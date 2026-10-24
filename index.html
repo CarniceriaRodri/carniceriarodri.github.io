@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carnicería Rodri</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <meta name="theme-color" content="#dc2626">
+    
+    <!-- Logotipo vectorial integrado para icono de la app -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 300'><circle cx='150' cy='150' r='140' fill='%23fff' stroke='%23111' stroke-width='6'/><circle cx='150' cy='150' r='128' fill='none' stroke='%23111' stroke-width='2'/><path id='t' d='M 45,150 A 105,105 0 1,1 255,150' fill='none'/><text font-family='Arial' font-weight='bold' font-size='22' fill='%23111' letter-spacing='4'><textPath href='%23t' startOffset='50%' text-anchor='middle'>CARNICERÍA</textPath></text><text x='150' y='145' font-size='45' text-anchor='middle'>🐄🐖🐓</text><text x='150' y='205' font-family='Georgia' font-weight='bold' font-size='40' fill='%23111' text-anchor='middle' letter-spacing='3'>RODRI</text><line x1='80' y1='225' x2='115' y2='225' stroke='%23111' stroke-width='2'/><text x='150' y='231' font-family='Arial' font-weight='bold' font-size='15' fill='%23111' text-anchor='middle' letter-spacing='2'>CHARCUTERÍA</text><line x1='185' y1='225' x2='220' y2='225' stroke='%23111' stroke-width='2'/></svg>">
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans pb-24">
+
+    <!-- Cabecera -->
+    <header class="bg-red-600 text-white shadow-md sticky top-0 z-40">
+        <div class="max-w-md mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <div class="w-12 h-12 bg-white rounded-full p-0.5 shadow-md flex items-center justify-center overflow-hidden border-2 border-white flex-shrink-0">
+                    <svg viewBox="0 0 300 300" class="w-full h-full">
+                        <circle cx="150" cy="150" r="140" fill="#fff" stroke="#111" stroke-width="6"/>
+                        <circle cx="150" cy="150" r="128" fill="none" stroke="#111" stroke-width="2"/>
+                        <path id="tHead" d="M 45,150 A 105,105 0 1,1 255,150" fill="none"/>
+                        <text font-family="Arial" font-weight="bold" font-size="22" fill="#111" letter-spacing="3">
+                            <textPath href="#tHead" startOffset="50%" text-anchor="middle">CARNICERÍA</textPath>
+                        </text>
+                        <text x="150" y="145" font-size="45" text-anchor="middle">🐄🐖🐓</text>
+                        <text x="150" y="205" font-family="Georgia" font-weight="bold" font-size="40" fill="#111" text-anchor="middle" letter-spacing="3">RODRI</text>
+                        <line x1="80" y1="225" x2="115" y2="225" stroke="#111" stroke-width="2"/>
+                        <text x="150" y="231" font-family="Arial" font-weight="bold" font-size="14" fill="#111" text-anchor="middle" letter-spacing="2">CHARCUTERÍA</text>
+                        <line x1="185" y1="225" x2="220" y2="225" stroke="#111" stroke-width="2"/>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold tracking-wide leading-tight">Carnicería Rodri</h1>
+                    <p class="text-xs text-red-200">Charcutería Artesanal</p>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Contenido Principal -->
+    <main class="max-w-md mx-auto p-4 space-y-5">
+        
+        <!-- Buscador -->
+        <div>
+            <input type="text" id="searchInput" placeholder="Buscar producto (ej. ternera, hamburguesa...)" 
+                class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-500 text-sm bg-white shadow-sm">
+        </div>
+
+        <!-- Categorías -->
+        <div class="flex space-x-2 overflow-x-auto pb-2 scrollbar-none">
+            <button onclick="filterCategory(this, 'todos')" class="cat-btn bg-red-600 text-white px-4 py-1.5 rounded-full text-xs font-medium whitespace-nowrap shadow-sm">Todos</button>
+            <button onclick="filterCategory(this, 'ternera')" class="cat-btn bg-white text-gray-600 border border-gray-300 px-4 py-1.5 rounded-full text-xs font-medium whitespace-nowrap">Ternera</button>
+            <button onclick="filterCategory(this, 'cerdo')" class="cat-btn bg-white text-gray-600 border border-gray-300 px-4 py-1.5 rounded-full text-xs font-medium whitespace-nowrap">Cerdo</button>
+            <button onclick="filterCategory(this, 'pollo')" class="cat-btn bg-white text-gray-600 border border-gray-300 px-4 py-1.5 rounded-full text-xs font-medium whitespace-nowrap">Pollo</button>
+            <button onclick="filterCategory(this, 'elaborados')" class="cat-btn bg-white text-gray-600 border border-gray-300 px-4 py-1.5 rounded-full text-xs font-medium whitespace-nowrap">Elaborados</button>
+        </div>
+
+        <!-- Listado de Productos -->
+        <div id="productGrid" class="grid grid-cols-2 gap-3">
+            
+            <!-- Producto 1 -->
+            <div class="product-card bg-white p-3 rounded-xl shadow-sm border border-gray-100 flex flex-col justify-between" data-category="ternera" data-name="filetes surtido de ternera">
+                <div>
+                    <img src="https://images.unsplash.com/photo-1607623814075-e51df1bdc82f?w=300&q=80" alt="Filetes Surtidos de Ternera" class="w-full h-28 object-cover rounded-lg mb-2 shadow-sm">
+                    <h3 class="font-semibold text-sm text-gray-800">Filetes Surtidos de Ternera</h3>
+                    <p class="text-xs text-gray-500 mt-0.5">Del Noroeste</p>
+                </div>
+                <div class="mt-3 flex items-center justify-between">
+                    <span class="text-red-600 font-bold text-sm">19.90 €/kg</span>
+                    <button onclick="openQuantityModal('Filetes Surtidos de Ternera', 19.90, 'kg')" class="bg-red-50 text-red-600 p-1.5 rounded-lg hover:bg-red-600 hover:text-white transition shadow-sm">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Producto 2 -->
+            <div class="product-card bg-white p-3 rounded-xl shadow-sm border border-gray-100 flex flex-col justify-between" data-category="ternera" data-name="carne ternera picada">
+                <div>
+                    <img src="https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?w=300&q=80" alt="Carne Picada de Ternera" class="w-full h-28 object-cover rounded-lg mb-2 shadow-sm">
+                    <h3 class="font-semibold text-sm text-gray-800">Carne Picada de Ternera</h3>
+                    <p class="text-xs text-gray-500 mt-0.5">Especial plancha</p>
+                </div>
+                <div class="mt-3 flex items-center justify-between">
+                    <span class="text-red-600 font-bold text-sm">17.95 €/kg</span>
+                    <button onclick="openQuantityModal('Carne Picada de Ternera', 17.95, 'kg')" class="bg-red-50 text-red-600 p-1.5 rounded-lg hover:bg-red-600 hover:text-white transition shadow-sm">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Producto 3 -->
+            <div class="product-card bg-white p-3 rounded-xl shadow-sm border border-gray-100 flex flex-col justify-between" data-category="cerdo" data-name="chuletas de cerdo">
+                <div>
+                    <img src="https://images.unsplash.com/photo-1432139555190-58524dae6a55?w=300&q=80" alt="Chuletas de Cerdo" class="w-full h-28 object-cover rounded-lg mb-2 shadow-sm">
+                    <h3 class="font-semibold text-sm text-gray-800">Chuletas de Cerdo</h3>
+                    <p class="text-xs text-gray-500 mt-0.5">Cerdo Blanco</p>
+                </div>
+                <div class="mt-3 flex items-center justify-between">
+                    <span class="text-red-600 font-bold text-sm">6.90 €/kg</span>
+                    <button onclick="openQuantityModal('Chuletas de Cerdo', 6.90, 'kg')" class="bg-red-50 text-red-600 p-1.5 rounded-lg hover:bg-red-600 hover:text-white transition shadow-sm">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Producto 4 -->
+            <div class="product-card bg-white p-3 rounded-xl shadow-sm border border-gray-100 flex flex-col justify-between" data-category="pollo" data-name="pechuga de pollo campero">
+                <div>
+                    <img src="https://images.unsplash.com/photo-1604503468506-a8da13d82791?w=300&q=80" alt="Pechuga Pollo Campero" class="w-full h-28 object-cover rounded-lg mb-2 shadow-sm">
+                    <h3 class="font-semibold text-sm text-gray-800">Pechuga Pollo Campero</h3>
+                    <p class="text-xs text-gray-500 mt-0.5">Fresco y tierno</p>
+                </div>
+                <div class="mt-3 flex items-center justify-between">
+                    <span class="text-red-600 font-bold text-sm">9.25 €/kg</span>
+                    <button onclick="openQuantityModal('Pechuga Pollo Campero', 9.25, 'kg')" class="bg-red-50 text-red-600 p-1.5 rounded-lg hover:bg-red-600 hover:text-white transition shadow-sm">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Producto 5 -->
+            <div class="product-card bg-white p-3 rounded-xl shadow-sm border border-gray-100 flex flex-col justify-between" data-category="elaborados" data-name="hamburguesas artesana mezcla">
+                <div>
+                    <img src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=300&q=80" alt="Hamburguesa Mezcla" class="w-full h-28 object-cover rounded-lg mb-2 shadow-sm">
+                    <h3 class="font-semibold text-sm text-gray-800">Hamburguesa Mezcla</h3>
+                    <p class="text-xs text-gray-500 mt-0.5">70% Ternera / 30% Cerdo</p>
+                </div>
+                <div class="mt-3 flex items-center justify-between">
+                    <span class="text-red-600 font-bold text-sm">1.35 € /ud</span>
+                    <button onclick="openQuantityModal('Hamburguesa Mezcla Artesana', 1.35, 'ud')" class="bg-red-50 text-red-600 p-1.5 rounded-lg hover:bg-red-600 hover:text-white transition shadow-sm">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Producto 6 -->
+            <div class="product-card bg-white p-3 rounded-xl shadow-sm border border-gray-100 flex flex-col justify-between" data-category="elaborados" data-name="cachopo de ternera">
+                <div>
+                    <img src="https://images.unsplash.com/photo-1544025162-d76694265947?w=300&q=80" alt="Cachopo de Ternera" class="w-full h-28 object-cover rounded-lg mb-2 shadow-sm">
+                    <h3 class="font-semibold text-sm text-gray-800">Cachopo de Ternera</h3>
+                    <p class="text-xs text-gray-500 mt-0.5">Serrano, queso, piquillo</p>
+                </div>
+                <div class="mt-3 flex items-center justify-between">
+                    <span class="text-red-600 font-bold text-sm">17.25 €/ud</span>
+                    <button onclick="openQuantityModal('Cachopo de Ternera', 17.25, 'ud')" class="bg-red-50 text-red-600 p-1.5 rounded-lg hover:bg-red-600 hover:text-white transition shadow-sm">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    </button>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- Modal para Seleccionar Peso o Cantidad -->
+    <div id="quantityModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-sm rounded-2xl p-5 shadow-2xl space-y-4">
+            <div class="flex justify-between items-center border-b pb-2">
+                <h3 id="modalProductTitle" class="font-bold text-sm text-gray-800">Seleccionar cantidad</h3>
+                <button onclick="toggleQuantityModal()" class="text-gray-400 hover:text-gray-600 text-xl font-bold">&times;</button>
+            </div>
+            
+            <div class="space-y-3">
+                <p class="text-xs text-gray-600">Elige el peso o cantidad que deseas:</p>
+                
+                <!-- Botones de selección rápida -->
+                <div id="quickOptions" class="grid grid-cols-3 gap-2"></div>
+
+                <!-- Cantidad personalizada -->
+                <div class="pt-2 border-t">
+                    <label class="text-[11px] text-gray-500 block mb-1">O escribe cantidad exacta:</label>
+                    <div class="flex space-x-2">
+                        <input type="number" id="customQty" step="0.1" min="0.1" value="1" class="w-full px-3 py-1.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-500">
+                        <span id="unitLabel" class="text-xs font-bold text-gray-700 self-center">kg</span>
+                    </div>
+                </div>
+            </div>
+
+            <button onclick="confirmAddToCart()" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2.5 rounded-xl text-xs shadow">
+                Añadir a la Cesta
+            </button>
+        </div>
+    </div>
+
+    <!-- Modal del Carrito -->
+    <div id="cartModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-end sm:items-center justify-center">
+        <div class="bg-white w-full max-w-md rounded-t-2xl sm:rounded-2xl p-5 max-h-[85vh] flex flex-col shadow-2xl">
+            <div class="flex justify-between items-center border-b pb-3">
+                <h2 class="font-bold text-lg text-gray-800">🛒 Tu Cesta de Pedido</h2>
+                <button onclick="toggleCartModal()" class="text-gray-400 hover:text-gray-600 text-xl font-bold">&times;</button>
+            </div>
+            
+            <div id="cartItems" class="overflow-y-auto py-3 space-y-3 flex-1">
+                <!-- Se llena dinámicamente -->
+            </div>
+
+            <div class="border-t pt-3 mt-auto space-y-3 bg-white">
+                <!-- Datos del cliente para generar el código -->
+                <div class="bg-gray-50 p-3 rounded-xl border border-gray-200 space-y-2">
+                    <p class="text-xs font-bold text-gray-700">Tus datos para el pedido:</p>
+                    <div>
+                        <label class="text-[10px] text-gray-500 block">Nombre y Apellido</label>
+                        <input type="text" id="clientName" placeholder="Ej. María García" class="w-full px-3 py-1.5 text-xs border rounded-lg focus:ring-2 focus:ring-red-500 bg-white">
+                    </div>
+                </div>
+
+                <div class="flex justify-between items-center text-sm font-bold">
+                    <span>Total estimado:</span>
+                    <span id="cartTotal" class="text-red-600 text-base">0.00 €</span>
+                </div>
+                <button onclick="sendWhatsAppOrder()" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-xl shadow transition flex items-center justify-center space-x-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
+                    <span>Enviar pedido por WhatsApp</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notificación flotante -->
+    <div id="toast" class="fixed top-20 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-xs px-4 py-2 rounded-full shadow-lg transition-all duration-300 translate-y-20 opacity-0 pointer-events-none z-50">
+        ¡Producto añadido a la cesta!
+    </div>
+
+    <!-- Barra de navegación inferior -->
+    <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 py-3 shadow-lg z-40">
+        <div class="max-w-md mx-auto px-6 flex justify-around items-center">
+            <a href="#" class="flex flex-col items-center text-red-600">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                <span class="text-[10px] mt-1 font-medium">Catálogo</span>
+            </a>
+            <button onclick="toggleCartModal()" class="relative flex flex-col items-center text-gray-600 hover:text-red-600 focus:outline-none">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                <span class="text-[10px] mt-1 font-medium">Ver Cesta</span>
+                <span id="cartBadge" class="absolute -top-1 -right-2 bg-red-600 text-white text-[10px] font-bold px-1.5 py-0.2 rounded-full hidden">0</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Scripts -->
+    <script>
+        let cart = [];
+        let currentProduct = null;
+
+        function filterCategory(btnElement, cat) {
+            const buttons = document.querySelectorAll('.cat-btn');
+            buttons.forEach(btn => {
+                btn.classList.remove('bg-red-600', 'text-white');
+                btn.classList.add('bg-white', 'text-gray-600', 'border', 'border-gray-300');
+            });
+            btnElement.classList.remove('bg-white', 'text-gray-600', 'border', 'border-gray-300');
+            btnElement.classList.add('bg-red-600', 'text-white');
+
+            const cards = document.querySelectorAll('.product-card');
+            cards.forEach(card => {
+                if (cat === 'todos' || card.dataset.category === cat) {
+                    card.style.display = 'flex';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        document.getElementById('searchInput').addEventListener('input', function(e) {
+            const term = e.target.value.toLowerCase();
+            const cards = document.querySelectorAll('.product-card');
+            cards.forEach(card => {
+                const name = card.dataset.name;
+                if (name.includes(term)) {
+                    card.style.display = 'flex';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        });
+
+        function openQuantityModal(name, price, type) {
+            currentProduct = { name, price, type };
+            document.getElementById('modalProductTitle').textContent = name + ` (${price.toFixed(2)} €/${type})`;
+            document.getElementById('unitLabel').textContent = type === 'kg' ? 'kg' : 'uds';
+            
+            const quickOptions = document.getElementById('quickOptions');
+            let html = '';
+            
+            if (type === 'kg') {
+                html = `
+                    <button onclick="selectQuick(0.25)" class="bg-gray-100 hover:bg-red-50 hover:border-red-500 border border-gray-200 py-2 rounded-lg text-xs font-semibold">250g</button>
+                    <button onclick="selectQuick(0.5)" class="bg-gray-100 hover:bg-red-50 hover:border-red-500 border border-gray-200 py-2 rounded-lg text-xs font-semibold">500g</button>
+                    <button onclick="selectQuick(1)" class="bg-gray-100 hover:bg-red-50 hover:border-red-500 border border-gray-200 py-2 rounded-lg text-xs font-semibold">1 kg</button>
+                    <button onclick="selectQuick(1.5)" class="bg-gray-100 hover:bg-red-50 hover:border-red-500 border border-gray-200 py-2 rounded-lg text-xs font-semibold">1.5 kg</button>
+                    <button onclick="selectQuick(2)" class="bg-gray-100 hover:bg-red-50 hover:border-red-500 border border-gray-200 py-2 rounded-lg text-xs font-semibold">2 kg</button>
+                    <button onclick="selectQuick(3)" class="bg-gray-100 hover:bg-red-50 hover:border-red-500 border border-gray-200 py-2 rounded-lg text-xs font-semibold">3 kg</button>
+                `;
+                document.getElementById('customQty').value = 1;
+                document.getElementById('customQty').step = 0.25;
+            } else {
+                html = `
+                    <button onclick="selectQuick(1)" class="bg-gray-100 hover:bg-red-50 hover:border-red-500 border border-gray-200 py-2 rounded-lg text-xs font-semibold">1 ud</button>
+                    <button onclick="selectQuick(2)" class="bg-gray-100 hover:bg-red-50 hover:border-red-500 border border-gray-200 py-2 rounded-lg text-xs font-semibold">2 uds</button>
+                    <button onclick="selectQuick(3)" class="bg-gray-100 hover:bg-red-50 hover:border-red-500 border border-gray-200 py-2 rounded-lg text-xs font-semibold">3 uds</button>
+                    <button onclick="selectQuick(4)" class="bg-gray-100 hover:bg-red-50 hover:border-red-500 border border-gray-200 py-2 rounded-lg text-xs font-semibold">4 uds</button>
+                    <button onclick="selectQuick(5)" class="bg-gray-100 hover:bg-red-50 hover:border-red-500 border border-gray-200 py-2 rounded-lg text-xs font-semibold">5 uds</button>
+                    <button onclick="selectQuick(6)" class="bg-gray-100 hover:bg-red-50 hover:border-red-500 border border-gray-200 py-2 rounded-lg text-xs font-semibold">6 uds</button>
+                `;
+                document.getElementById('customQty').value = 1;
+                document.getElementById('customQty').step = 1;
+            }
+            
+            quickOptions.innerHTML = html;
+            toggleQuantityModal();
+        }
+
+        function selectQuick(val) {
+            document.getElementById('customQty').value = val;
+        }
+
+        function toggleQuantityModal() {
+            const modal = document.getElementById('quantityModal');
+            modal.classList.toggle('hidden');
+        }
+
+        function confirmAddToCart() {
+            const qty = parseFloat(document.getElementById('customQty').value);
+            if (!qty || qty <= 0) {
+                alert('Por favor, introduce una cantidad válida.');
+                return;
+            }
+
+            const name = currentProduct.name;
+            const pricePerUnit = currentProduct.price;
+            const type = currentProduct.type;
+            const totalPrice = pricePerUnit * qty;
+            
+            let qtyText = type === 'kg' ? (qty >= 1 ? `${qty} kg` : `${qty * 1000}g`) : `${qty} uds`;
+
+            cart.push({ name, pricePerUnit, type, qty, qtyText, totalPrice });
+
+            toggleQuantityModal();
+            updateCartUI();
+            showToast();
+        }
+
+        function updateCartUI() {
+            const badge = document.getElementById('cartBadge');
+            const totalItems = cart.length;
+            
+            if (totalItems > 0) {
+                badge.textContent = totalItems;
+                badge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+            }
+
+            const container = document.getElementById('cartItems');
+            if (cart.length === 0) {
+                container.innerHTML = '<p class="text-center text-gray-400 py-6 text-sm">Tu cesta está vacía</p>';
+                document.getElementById('cartTotal').textContent = '0.00 €';
+                return;
+            }
+
+            let html = '';
+            let overallTotal = 0;
+
+            cart.forEach((item, index) => {
+                overallTotal += item.totalPrice;
+                html += `
+                    <div class="flex justify-between items-center bg-gray-50 p-2.5 rounded-lg border border-gray-100 text-sm">
+                        <div>
+                            <p class="font-semibold text-gray-800">${item.name}</p>
+                            <p class="text-xs text-red-600 font-medium">${item.qtyText} (${item.totalPrice.toFixed(2)} €)</p>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <button onclick="removeItem(${index})" class="text-gray-400 hover:text-red-600 p-1 text-xs">🗑️ Quitar</button>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+            document.getElementById('cartTotal').textContent = overallTotal.toFixed(2) + ' €';
+        }
+
+        function removeItem(index) {
+            cart.splice(index, 1);
+            updateCartUI();
+        }
+
+        function toggleCartModal() {
+            const modal = document.getElementById('cartModal');
+            modal.classList.toggle('hidden');
+        }
+
+        function showToast() {
+            const toast = document.getElementById('toast');
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 1800);
+        }
+
+        function sendWhatsAppOrder() {
+            if (cart.length === 0) {
+                alert('Por favor, añade al menos un producto a la cesta.');
+                return;
+            }
+
+            const clientNameInput = document.getElementById('clientName').value.trim();
+
+            if (!clientNameInput) {
+                alert('Por favor, introduce tu Nombre y Apellido para generar el código de pedido.');
+                return;
+            }
+
+            // Generar código con fecha y hora exacta: NOMBRE-APELLIDO-DDMM-HHMM
+            const now = new Date();
+            const day = String(now.getDate()).padStart(2, '0');
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            
+            const cleanName = clientNameInput.toUpperCase()
+                .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+                .replace(/[^A-Z\s]/g, '')
+                .trim().replace(/\s+/g, '-');
+
+            const orderCode = `${cleanName}-${day}${month}-${hours}${minutes}`;
+
+            const telefonoTienda = "34677228251";
+            let mensaje = `*NUEVO PEDIDO - CARNICERÍA RODRI*\n`;
+            mensaje += `👤 Cliente: ${clientNameInput}\n\n`;
+            mensaje += `*Detalle de productos:*\n`;
+            
+            let total = 0;
+            cart.forEach(item => {
+                mensaje += `• ${item.qtyText} de *${item.name}* (${item.totalPrice.toFixed(2)} €)\n`;
+                total += item.totalPrice;
+            });
+            
+            mensaje += `\n*Total estimado: ${total.toFixed(2)} €*\n`;
+            mensaje += `🔖 Código de Pedido (Fecha/Hora): *${orderCode}*\n\n`;
+            mensaje += `¡Muchas gracias!`;
+
+            toggleCartModal();
+
+            const url = `https://wa.me/${telefonoTienda}?text=${encodeURIComponent(mensaje)}`;
+            window.open(url, '_blank');
+        }
+    </script>
+</body>
+</html>
+
