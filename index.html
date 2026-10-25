@@ -467,12 +467,8 @@ async function confirmOrder() {
         'Importe sujeto al peso final de los productos.'
     ].join('\n');
 
-    const enlaceWhatsApp =
-        `https://wa.me/${numeroWhatsApp}?text=${encodeURIComponent(mensajeWhatsApp)}`;
-
-    // Abrir WhatsApp desde el clic del cliente para evitar bloqueos.
-    const ventanaWhatsApp = window.open('about:blank', '_blank');
-
+    const enlaceWhatsApp = `https://wa.me/34677228251?text=${encodeURIComponent(mensajeWhatsApp)}`;
+const ventanaWhatsApp = window.open(enlaceWhatsApp, '_blank');
     if (ventanaWhatsApp) {
         ventanaWhatsApp.opener = null;
     }
