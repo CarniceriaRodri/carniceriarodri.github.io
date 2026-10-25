@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+--<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -203,7 +203,11 @@
                     <p class="text-xs font-bold text-gray-700">Tus datos para el pedido:</p>
                     <div>
                         <label class="text-[10px] text-gray-500 block">Nombre y Apellido</label>
-                        <input type="text" id="clientName" placeholder="Ej. María García" class="w-full px-3 py-1.5 text-xs border rounded-lg focus:ring-2 focus:ring-red-500 bg-white">
+                        <input type="text" id="clientName" autocomplete="name" placeholder="Ej. María García" class="w-full px-3 py-1.5 text-xs border rounded-lg focus:ring-2 focus:ring-red-500 bg-white">
+                    </div>
+                    <div>
+                        <label class="text-[10px] text-gray-500 block">Teléfono (opcional)</label>
+                        <input type="tel" id="clientPhone" autocomplete="tel" maxlength="25" placeholder="Ej. 600 123 456" class="w-full px-3 py-1.5 text-xs border rounded-lg focus:ring-2 focus:ring-red-500 bg-white">
                     </div>
                 </div>
 
@@ -211,9 +215,9 @@
                     <span>Total estimado:</span>
                     <span id="cartTotal" class="text-red-600 text-base">0.00 €</span>
                 </div>
-                <button onclick="sendWhatsAppOrder()" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-xl shadow transition flex items-center justify-center space-x-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
-                    <span>Enviar pedido por WhatsApp</span>
+                <button onclick="confirmOrder()" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-xl shadow transition flex items-center justify-center space-x-2">
+                    <span class="text-lg">✓</span>
+                    <span>Confirmar pedido</span>
                 </button>
             </div>
         </div>
@@ -399,54 +403,70 @@
             }, 1800);
         }
 
-        function sendWhatsAppOrder() {
+        // URL de despliegue de Google Apps Script (aplicación web).
+        const GOOGLE_SHEETS_URL = 'https://script.google.com/macros/s/AKfycbylHbaBm67ngqtOJ3DDtiRE3265yKArEElnDJ04WtWD8lrvgiJMBOkv-aRywST4fmv0Yw/exec';
+
+        async function confirmOrder() {
             if (cart.length === 0) {
                 alert('Por favor, añade al menos un producto a la cesta.');
                 return;
             }
 
-            const clientNameInput = document.getElementById('clientName').value.trim();
+            const nombre = document.getElementById('clientName').value.trim();
+            const telefono = document.getElementById('clientPhone')?.value.trim() || '';
 
-            if (!clientNameInput) {
-                alert('Por favor, introduce tu Nombre y Apellido para generar el código de pedido.');
+            if (!nombre) {
+                alert('Por favor, introduce tu Nombre y Apellido.');
                 return;
             }
 
-            // Generar código con fecha y hora exacta: NOMBRE-APELLIDO-DDMM-HHMM
-            const now = new Date();
-            const day = String(now.getDate()).padStart(2, '0');
-            const month = String(now.getMonth() + 1).padStart(2, '0');
-            const hours = String(now.getHours()).padStart(2, '0');
-            const minutes = String(now.getMinutes()).padStart(2, '0');
-            
-            const cleanName = clientNameInput.toUpperCase()
-                .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-                .replace(/[^A-Z\s]/g, '')
-                .trim().replace(/\s+/g, '-');
+            const ahora = new Date();
+            const codigo = 'ROD-' + ahora.getTime() + '-' +
+                Math.random().toString(36).slice(2, 7).toUpperCase();
 
-            const orderCode = `${cleanName}-${day}${month}-${hours}${minutes}`;
+            const productos = cart.map(item => ({
+                nombre: item.name,
+                cantidad: item.qty,
+                unidad: item.type,
+                precioUnitario: Math.round(item.pricePerUnit * 100) / 100,
+                subtotal: Math.round(item.totalPrice * 100) / 100
+            }));
 
-            const telefonoTienda = "34677228251";
-            let mensaje = `*NUEVO PEDIDO - CARNICERÍA RODRI*\n`;
-            mensaje += `👤 Cliente: ${clientNameInput}\n\n`;
-            mensaje += `*Detalle de productos:*\n`;
-            
-            let total = 0;
-            cart.forEach(item => {
-                mensaje += `• ${item.qtyText} de *${item.name}* (${item.totalPrice.toFixed(2)} €)\n`;
-                total += item.totalPrice;
-            });
-            
-            mensaje += `\n*Total estimado: ${total.toFixed(2)} €*\n`;
-            mensaje += `🔖 Código de Pedido (Fecha/Hora): *${orderCode}*\n\n`;
-            mensaje += `¡Muchas gracias!`;
+            const total = Math.round(
+                productos.reduce((suma, item) => suma + item.subtotal, 0) * 100
+            ) / 100;
+
+            const pedido = {
+                codigo,
+                nombre,
+                telefono,
+                productos,
+                total,
+                fecha: ahora.toISOString()
+            };
+
+            // Enviar el pedido a Google Sheets. No se abre WhatsApp.
+            try {
+                await fetch(GOOGLE_SHEETS_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify(pedido)
+                });
+            } catch (error) {
+                console.error('Error enviando el pedido a Google Sheets:', error);
+                alert('No se ha podido enviar el pedido. Comprueba tu conexión e inténtalo de nuevo.');
+                return;
+            }
 
             toggleCartModal();
+            alert('¡Pedido recibido! Gracias, ' + nombre + '. Tu código de pedido es ' + codigo + '.');
 
-            const url = `https://wa.me/${telefonoTienda}?text=${encodeURIComponent(mensaje)}`;
-            window.open(url, '_blank');
+            cart = [];
+            updateCartUI();
+            document.getElementById('clientName').value = '';
+            document.getElementById('clientPhone').value = '';
         }
     </script>
 </body>
 </html>
-
