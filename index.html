@@ -407,65 +407,116 @@
         const GOOGLE_SHEETS_URL = 'https://script.google.com/macros/s/AKfycbylHbaBm67ngqtOJ3DDtiRE3265yKArEElnDJ04WtWD8lrvgiJMBOkv-aRywST4fmv0Yw/exec';
 
         async function confirmOrder() {
-            if (cart.length === 0) {
-                alert('Por favor, añade al menos un producto a la cesta.');
-                return;
-            }
+        
+async function confirmOrder() {
+    if (cart.length === 0) {
+        alert('Por favor, añade al menos un producto a la cesta.');
+        return;
+    }
 
-            const nombre = document.getElementById('clientName').value.trim();
-            const telefono = document.getElementById('clientPhone')?.value.trim() || '';
+    const nombre = document.getElementById('clientName').value.trim();
+    const telefono = document.getElementById('clientPhone')?.value.trim() || '';
 
-            if (!nombre) {
-                alert('Por favor, introduce tu Nombre y Apellido.');
-                return;
-            }
+    if (!nombre) {
+        alert('Por favor, introduce tu Nombre y Apellido.');
+        return;
+    }
 
-            const ahora = new Date();
-            // Código corto para el cliente: por ejemplo, ROD-X39OV.
-            const codigo = 'ROD-' + Math.random().toString(36).slice(2, 7).toUpperCase();
+    const ahora = new Date();
+    const codigo = 'ROD-' + Math.random().toString(36).slice(2, 7).toUpperCase();
 
-            const productos = cart.map(item => ({
-                nombre: item.name,
-                cantidad: item.qty,
-                unidad: item.type,
-                precioUnitario: Math.round(item.pricePerUnit * 100) / 100,
-                subtotal: Math.round(item.totalPrice * 100) / 100
-            }));
+    const productos = cart.map(item => ({
+        nombre: item.name,
+        cantidad: item.qty,
+        unidad: item.type,
+        precioUnitario: Math.round(item.pricePerUnit * 100) / 100,
+        subtotal: Math.round(item.totalPrice * 100) / 100
+    }));
 
-            const total = Math.round(
-                productos.reduce((suma, item) => suma + item.subtotal, 0) * 100
-            ) / 100;
+    const total = Math.round(
+        productos.reduce((suma, item) => suma + item.subtotal, 0) * 100
+    ) / 100;
 
-            const pedido = {
-                codigo,
-                nombre,
-                telefono,
-                productos,
-                total,
-fecha: `${String(ahora.getDate()).padStart(2,'0')}/${String(ahora.getMonth()+1).padStart(2,'0')}/${ahora.getFullYear()}`            };
+    const pedido = {
+        codigo,
+        nombre,
+        telefono,
+        productos,
+        total,
+        fecha: `${String(ahora.getDate()).padStart(2, '0')}/${String(ahora.getMonth() + 1).padStart(2, '0')}/${ahora.getFullYear()}`
+    };
 
-            // Enviar el pedido a Google Sheets. No se abre WhatsApp.
-            try {
-                await fetch(GOOGLE_SHEETS_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    body: JSON.stringify(pedido)
-                });
-            } catch (error) {
-                console.error('Error enviando el pedido a Google Sheets:', error);
-                alert('No se ha podido enviar el pedido. Comprueba tu conexión e inténtalo de nuevo.');
-                return;
-            }
+    // Preparar el mensaje de WhatsApp.
+    const numeroWhatsApp = '34677228251';
 
-            toggleCartModal();
-            alert('¡Pedido recibido! Gracias, ' + nombre + '. Tu código de pedido es ' + codigo + '.');
+    const mensajeWhatsApp = [
+        '*NUEVO PEDIDO - CARNICERÍA RODRI*',
+        '',
+        `Pedido: ${codigo}`,
+        `Cliente: ${nombre}`,
+        `Teléfono: ${telefono || 'No indicado'}`,
+        '',
+        '*Productos:*',
+        ...productos.map(item =>
+            `- ${item.nombre}: ${item.cantidad} ${item.unidad} x ${item.precioUnitario.toFixed(2)} € = ${item.subtotal.toFixed(2)} €`
+        ),
+        '',
+        `*TOTAL ESTIMADO: ${total.toFixed(2)} €*`,
+        '',
+        'Pago en la recogida.',
+        'Importe sujeto al peso final de los productos.'
+    ].join('\n');
 
-            cart = [];
-            updateCartUI();
-            document.getElementById('clientName').value = '';
-            document.getElementById('clientPhone').value = '';
+    const enlaceWhatsApp =
+        `https://wa.me/${numeroWhatsApp}?text=${encodeURIComponent(mensajeWhatsApp)}`;
+
+    // Abrir WhatsApp desde el clic del cliente para evitar bloqueos.
+    const ventanaWhatsApp = window.open('about:blank', '_blank');
+
+    if (ventanaWhatsApp) {
+        ventanaWhatsApp.opener = null;
+    }
+
+    // Guardar el pedido en Google Sheets, como antes.
+    try {
+        await fetch(GOOGLE_SHEETS_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify(pedido)
+        });
+    } catch (error) {
+        console.error('Error enviando el pedido a Google Sheets:', error);
+
+        if (ventanaWhatsApp) {
+            ventanaWhatsApp.close();
         }
+
+        alert('No se ha podido enviar el pedido. Comprueba tu conexión e inténtalo de nuevo.');
+        return;
+    }
+
+    // Llevar la ventana abierta al mensaje preparado.
+    if (ventanaWhatsApp) {
+        ventanaWhatsApp.location.href = enlaceWhatsApp;
+    } else {
+        // Alternativa si el navegador bloquea la ventana emergente.
+        window.location.href = enlaceWhatsApp;
+    }
+
+    toggleCartModal();
+
+    alert(
+        'Pedido preparado. Código: ' + codigo +
+        '. WhatsApp se abrirá con los detalles. Pulsa Enviar en WhatsApp para completar el envío.'
+    );
+
+    cart = [];
+    updateCartUI();
+    document.getElementById('clientName').value = '';
+    document.getElementById('clientPhone').value = '';
+}
+
     </script>
 </body>
 </html>
