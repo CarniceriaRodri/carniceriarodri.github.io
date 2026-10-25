@@ -442,7 +442,7 @@
                 telefono,
                 productos,
                 total,
-                fecha: ahora.toISOString()
+               fecha: `${String(ahora.getDate()).padStart(2,'0')}/${String(ahora.getMonth()+1).padStart(2,'0')}/${ahora.getFullYear()}`
             };
 
             // Enviar el pedido a Google Sheets. No se abre WhatsApp.
