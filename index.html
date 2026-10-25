@@ -470,7 +470,12 @@
                 `https://wa.me/${numeroWhatsApp}?text=${encodeURIComponent(mensajeWhatsApp)}`;
 
             // Abrir WhatsApp directamente desde el botón del cliente.
-            const ventanaWhatsApp = window.open(enlaceWhatsApp, '_blank');
+            
+const ventanaWhatsApp = window.open('about:blank', '_blank');
+
+if (ventanaWhatsApp) {
+    ventanaWhatsApp.location.href = enlaceWhatsApp;
+}
 
             // Enviar el pedido a Google Sheets.
             try {
@@ -488,13 +493,20 @@
                 return;
             }
 
-            toggleCartModal();
+            
+if (!ventanaWhatsApp) {
+    alert('El navegador ha bloqueado la ventana. Se abrirá WhatsApp en esta pestaña.');
+    window.location.href = enlaceWhatsApp;
+    return;
+}
 
-            alert(
-                'Pedido preparado con código ' + codigo +
-                '. Si WhatsApp no se ha abierto, permite las ventanas emergentes del navegador. ' +
-                'Debes pulsar Enviar en WhatsApp para mandar el pedido.'
-            );
+toggleCartModal();
+
+alert(
+    'Pedido preparado con código ' + codigo +
+    '. Pulsa Enviar en WhatsApp para mandar el pedido.'
+);
+
 
             cart = [];
             updateCartUI();
