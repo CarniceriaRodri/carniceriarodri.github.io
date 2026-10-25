@@ -1,4 +1,4 @@
---<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -421,8 +421,8 @@
             }
 
             const ahora = new Date();
-            const codigo = 'ROD-' + ahora.getTime() + '-' +
-                Math.random().toString(36).slice(2, 7).toUpperCase();
+            // Código corto para el cliente: por ejemplo, ROD-X39OV.
+            const codigo = 'ROD-' + Math.random().toString(36).slice(2, 7).toUpperCase();
 
             const productos = cart.map(item => ({
                 nombre: item.name,
