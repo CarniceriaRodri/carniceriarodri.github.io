@@ -420,13 +420,9 @@
                 return;
             }
 
-            // Código para el cliente: ROD-DDMM-NNN (fecha + número de 3 cifras).
-            // Nota: el número es aleatorio; para consecutivos sin duplicados hay que generarlo en Apps Script.
             const ahora = new Date();
-            const diaMes = String(ahora.getDate()).padStart(2, '0') +
-                           String(ahora.getMonth() + 1).padStart(2, '0');
-            const numeroPedido = String(Math.floor(Math.random() * 900) + 100);
-            const codigo = 'ROD-' + diaMes + '-' + numeroPedido;
+            // Código corto para el cliente: por ejemplo, ROD-X39OV.
+            const codigo = 'ROD-' + Math.random().toString(36).slice(2, 7).toUpperCase();
 
             const productos = cart.map(item => ({
                 nombre: item.name,
@@ -464,7 +460,7 @@
             }
 
             toggleCartModal();
-            alert('¡Pedido recibido! Gracias, ' + nombre + '. Tu código de pedido es ' + codigo + '. Los cuatro primeros números indican el día y el mes; los tres últimos identifican este pedido. Guarda el código para consultarlo.');
+            alert('¡Pedido recibido! Gracias, ' + nombre + '. Tu código de pedido es ' + codigo + '.');
 
             cart = [];
             updateCartUI();
