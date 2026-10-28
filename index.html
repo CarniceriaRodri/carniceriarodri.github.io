@@ -265,6 +265,73 @@
 
 <script src="js/catalogo.js"></script>
 <script src="js/app.js"></script>
+  <script src="js/catalogo.js"></script>
+<script src="js/app.js"></script>
+
+<!-- AÑADE TODO ESTO AQUÍ EXACTAMENTE -->
+<script>
+  const GOOGLE_SHEETS_URL = 'https://script.google.com/macros/s/AKfycbylHbaBm67ngqtOJ3DDtiRE3265yKArEElnDJ04WtWD8lrvgiJMBOkv-aRywST4fmv0Yw/exec';
+  let ultimoEnlaceWhatsApp = '';
+
+  function generarCodigoPedido() {
+      const ahora = new Date();
+      const dia = String(ahora.getDate()).padStart(2, '0');
+      const mes = String(ahora.getMonth() + 1).padStart(2, '0');
+      const fecha = `${dia}${mes}`;
+      const clave = `rodri_pedidos_${fecha}`;
+
+      let numero = Number(localStorage.getItem(clave) || '0') + 1;
+      localStorage.setItem(clave, String(numero));
+
+      return `ROD-${fecha}-${String(numero).padStart(2, '0')}`;
+  }
+
+  function abrirWhatsAppPedido() {
+      if (ultimoEnlaceWhatsApp) {
+          window.open(ultimoEnlaceWhatsApp, '_blank');
+      } else {
+          alert('No se ha encontrado el enlace del pedido. Inténtalo de nuevo.');
+      }
+  }
+
+  function mostrarPanelConfirmacion(codigo) {
+      const partes = codigo.split('-');
+      document.getElementById('confirmationCode').textContent = codigo;
+
+      const fecha = partes[1] || '';
+      const numero = partes[2] || '';
+
+      document.getElementById('confirmationDate').textContent = fecha;
+      document.getElementById('confirmationNumber').textContent = numero;
+
+      if (fecha.length === 4) {
+          const dia = fecha.substring(0, 2);
+          const mes = Number(fecha.substring(2, 4));
+          const nombresMeses = ['', 'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+
+          const significado = (mes >= 1 && mes <= 12)
+              ? `${Number(dia)} de ${nombresMeses[mes]}`
+              : 'Día y mes';
+
+          document.getElementById('confirmationDateMeaning').textContent = significado;
+      }
+
+      const panel = document.getElementById('confirmationPanel');
+      panel.classList.remove('hidden');
+      panel.classList.add('flex');
+  }
+
+  function cerrarPanelConfirmacion() {
+      const panel = document.getElementById('confirmationPanel');
+      panel.classList.add('hidden');
+      panel.classList.remove('flex');
+  }
+</script>
+<!-- FIN DE LO QUE DEBES AÑADIR -->
+
+</body>
+</html>
+
 
 <!-- Scripts para la gestión del código de pedido, panel y Google Sheets -->
 <script>
