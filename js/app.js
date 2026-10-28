@@ -1,1 +1,240 @@
+(function () {
+  const TELEFONO = '34677228251'
+  const STORAGE_KEY = 'rodri-encargo'
 
+  const $ = (sel, root = document) => root.querySelector(sel)
+  const $$ = (sel, root = document) => [...root.querySelectorAll(sel)]
+
+  const img = (name, w, h) =>
+    `img/productos/${name}.jpg`
+
+  const escapeHtml = (s) =>
+    String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c])
+
+  // ——— Estado del encargo ———
+  let cart = []
+  try { cart = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [] } catch { cart = [] }
+  const save = () => localStorage.setItem(STORAGE_KEY, JSON.stringify(cart))
+
+  // ——— Catálogo ———
+  function renderCatalogo() {
+    $('#chips').innerHTML =
+      `<button type="button" class="chip is-active" data-chip="todo">Todo</button>` +
+      CATEGORIAS.map((c) => `<button type="button" class="chip" data-chip="${c.id}">${c.nombre}</button>`).join('')
+
+    $('#secciones').innerHTML = CATEGORIAS.map((c, i) => {
+      const productos = PRODUCTOS.filter((p) => p.cat === c.id)
+      return `
+        <section class="cat" id="cat-${c.id}" data-cat="${c.id}">
+          <header class="cat-head">
+            <span class="cat-n">${String(i + 1).padStart(2, '0')}</span>
+            <div>
+              <h3>${c.nombre}</h3>
+              <p>${c.lema}</p>
+            </div>
+          </header>
+          <div class="grid">${productos.map(card).join('')}</div>
+        </section>`
+    }).join('')
+  }
+
+  function card(p) {
+    const keywords = [p.nombre, p.desc, ...p.opciones].join(' ').toLowerCase()
+    return `
+      <article class="card" data-id="${p.id}" data-search="${escapeHtml(normalize(keywords))}">
+        <div class="card-img">
+          <img src="${img(p.img, 600, 450)}" srcset="${img(p.img, 400, 300)} 400w, ${img(p.img, 800, 600)} 800w"
+               sizes="(max-width: 640px) 100vw, 360px" alt="${escapeHtml(p.nombre)}" loading="lazy" width="600" height="450"
+               onerror="this.onerror=null;this.removeAttribute('srcset');this.src='img/productos/${p.img}.jpg'">
+          ${p.etiqueta ? `<span class="tag">${p.etiqueta}</span>` : ''}
+        </div>
+        <div class="card-body">
+          <h4>${p.nombre}</h4>
+          <p class="card-desc">${p.desc}</p>
+          ${p.precio ? `<p class="card-precio">${p.precio} <small>orientativo</small></p>` : ''}
+          <div class="card-fields">
+            <label>
+              <span>Cantidad</span>
+              <select data-field="cantidad">${p.cantidades.map((o) => `<option>${o}</option>`).join('')}</select>
+            </label>
+            <label>
+              <span>${p.opcionLabel}</span>
+              <select data-field="opcion">${p.opciones.map((o) => `<option>${o}</option>`).join('')}</select>
+            </label>
+          </div>
+          <button type="button" class="btn btn-add" data-add>
+            <span class="plus" aria-hidden="true">+</span> Añadir al encargo
+          </button>
+        </div>
+      </article>`
+  }
+
+  function normalize(s) {
+    return s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
+  }
+
+  // ——— Filtros: categorías y búsqueda ———
+  function filtrar() {
+    const q = normalize($('#buscar').value.trim())
+    const activa = $('.chip.is-active')?.dataset.chip || 'todo'
+    let visibles = 0
+    $$('.cat').forEach((sec) => {
+      const catOk = activa === 'todo' || sec.dataset.cat === activa
+      let enSeccion = 0
+      $$('.card', sec).forEach((c) => {
+        const ok = catOk && (!q || c.dataset.search.includes(q))
+        c.hidden = !ok
+        if (ok) enSeccion++
+      })
+      sec.hidden = enSeccion === 0
+      visibles += enSeccion
+    })
+    const sin = $('#sinResultados')
+    sin.hidden = visibles > 0
+    $('[data-query]', sin).textContent = $('#buscar').value.trim()
+  }
+
+  // ——— Panel del encargo ———
+  function renderCart() {
+    const total = cart.reduce((n, l) => n + l.uds, 0)
+    $$('[data-cart-count]').forEach((el) => (el.textContent = total))
+    $('.float-bar').hidden = total === 0
+    $('#cartEmpty').hidden = cart.length > 0
+    $('#checkout').hidden = cart.length === 0
+
+    $('#cartList').innerHTML = cart.map((l, i) => {
+      const p = PRODUCTOS.find((x) => x.id === l.id)
+      if (!p) return ''
+      return `
+        <li class="line">
+          <img src="${img(p.img, 120, 120)}" alt="" width="60" height="60">
+          <div class="line-info">
+            <strong>${escapeHtml(p.nombre)}</strong>
+            <span>${escapeHtml(l.cantidad)} · ${escapeHtml(l.opcion)}</span>
+          </div>
+          <div class="stepper" aria-label="Unidades">
+            <button type="button" data-dec="${i}" aria-label="Quitar uno">−</button>
+            <b>${l.uds}</b>
+            <button type="button" data-inc="${i}" aria-label="Añadir uno">+</button>
+          </div>
+        </li>`
+    }).join('')
+  }
+
+  function addToCart(id, cantidad, opcion) {
+    const existing = cart.find((l) => l.id === id && l.cantidad === cantidad && l.opcion === opcion)
+    if (existing) existing.uds++
+    else cart.push({ id, cantidad, opcion, uds: 1 })
+    save()
+    renderCart()
+    const btn = $('.cart-btn')
+    btn.classList.remove('bump'); void btn.offsetWidth; btn.classList.add('bump')
+  }
+
+  const drawer = $('#drawer')
+  const backdrop = $('.drawer-backdrop')
+  function openCart() {
+    backdrop.hidden = false
+    requestAnimationFrame(() => { drawer.classList.add('open'); backdrop.classList.add('open') })
+    drawer.setAttribute('aria-hidden', 'false')
+    document.body.classList.add('no-scroll')
+  }
+  function closeCart() {
+    drawer.classList.remove('open'); backdrop.classList.remove('open')
+    drawer.setAttribute('aria-hidden', 'true')
+    document.body.classList.remove('no-scroll')
+    setTimeout(() => { if (!drawer.classList.contains('open')) backdrop.hidden = true }, 300)
+  }
+
+  let toastTimer
+  function toast(msg) {
+    const t = $('#toast')
+    t.textContent = msg
+    t.classList.add('show')
+    clearTimeout(toastTimer)
+    toastTimer = setTimeout(() => t.classList.remove('show'), 2200)
+  }
+
+  // ——— Envío por WhatsApp ———
+  function enviar(e) {
+    e.preventDefault()
+    const nombre = $('#nombre').value.trim()
+    const hora = $('#hora').value
+    const dia = $('#dia').value
+    const notas = $('#observaciones').value.trim()
+
+    $('[data-err="nombre"]').classList.toggle('show', !nombre)
+    $('[data-err="hora"]').classList.toggle('show', !hora)
+    if (!nombre || !hora) return
+
+    const lineas = cart.map((l) => {
+      const p = PRODUCTOS.find((x) => x.id === l.id)
+      const uds = l.uds > 1 ? `${l.uds} × ` : ''
+      return `• ${uds}*${p ? p.nombre : l.id}* — ${l.cantidad} (${l.opcion})`
+    })
+
+    const texto = [
+      '*🥩 NUEVO ENCARGO - CARNICERÍA RODRI*',
+      `*Cliente:* ${nombre}`,
+      `*Recogida:* ${dia} a las ${hora}`,
+      notas ? `*Notas:* ${notas}` : null,
+      '',
+      '*Productos:*',
+      ...lineas,
+      '',
+      '¡Gracias por confiar en Carnicería Rodri! 🍖',
+    ].filter((x) => x !== null).join('\n')
+
+    window.open(`https://wa.me/${TELEFONO}?text=${encodeURIComponent(texto)}`, '_blank')
+  }
+
+  // ——— Eventos ———
+  document.addEventListener('click', (e) => {
+    const add = e.target.closest('[data-add]')
+    if (add) {
+      const c = add.closest('.card')
+      const p = PRODUCTOS.find((x) => x.id === c.dataset.id)
+      const cantidad = $('[data-field="cantidad"]', c).value
+      const opcion = $('[data-field="opcion"]', c).value
+      addToCart(p.id, cantidad, opcion)
+      add.classList.add('added')
+      setTimeout(() => add.classList.remove('added'), 900)
+      toast(`Añadido: ${p.nombre} · ${cantidad}`)
+      return
+    }
+    const chip = e.target.closest('[data-chip]')
+    if (chip) {
+      $$('.chip').forEach((c) => c.classList.toggle('is-active', c === chip))
+      filtrar()
+      $('#catalogo').scrollIntoView({ behavior: 'smooth', block: 'start' })
+      return
+    }
+    const inc = e.target.closest('[data-inc]')
+    const dec = e.target.closest('[data-dec]')
+    if (inc || dec) {
+      const i = Number((inc || dec).dataset.inc ?? (inc || dec).dataset.dec)
+      cart[i].uds += inc ? 1 : -1
+      if (cart[i].uds <= 0) cart.splice(i, 1)
+      save(); renderCart()
+      return
+    }
+    if (e.target.closest('[data-open-cart]')) return openCart()
+    if (e.target.closest('[data-close-cart]')) return closeCart()
+  })
+
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeCart() })
+  $('#buscar').addEventListener('input', filtrar)
+  $('#checkout').addEventListener('submit', enviar)
+  $('#vaciar').addEventListener('click', () => { cart = []; save(); renderCart() })
+  $$('#nombre, #hora').forEach((el) =>
+    el.addEventListener('input', () => $(`[data-err="${el.id}"]`).classList.remove('show')))
+
+  renderCatalogo()
+  renderCart()
+
+  // Animación de entrada de las tarjetas al hacer scroll
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach((en) => { if (en.isIntersecting) { en.target.classList.add('in'); io.unobserve(en.target) } })
+  }, { rootMargin: '0px 0px -8% 0px' })
+  $$('.card, .cat-head').forEach((el) => io.observe(el))
+})()
