@@ -250,7 +250,7 @@
 
 <!-- Modal del Carrito -->
 <div id="cartModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-end sm:items-center justify-center">
-    <div class="bg-white w-full max-w-md rounded-t-2xl sm:rounded-2xl p-5 max-h-[85vh] flex flex-col shadow-2xl">
+    <div id="cartModalContainer" class="bg-white w-full max-w-md rounded-t-2xl sm:rounded-2xl p-5 max-h-[85vh] flex flex-col shadow-2xl transition-colors duration-300">
         <div class="flex justify-between items-center border-b pb-3">
             <h2 class="font-bold text-lg text-gray-800">🛒 Tu Cesta de Pedido</h2>
             <button onclick="toggleCartModal()" class="text-gray-400 hover:text-gray-600 text-xl font-bold">&times;</button>
@@ -258,8 +258,8 @@
         
         <div id="cartItems" class="overflow-y-auto py-3 space-y-3 flex-1"></div>
 
-        <div class="border-t pt-3 mt-auto space-y-3 bg-white">
-            <div class="bg-gray-50 p-3 rounded-xl border border-gray-200 space-y-2">
+        <div class="border-t pt-3 mt-auto space-y-3 bg-transparent">
+            <div class="bg-white/80 p-3 rounded-xl border border-gray-200 space-y-2 shadow-sm">
                 <p class="text-xs font-bold text-gray-700">Tus datos para el pedido:</p>
                 <div>
                     <label class="text-[10px] text-gray-500 block">Nombre y Apellido *</label>
@@ -271,7 +271,7 @@
                 </div>
             </div>
 
-            <div class="flex justify-between items-center text-sm font-bold">
+            <div class="flex justify-between items-center text-sm font-bold px-1">
                 <span>Total estimado:</span>
                 <span id="cartTotal" class="text-red-600 text-base">0.00 €</span>
             </div>
@@ -355,14 +355,29 @@
   </div>
 </div>
 
-<!-- Scripts de funcionamiento y conexión idénticos al original que funcionaba -->
+<!-- Scripts de funcionamiento con paleta de colores pastel por cliente -->
 <script>
     let cart = [];
     let currentProduct = null;
     let ultimoEnlaceWhatsApp = '';
+    let colorClienteActual = '';
     
-    // URL de despliegue de Google Apps Script que funcionaba en index0_2.html
     const GOOGLE_SHEETS_URL = 'https://script.google.com/macros/s/AKfycbylHbaBm67ngqtOJ3DDtiRE3265yKArEElnDJ04WtWD8lrvgiJMBOkv-aRywST4fmv0Yw/exec';
+
+    // Lista de colores pastel suaves y claros para diferenciar pedidos
+    const paletaPastel = [
+        { bg: 'bg-red-50', border: 'border-red-200', itemBg: 'bg-white/90 border-red-100' },
+        { bg: 'bg-blue-50', border: 'border-blue-200', itemBg: 'bg-white/90 border-blue-100' },
+        { bg: 'bg-emerald-50', border: 'border-emerald-200', itemBg: 'bg-white/90 border-emerald-100' },
+        { bg: 'bg-amber-50', border: 'border-amber-200', itemBg: 'bg-white/90 border-amber-100' },
+        { bg: 'bg-purple-50', border: 'border-purple-200', itemBg: 'bg-white/90 border-purple-100' },
+        { bg: 'bg-pink-50', border: 'border-pink-200', itemBg: 'bg-white/90 border-pink-100' }
+    ];
+
+    function obtenerColorPastelAleatorio() {
+        const index = Math.floor(Math.random() * paletaPastel.length);
+        return paletaPastel[index];
+    }
 
     function generarCodigoPedido() {
         const ahora = new Date();
@@ -527,10 +542,25 @@
             badge.classList.add('hidden');
         }
 
+        // Asignar color pastel único al abrir la cesta si aún no lo tiene
+        if (!colorClienteActual && totalItems > 0) {
+            colorClienteActual = obtenerColorPastelAleatorio();
+        }
+
+        // Aplicar clases de color pastel al contenedor del carrito
+        const modalContainer = document.getElementById('cartModalContainer');
+        if (colorClienteActual && totalItems > 0) {
+            modalContainer.className = `bg-white w-full max-w-md rounded-t-2xl sm:rounded-2xl p-5 max-h-[85vh] flex flex-col shadow-2xl transition-colors duration-300 border-2 ${colorClienteActual.border} ${colorClienteActual.bg}`;
+        } else {
+            modalContainer.className = `bg-white w-full max-w-md rounded-t-2xl sm:rounded-2xl p-5 max-h-[85vh] flex flex-col shadow-2xl transition-colors duration-300`;
+            colorClienteActual = '';
+        }
+
         const container = document.getElementById('cartItems');
         if (cart.length === 0) {
             container.innerHTML = '<p class="text-center text-gray-400 py-6 text-sm">Tu cesta está vacía</p>';
             document.getElementById('cartTotal').textContent = '0.00 €';
+            colorClienteActual = '';
             return;
         }
 
@@ -540,7 +570,7 @@
         cart.forEach((item, index) => {
             overallTotal += item.totalPrice;
             html += `
-                <div class="flex justify-between items-center bg-gray-50 p-2.5 rounded-lg border border-gray-100 text-sm">
+                <div class="flex justify-between items-center ${colorClienteActual ? colorClienteActual.itemBg : 'bg-gray-50'} p-2.5 rounded-lg border text-sm shadow-xs">
                     <div>
                         <p class="font-semibold text-gray-800">${item.name}</p>
                         <p class="text-xs text-red-600 font-medium">${item.qtyText} (${item.totalPrice.toFixed(2)} €)</p>
@@ -573,7 +603,6 @@
         }, 1800);
     }
 
-    // Función exacta de envío probada y conectada a Google Sheets
     async function confirmOrder() {
         if (cart.length === 0) {
             alert('Por favor, añade al menos un producto a la cesta.');
@@ -654,18 +683,16 @@
                 body: JSON.stringify(pedido)
             });
 
-            // Cerrar el carrito
             toggleCartModal();
 
-            // Vaciar la cesta
+            // Limpiar cesta y color actual para el siguiente cliente
             cart = [];
+            colorClienteActual = '';
             updateCartUI();
 
-            // Limpiar los datos del cliente
             document.getElementById('clientName').value = '';
             document.getElementById('clientPhone').value = '';
 
-            // Mostrar el cartel con el código y su significado
             mostrarPanelConfirmacion(codigo);
 
         } catch (error) {
