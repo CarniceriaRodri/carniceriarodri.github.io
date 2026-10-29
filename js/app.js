@@ -1,6 +1,7 @@
 (function () {
   const TELEFONO = '34677228251'
   const STORAGE_KEY = 'rodri-encargo'
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxU5fsmDDACKrT42BIuc_Bhna_8eaagxzB9S5gM0JVuDzvUs8wD4nv_yBM5muZ8sJjxxA/exec";
 
   const $ = (sel, root = document) => root.querySelector(sel)
   const $$ = (sel, root = document) => [...root.querySelectorAll(sel)]
