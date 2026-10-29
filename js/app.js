@@ -1,7 +1,7 @@
 (function () {
   const TELEFONO = '34677228251'
   const STORAGE_KEY = 'rodri-encargo'
-  const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzJ8pKomfk6gLatwD2jRCuQT2dFiPxNu86Xr-gcqRAzaZ0ZaemdGVtcqpsxPuHkYLFC/exec";
+  const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwrmMiIaB8WhFRhvIKL-K3cGuvvgnNixV1Q_RMZclfkvNGzP-Zn8xFw28xga-DowgP9Kg/exec";
 
   const $ = (sel, root = document) => root.querySelector(sel)
   const $$ = (sel, root = document) => [...root.querySelectorAll(sel)]
@@ -116,7 +116,7 @@
           <div class="stepper" aria-label="Unidades">
             <button type="button" data-dec="${i}" aria-label="Quitar uno">−</button>
             <b>${l.uds}</b>
-            <button type="button" data-inc="${i}" aria-label="Anadir uno">+</button>
+            <button type="button" data-inc="${i}" aria-label="Añadir uno">+</button>
           </div>
         </li>`
     }).join('')
