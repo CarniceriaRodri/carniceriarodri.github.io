@@ -1,30 +1,30 @@
 (function () {
-  const TELEFONO = '34677228251'
-  const STORAGE_KEY = 'rodri-encargo'
-  const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxU5fsmDDACKrT42BIuc_Bhna_8eaagxzB9S5gM0JVuDzvUs8wD4nv_yBM5muZ8sJjxxA";
+  const TELEFONO = '34677228251';
+  const STORAGE_KEY = 'rodri-encargo';
+  // ⚡ URL NUEVA ACTUALIZADA
+  const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxEdMdBsmVPB2eIb2IVkzxhdkckcU6SZdK1qAtBlUEEJ7crK2U0264TJc6Si1RyHwdz/exec";
 
-  const $ = (sel, root = document) => root.querySelector(sel)
-  const $$ = (sel, root = document) => [...root.querySelectorAll(sel)]
+  const $ = (sel, root = document) => root.querySelector(sel);
+  const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
 
-  const img = (name, w, h) =>
-    `img/productos/${name}.jpg`
+  const img = (name, w, h) => `img/productos/${name}.jpg`;
 
   const escapeHtml = (s) =>
-    String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c])
+    String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 
   // ——— Estado del encargo ———
-  let cart = []
-  try { cart = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [] } catch { cart = [] }
-  const save = () => localStorage.setItem(STORAGE_KEY, JSON.stringify(cart))
+  let cart = [];
+  try { cart = JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch { cart = []; }
+  const save = () => localStorage.setItem(STORAGE_KEY, JSON.stringify(cart));
 
   // ——— Catálogo ———
   function renderCatalogo() {
     $('#chips').innerHTML =
       `<button type="button" class="chip is-active" data-chip="todo">Todo</button>` +
-      CATEGORIAS.map((c) => `<button type="button" class="chip" data-chip="${c.id}">${c.nombre}</button>`).join('')
+      CATEGORIAS.map((c) => `<button type="button" class="chip" data-chip="${c.id}">${c.nombre}</button>`).join('');
 
     $('#secciones').innerHTML = CATEGORIAS.map((c, i) => {
-      const productos = PRODUCTOS.filter((p) => p.cat === c.id)
+      const productos = PRODUCTOS.filter((p) => p.cat === c.id);
       return `
         <section class="cat" id="cat-${c.id}" data-cat="${c.id}">
           <header class="cat-head">
@@ -35,12 +35,12 @@
             </div>
           </header>
           <div class="grid">${productos.map(card).join('')}</div>
-        </section>`
-    }).join('')
+        </section>`;
+    }).join('');
   }
 
   function card(p) {
-    const keywords = [p.nombre, p.desc, ...p.opciones].join(' ').toLowerCase()
+    const keywords = [p.nombre, p.desc, ...p.opciones].join(' ').toLowerCase();
     return `
       <article class="card" data-id="${p.id}" data-search="${escapeHtml(normalize(keywords))}">
         <div class="card-img">
@@ -67,45 +67,45 @@
             <span class="plus" aria-hidden="true">+</span> Añadir al encargo
           </button>
         </div>
-      </article>`
+      </article>`;
   }
 
   function normalize(s) {
-    return s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
+    return s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
   }
 
   // ——— Filtros: categorías y búsqueda ———
   function filtrar() {
-    const q = normalize($('#buscar').value.trim())
-    const activa = $('.chip.is-active')?.dataset.chip || 'todo'
-    let visibles = 0
+    const q = normalize($('#buscar').value.trim());
+    const activa = $('.chip.is-active')?.dataset.chip || 'todo';
+    let visibles = 0;
     $$('.cat').forEach((sec) => {
-      const catOk = activa === 'todo' || sec.dataset.cat === activa
-      let enSeccion = 0
+      const catOk = activa === 'todo' || sec.dataset.cat === activa;
+      let enSeccion = 0;
       $$('.card', sec).forEach((c) => {
-        const ok = catOk && (!q || c.dataset.search.includes(q))
-        c.hidden = !ok
-        if (ok) enSeccion++
-      })
-      sec.hidden = enSeccion === 0
-      visibles += enSeccion
-    })
-    const sin = $('#sinResultados')
-    sin.hidden = visibles > 0
-    $('[data-query]', sin).textContent = $('#buscar').value.trim()
+        const ok = catOk && (!q || c.dataset.search.includes(q));
+        c.hidden = !ok;
+        if (ok) enSeccion++;
+      });
+      sec.hidden = enSeccion === 0;
+      visibles += enSeccion;
+    });
+    const sin = $('#sinResultados');
+    sin.hidden = visibles > 0;
+    $('[data-query]', sin).textContent = $('#buscar').value.trim();
   }
 
   // ——— Panel del encargo ———
   function renderCart() {
-    const total = cart.reduce((n, l) => n + l.uds, 0)
-    $$('[data-cart-count]').forEach((el) => (el.textContent = total))
-    $('.float-bar').hidden = total === 0
-    $('#cartEmpty').hidden = cart.length > 0
-    $('#checkout').hidden = cart.length === 0
+    const total = cart.reduce((n, l) => n + l.uds, 0);
+    $$('[data-cart-count]').forEach((el) => (el.textContent = total));
+    $('.float-bar').hidden = total === 0;
+    $('#cartEmpty').hidden = cart.length > 0;
+    $('#checkout').hidden = cart.length === 0;
 
     $('#cartList').innerHTML = cart.map((l, i) => {
-      const p = PRODUCTOS.find((x) => x.id === l.id)
-      if (!p) return ''
+      const p = PRODUCTOS.find((x) => x.id === l.id);
+      if (!p) return '';
       return `
         <li class="line">
           <img src="${img(p.img, 120, 120)}" alt="" width="60" height="60">
@@ -118,67 +118,67 @@
             <b>${l.uds}</b>
             <button type="button" data-inc="${i}" aria-label="Añadir uno">+</button>
           </div>
-        </li>`
-    }).join('')
+        </li>`;
+    }).join('');
   }
 
   function addToCart(id, cantidad, opcion) {
-    const existing = cart.find((l) => l.id === id && l.cantidad === cantidad && l.opcion === opcion)
-    if (existing) existing.uds++
-    else cart.push({ id, cantidad, opcion, uds: 1 })
-    save()
-    renderCart()
-    const btn = $('.cart-btn')
-    btn.classList.remove('bump'); void btn.offsetWidth; btn.classList.add('bump')
+    const existing = cart.find((l) => l.id === id && l.cantidad === cantidad && l.opcion === opcion);
+    if (existing) existing.uds++;
+    else cart.push({ id, cantidad, opcion, uds: 1 });
+    save();
+    renderCart();
+    const btn = $('.cart-btn');
+    btn.classList.remove('bump'); void btn.offsetWidth; btn.classList.add('bump');
   }
 
-  const drawer = $('#drawer')
-  const backdrop = $('.drawer-backdrop')
-  
+  const drawer = $('#drawer');
+  const backdrop = $('.drawer-backdrop');
+
   function openCart() {
-    backdrop.hidden = false
-    drawer.removeAttribute('inert')
+    backdrop.hidden = false;
+    drawer.removeAttribute('inert');
     requestAnimationFrame(() => { 
       drawer.classList.add('open'); 
-      backdrop.classList.add('open') 
-    })
-    document.body.classList.add('no-scroll')
+      backdrop.classList.add('open');
+    });
+    document.body.classList.add('no-scroll');
   }
 
   function closeCart() {
     drawer.classList.remove('open'); 
-    backdrop.classList.remove('open')
-    document.body.classList.remove('no-scroll')
+    backdrop.classList.remove('open');
+    document.body.classList.remove('no-scroll');
     setTimeout(() => { 
       if (!drawer.classList.contains('open')) {
         backdrop.hidden = true;
         drawer.setAttribute('inert', '');
       }
-    }, 300)
+    }, 300);
   }
 
-  let toastTimer
+  let toastTimer;
   function toast(msg) {
-    const t = $('#toast')
-    t.textContent = msg
-    t.classList.add('show')
-    clearTimeout(toastTimer)
-    toastTimer = setTimeout(() => t.classList.remove('show'), 2200)
+    const t = $('#toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
   }
 
   let enlaceWhatsAppPendiente = "";
 
   // ——— Envío por Google Sheets y WhatsApp ———
   async function enviar(e) {
-    e.preventDefault()
-    const nombre = $('#nombre').value.trim()
-    const hora = $('#hora').value
-    const dia = $('#dia').value
-    const notas = $('#observaciones').value.trim()
+    e.preventDefault();
+    const nombre = $('#nombre').value.trim();
+    const hora = $('#hora').value;
+    const dia = $('#dia').value;
+    const notas = $('#observaciones').value.trim();
 
-    $('[data-err="nombre"]').classList.toggle('show', !nombre)
-    $('[data-err="hora"]').classList.toggle('show', !hora)
-    if (!nombre || !hora) return
+    $('[data-err="nombre"]').classList.toggle('show', !nombre);
+    $('[data-err="hora"]').classList.toggle('show', !hora);
+    if (!nombre || !hora) return;
 
     const hoy = new Date();
     const dd = String(hoy.getDate()).padStart(2, '0');
@@ -203,21 +203,21 @@
       const subtotalNum = Number((precioNum * (matchNum ? parseFloat(matchNum[0]) : 1) * l.uds).toFixed(2));
       totalPedido += subtotalNum;
 
+      // ⚙️ Nombres ajustados exactamente a lo que espera Apps Script
       return {
         nombre: nombreProd,
         cantidad: cantidadNum,
         unidad: unidadStr,
         precioUnitario: precioNum,
-        subtotal: subtotalNum,
-        telefono: ''
+        subtotal: subtotalNum
       };
     });
 
     const lineas = cart.map((l) => {
-      const p = PRODUCTOS.find((x) => x.id === l.id)
-      const uds = l.uds > 1 ? `${l.uds} × ` : ''
-      return `• ${uds}*${p ? p.nombre : l.id}* — ${l.cantidad} (${l.opcion})`
-    })
+      const p = PRODUCTOS.find((x) => x.id === l.id);
+      const uds = l.uds > 1 ? `${l.uds} × ` : '';
+      return `• ${uds}*${p ? p.nombre : l.id}* — ${l.cantidad} (${l.opcion})`;
+    });
 
     const submitBtn = checkoutForm.querySelector('button[type="submit"]');
     submitBtn.disabled = true;
@@ -239,15 +239,17 @@
     enlaceWhatsAppPendiente = `https://wa.me/${TELEFONO}?text=${encodeURIComponent(textoWA)}`;
 
     try {
+      // 🚀 Envío del Payload adaptado a las columnas de tu hoja de cálculo
       await fetch(APPS_SCRIPT_URL, {
         method: "POST",
         mode: "no-cors",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          codigo: idMostrar,
-          nombre: nombre,
-          telefono: '',
+          codigoPedido: idMostrar,
+          cliente: nombre,
+          telefono: '', // Puedes mapear un input de teléfono si lo añades al HTML
           total: Number(totalPedido.toFixed(2)),
+          estado: 'Pendiente',
           productos: productosParaSheets
         })
       });
@@ -270,37 +272,37 @@
 
   // ——— Eventos ———
   document.addEventListener('click', (e) => {
-    const add = e.target.closest('[data-add]')
+    const add = e.target.closest('[data-add]');
     if (add) {
-      const c = add.closest('.card')
-      const p = PRODUCTOS.find((x) => x.id === c.dataset.id)
-      const cantidad = $('[data-field="cantidad"]', c).value
-      const opcion = $('[data-field="opcion"]', c).value
-      addToCart(p.id, cantidad, opcion)
-      add.classList.add('added')
-      setTimeout(() => add.classList.remove('added'), 900)
-      toast(`Añadido: ${p.nombre} · ${cantidad}`)
-      return
+      const c = add.closest('.card');
+      const p = PRODUCTOS.find((x) => x.id === c.dataset.id);
+      const cantidad = $('[data-field="cantidad"]', c).value;
+      const opcion = $('[data-field="opcion"]', c).value;
+      addToCart(p.id, cantidad, opcion);
+      add.classList.add('added');
+      setTimeout(() => add.classList.remove('added'), 900);
+      toast(`Añadido: ${p.nombre} · ${cantidad}`);
+      return;
     }
-    const chip = e.target.closest('[data-chip]')
+    const chip = e.target.closest('[data-chip]');
     if (chip) {
-      $$('.chip').forEach((c) => c.classList.toggle('is-active', c === chip))
-      filtrar()
-      $('#catalogo').scrollIntoView({ behavior: 'smooth', block: 'start' })
-      return
+      $$('.chip').forEach((c) => c.classList.toggle('is-active', c === chip));
+      filtrar();
+      $('#catalogo').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      return;
     }
-    const inc = e.target.closest('[data-inc]')
-    const dec = e.target.closest('[data-dec]')
+    const inc = e.target.closest('[data-inc]');
+    const dec = e.target.closest('[data-dec]');
     if (inc || dec) {
-      const i = Number((inc || dec).dataset.inc ?? (inc || dec).dataset.dec)
-      cart[i].uds += inc ? 1 : -1
-      if (cart[i].uds <= 0) cart.splice(i, 1)
-      save(); renderCart()
-      return
+      const i = Number((inc || dec).dataset.inc ?? (inc || dec).dataset.dec);
+      cart[i].uds += inc ? 1 : -1;
+      if (cart[i].uds <= 0) cart.splice(i, 1);
+      save(); renderCart();
+      return;
     }
-    if (e.target.closest('[data-open-cart]')) return openCart()
-    if (e.target.closest('[data-close-cart]')) return closeCart()
-  })
+    if (e.target.closest('[data-open-cart]')) return openCart();
+    if (e.target.closest('[data-close-cart]')) return closeCart();
+  });
 
   const btnWhatsAppModal = document.getElementById('btnEnviarWhatsApp');
   if (btnWhatsAppModal) {
@@ -315,19 +317,14 @@
     });
   }
 
-  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeCart() })
-  $('#buscar').addEventListener('input', filtrar)
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeCart(); });
+  $('#buscar').addEventListener('input', filtrar);
   const checkoutForm = $('#checkout');
-  if (checkoutForm) checkoutForm.addEventListener('submit', enviar)
-  $('#vaciar').addEventListener('click', () => { cart = []; save(); renderCart() })
+  if (checkoutForm) checkoutForm.addEventListener('submit', enviar);
+  $('#vaciar').addEventListener('click', () => { cart = []; save(); renderCart(); });
   $$('#nombre, #hora').forEach((el) =>
-    el.addEventListener('input', () => $(`[data-err="${el.id}"]`).classList.remove('show')))
+    el.addEventListener('input', () => $(`[data-err="${el.id}"]`).classList.remove('show')));
 
-  renderCatalogo()
-  renderCart()
-
-  const io = new IntersectionObserver((entries) => {
-    entries.forEach((en) => { if (en.isIntersecting) { en.target.classList.add('in'); io.unobserve(en.target) } })
-  }, { rootMargin: '0px 0px -8% 0px' })
-  $$('.card, .cat-head').forEach((el) => io.observe(el))
-})()
+  renderCatalogo();
+  renderCart();
+})();
