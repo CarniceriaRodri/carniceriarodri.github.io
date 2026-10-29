@@ -1,8 +1,6 @@
 <!doctype html>
 <html lang="es">
 <head>
-
-  
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
@@ -16,23 +14,16 @@
   <meta name="theme-color" content="#1b1513">
   <link rel="icon" href="img/logo.jpg">
   
-  <!-- Tus estilos con un número de versión para forzar la actualización -->
-  <link rel="stylesheet" href="css/styles.css?v=2.0">
-  
-  
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Carnicería Rodri &amp; Charcutería · Encarga online y recoge sin esperas</title>
-  <meta name="description" content="Carnicería Rodri &amp; Charcutería: ternera, cerdo ibérico, pollo, cordero, elaborados de la casa, charcutería, refrescos y más. Haz tu encargo por WhatsApp y recógelo sin esperas.">
-  <meta name="theme-color" content="#1b1513">
-  <link rel="icon" href="img/logo.jpg">
   <meta property="og:title" content="Carnicería Rodri &amp; Charcutería">
   <meta property="og:description" content="Cortado a tu gusto. Listo cuando llegues. Haz tu encargo por WhatsApp.">
   <meta property="og:image" content="img/hero.jpg">
+  
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700;9..144,900&family=Archivo:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/styles.css">
+  
+  <!-- Tus estilos con un número de versión para forzar la actualización -->
+  <link rel="stylesheet" href="css/styles.css?v=2.0">
 </head>
 <body>
 <a class="skip-link" href="#catalogo">Saltar al catálogo</a>
@@ -207,6 +198,17 @@
     </form>
   </div>
 </aside>
+
+<!-- Modal de Confirmación de Pedido -->
+<div class="modal" id="modalConfirmacion" hidden style="position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background:var(--bg-card, #fff); padding:2rem; border-radius:1rem; z-index:1000; max-width:90%; width:400px; box-shadow:0 10px 30px rgba(0,0,0,0.2); text-align:center;">
+  <div style="font-size:3rem; margin-bottom:1rem;">✅</div>
+  <h3 style="margin-bottom:0.5rem; font-family:var(--font-serif);">¡Encargo registrado!</h3>
+  <p style="margin-bottom:1rem; color:var(--text-muted);">Tu código de referencia es: <strong id="confirmacionIdPedido" style="color:var(--primary);"></strong></p>
+  <p style="font-size:0.9rem; margin-bottom:1.5rem; color:var(--text-muted);">Para finalizar y enviar el detalle a nuestro WhatsApp, pulsa el botón de abajo.</p>
+  <button type="button" class="btn btn-whatsapp btn-block" id="btnEnviarWhatsApp" style="margin-bottom:0.75rem;">
+    Enviar por WhatsApp
+  </button>
+</div>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
