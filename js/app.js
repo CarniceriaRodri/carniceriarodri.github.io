@@ -1,7 +1,7 @@
 (function () {
   const TELEFONO = '34677228251'
   const STORAGE_KEY = 'rodri-encargo'
-  const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwrmMiIaB8WhFRhvIKL-K3cGuvvgnNixV1Q_RMZclfkvNGzP-Zn8xFw28xga-DowgP9Kg/exec";
+  const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx_xGKXiVGxqPl8XqwQh0QBF8bld_sHnaRp3z2tm2bQwMpYVYFmwU2sdCdS-Kzo0mWlOw/exec";
 
   const $ = (sel, root = document) => root.querySelector(sel)
   const $$ = (sel, root = document) => [...root.querySelectorAll(sel)]
@@ -170,22 +170,48 @@
     $('[data-err="hora"]').classList.toggle('show', !hora)
     if (!nombre || !hora) return
 
+    const hoy = new Date();
+    const dd = String(hoy.getDate()).padStart(2, '0');
+    const mm = String(hoy.getMonth() + 1).padStart(2, '0');
+    const idMostrar = `rod-${dd}${mm}-${Math.floor(10 + Math.random() * 90)}`;
+
+    let totalPedido = 0;
+    const productosParaSheets = cart.map((l) => {
+      const p = PRODUCTOS.find((x) => x.id === l.id);
+      const nombreProd = p ? p.nombre : l.id;
+      
+      const matchNum = l.cantidad.replace(',', '.').match(/[\d.]+/);
+      const cantidadNum = matchNum ? parseFloat(matchNum[0]) * l.uds : l.uds;
+      const unidadStr = l.cantidad.replace(/[\d.,]/g, '').trim() || 'ud';
+
+      let precioNum = 0;
+      if (p && p.precio) {
+        const matchPrecio = p.precio.replace(',', '.').match(/[\d.]+/);
+        if (matchPrecio) precioNum = parseFloat(matchPrecio[0]);
+      }
+
+      const subtotalNum = Number((precioNum * (matchNum ? parseFloat(matchNum[0]) : 1) * l.uds).toFixed(2));
+      totalPedido += subtotalNum;
+
+      return {
+        nombre: nombreProd,
+        cantidad: cantidadNum,
+        unidad: unidadStr,
+        precioUnitario: precioNum,
+        subtotal: subtotalNum,
+        telefono: ''
+      };
+    });
+
     const lineas = cart.map((l) => {
       const p = PRODUCTOS.find((x) => x.id === l.id)
       const uds = l.uds > 1 ? `${l.uds} × ` : ''
       return `• ${uds}*${p ? p.nombre : l.id}* — ${l.cantidad} (${l.opcion})`
     })
 
-    const productosTxt = lineas.join('\n');
-
     const submitBtn = checkoutForm.querySelector('button[type="submit"]');
     submitBtn.disabled = true;
     submitBtn.textContent = "Registrando pedido...";
-
-    const hoy = new Date();
-    const dd = String(hoy.getDate()).padStart(2, '0');
-    const mm = String(hoy.getMonth() + 1).padStart(2, '0');
-    const idMostrar = `rod-${dd}${mm}-01`;
 
     const textoWA = [
       '*🥩 NUEVO ENCARGO - CARNICERÍA RODRI*',
@@ -208,11 +234,11 @@
         mode: "no-cors",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          codigo: idMostrar,
           nombre: nombre,
-          dia: dia,
-          hora: hora,
-          observaciones: notas,
-          productos: productosTxt
+          telefono: '',
+          total: Number(totalPedido.toFixed(2)),
+          productos: productosParaSheets
         })
       });
     } catch (error) {
@@ -227,6 +253,7 @@
         const modalId = document.getElementById('confirmacionIdPedido');
         if (modalId) modalId.textContent = idMostrar;
         modal.removeAttribute('hidden');
+        backdrop.hidden = false;
       }
     }
   }
@@ -273,6 +300,7 @@
       }
       const modal = document.getElementById('modalConfirmacion');
       if (modal) modal.setAttribute('hidden', 'true');
+      backdrop.hidden = true;
       cart = []; save(); renderCart();
     });
   }
