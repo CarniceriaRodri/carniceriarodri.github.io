@@ -366,18 +366,22 @@
   
 
   
-    function generarCodigoPedido() {
-        const ahora = new Date();
-        const dia = String(ahora.getDate()).padStart(2, '0');
-        const mes = String(ahora.getMonth() + 1).padStart(2, '0');
-        const fecha = `${dia}${mes}`;
-        const clave = `rodri_pedidos_${fecha}`;
+    
+function generarCodigoPedido() {
+    const ahora = new Date();
 
-        let numero = Number(localStorage.getItem(clave) || '0') + 1;
-        localStorage.setItem(clave, String(numero));
+    const dia = String(ahora.getDate()).padStart(2, '0');
+    const mes = String(ahora.getMonth() + 1).padStart(2, '0');
+    const fecha = `${dia}${mes}`;
 
-        return `ROD-${fecha}-${String(numero).padStart(2, '0')}`;
-    }
+    // Identificador distinto en cada dispositivo y pedido.
+    const tiempo = Date.now().toString().slice(-8);
+    const aleatorio = Math.random().toString(36)
+        .slice(2, 6).toUpperCase();
+
+    return `ROD-${fecha}-${tiempo}${aleatorio}`;
+}
+
 
     function abrirWhatsAppPedido() {
         if (ultimoEnlaceWhatsApp) {
