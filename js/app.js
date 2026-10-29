@@ -1,7 +1,7 @@
 (function () {
   const TELEFONO = '34677228251'
   const STORAGE_KEY = 'rodri-encargo'
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxU5fsmDDACKrT42BIuc_Bhna_8eaagxzB9S5gM0JVuDzvUs8wD4nv_yBM5muZ8sJjxxA/exec";
+  const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzJ8pKomfk6gLatwD2jRCuQT2dFiPxNu86Xr-gcqRAzaZ0ZaemdGVtcqpsxPuHkYLFC/exec";
 
   const $ = (sel, root = document) => root.querySelector(sel)
   const $$ = (sel, root = document) => [...root.querySelectorAll(sel)]
@@ -156,8 +156,10 @@ const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxU5fsmDDACKrT4
     toastTimer = setTimeout(() => t.classList.remove('show'), 2200)
   }
 
-  // ——— Envío por WhatsApp ———
-  function enviar(e) {
+  let enlaceWhatsAppPendiente = "";
+
+  // ——— Envío por Google Sheets y WhatsApp ———
+  async function enviar(e) {
     e.preventDefault()
     const nombre = $('#nombre').value.trim()
     const hora = $('#hora').value
@@ -174,19 +176,65 @@ const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxU5fsmDDACKrT4
       return `• ${uds}*${p ? p.nombre : l.id}* — ${l.cantidad} (${l.opcion})`
     })
 
-    const texto = [
-      '*🥩 NUEVO ENCARGO - CARNICERÍA RODRI*',
-      `*Cliente:* ${nombre}`,
-      `*Recogida:* ${dia} a las ${hora}`,
-      notas ? `*Notas:* ${notas}` : null,
-      '',
-      '*Productos:*',
-      ...lineas,
-      '',
-      '¡Gracias por confiar en Carnicería Rodri! 🍖',
-    ].filter((x) => x !== null).join('\n')
+    const productosTxt = lineas.join('\n');
 
-    window.open(`https://wa.me/${TELEFONO}?text=${encodeURIComponent(texto)}`, '_blank')
+    const submitBtn = checkoutForm.querySelector('button[type="submit"]');
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Registrando pedido...";
+
+    try {
+      // 1. Enviar datos a Google Sheets en segundo plano
+      await fetch(APPS_SCRIPT_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          nombre: nombre,
+          dia: dia,
+          hora: hora,
+          observaciones: notas,
+          productos: productosTxt
+        })
+      });
+
+      // 2. Generar formato de vista previa con fecha actual (ej: rod-2808)
+      const hoy = new Date();
+      const dd = String(hoy.getDate()).padStart(2, '0');
+      const mm = String(hoy.getMonth() + 1).padStart(2, '0');
+      const idMostrar = `rod-${dd}${mm}-01`;
+
+      const modalId = document.getElementById('confirmacionIdPedido');
+      if (modalId) modalId.textContent = idMostrar;
+
+      // 3. Preparar texto para WhatsApp
+      const textoWA = [
+        '*🥩 NUEVO ENCARGO - CARNICERÍA RODRI*',
+        `*ID Referencia:* ${idMostrar}`,
+        `*Cliente:* ${nombre}`,
+        `*Recogida:* ${dia} a las ${hora}`,
+        notas ? `*Notas:* ${notas}` : null,
+        '',
+        '*Productos:*',
+        ...lineas,
+        '',
+        '¡Gracias por confiar en Carnicería Rodri! 🍖',
+      ].filter((x) => x !== null).join('\n')
+
+      enlaceWhatsAppPendiente = `https://wa.me/${TELEFONO}?text=${encodeURIComponent(textoWA)}`;
+
+      // 4. Cerrar panel lateral del carrito y abrir la pantalla explicativa (modal)
+      closeCart();
+      const modal = document.getElementById('modalConfirmacion');
+      if (modal) modal.removeAttribute('hidden');
+
+    } catch (error) {
+      console.error("Error al registrar en Sheets:", error);
+      // Fallback directo a WhatsApp si falla la red
+      window.open(`https://wa.me/${TELEFONO}?text=${encodeURIComponent(lineas.join('\n'))}`, '_blank');
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Enviar encargo por WhatsApp";
+    }
   }
 
   // ——— Eventos ———
@@ -223,9 +271,24 @@ const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxU5fsmDDACKrT4
     if (e.target.closest('[data-close-cart]')) return closeCart()
   })
 
+  // Botón del modal explicativo para ir a WhatsApp
+  const btnWhatsAppModal = document.getElementById('btnEnviarWhatsApp');
+  if (btnWhatsAppModal) {
+    btnWhatsAppModal.addEventListener('click', () => {
+      if (enlaceWhatsAppPendiente) {
+        window.open(enlaceWhatsAppPendiente, '_blank');
+      }
+      const modal = document.getElementById('modalConfirmacion');
+      if (modal) modal.setAttribute('hidden', 'true');
+      // Vaciar carrito tras completar todo el proceso si se desea
+      cart = []; save(); renderCart();
+    });
+  }
+
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeCart() })
   $('#buscar').addEventListener('input', filtrar)
-  $('#checkout').addEventListener('submit', enviar)
+  const checkoutForm = $('#checkout');
+  if (checkoutForm) checkoutForm.addEventListener('submit', enviar)
   $('#vaciar').addEventListener('click', () => { cart = []; save(); renderCart() })
   $$('#nombre, #hora').forEach((el) =>
     el.addEventListener('input', () => $(`[data-err="${el.id}"]`).classList.remove('show')))
@@ -239,3 +302,4 @@ const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxU5fsmDDACKrT4
   }, { rootMargin: '0px 0px -8% 0px' })
   $$('.card, .cat-head').forEach((el) => io.observe(el))
 })()
+      
