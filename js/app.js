@@ -1,8 +1,7 @@
 (function () {
   const TELEFONO = '34677228251'
   const STORAGE_KEY = 'rodri-encargo'
-  const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxU5fsmDDACKrT42BIuc_Bhna_8eaagxzB9S5gM0JVuDzvUs8wD4nv_yBM5muZ8sJjxxA/exec";
-  
+  const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx_xGKXiVGxqPl8XqwQh0QBF8bld_sHnaRp3z2tm2bQwMpYVYFmwU2sdCdS-Kzo0mWlOw/exec";
 
   const $ = (sel, root = document) => root.querySelector(sel)
   const $$ = (sel, root = document) => [...root.querySelectorAll(sel)]
@@ -133,33 +132,28 @@
     btn.classList.remove('bump'); void btn.offsetWidth; btn.classList.add('bump')
   }
 
-const drawer = $('#drawer')
+  const drawer = $('#drawer')
   const backdrop = $('.drawer-backdrop')
-
+  
   function openCart() {
     backdrop.hidden = false
+    drawer.removeAttribute('inert')
     requestAnimationFrame(() => { 
       drawer.classList.add('open'); 
       backdrop.classList.add('open') 
     })
-    drawer.setAttribute('aria-hidden', 'false')
     document.body.classList.add('no-scroll')
   }
 
   function closeCart() {
-    // 🛑 Quitamos el foco de cualquier elemento dentro del drawer antes de ocultarlo
-    const activeEl = document.activeElement;
-    if (drawer.contains(activeEl)) {
-      activeEl.blur(); 
-    }
-
     drawer.classList.remove('open'); 
     backdrop.classList.remove('open')
-    drawer.setAttribute('aria-hidden', 'true')
     document.body.classList.remove('no-scroll')
-    
     setTimeout(() => { 
-      if (!drawer.classList.contains('open')) backdrop.hidden = true 
+      if (!drawer.classList.contains('open')) {
+        backdrop.hidden = true;
+        drawer.setAttribute('inert', '');
+      }
     }, 300)
   }
 
