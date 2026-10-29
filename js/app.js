@@ -116,7 +116,7 @@
           <div class="stepper" aria-label="Unidades">
             <button type="button" data-dec="${i}" aria-label="Quitar uno">−</button>
             <b>${l.uds}</b>
-            <button type="button" data-inc="${i}" aria-label="Añadir uno">+</button>
+            <button type="button" data-inc="${i}" aria-label="Anadir uno">+</button>
           </div>
         </li>`
     }).join('')
@@ -182,8 +182,27 @@
     submitBtn.disabled = true;
     submitBtn.textContent = "Registrando pedido...";
 
+    const hoy = new Date();
+    const dd = String(hoy.getDate()).padStart(2, '0');
+    const mm = String(hoy.getMonth() + 1).padStart(2, '0');
+    const idMostrar = `rod-${dd}${mm}-01`;
+
+    const textoWA = [
+      '*🥩 NUEVO ENCARGO - CARNICERÍA RODRI*',
+      `*ID Referencia:* ${idMostrar}`,
+      `*Cliente:* ${nombre}`,
+      `*Recogida:* ${dia} a las ${hora}`,
+      notas ? `*Notas:* ${notas}` : null,
+      '',
+      '*Productos:*',
+      ...lineas,
+      '',
+      '¡Gracias por confiar en Carnicería Rodri! 🍖',
+    ].filter((x) => x !== null).join('\n');
+
+    enlaceWhatsAppPendiente = `https://wa.me/${TELEFONO}?text=${encodeURIComponent(textoWA)}`;
+
     try {
-      // 1. Enviar datos a Google Sheets en segundo plano
       await fetch(APPS_SCRIPT_URL, {
         method: "POST",
         mode: "no-cors",
@@ -196,44 +215,19 @@
           productos: productosTxt
         })
       });
-
-      // 2. Generar formato de vista previa con fecha actual (ej: rod-2808)
-      const hoy = new Date();
-      const dd = String(hoy.getDate()).padStart(2, '0');
-      const mm = String(hoy.getMonth() + 1).padStart(2, '0');
-      const idMostrar = `rod-${dd}${mm}-01`;
-
-      const modalId = document.getElementById('confirmacionIdPedido');
-      if (modalId) modalId.textContent = idMostrar;
-
-      // 3. Preparar texto para WhatsApp
-      const textoWA = [
-        '*🥩 NUEVO ENCARGO - CARNICERÍA RODRI*',
-        `*ID Referencia:* ${idMostrar}`,
-        `*Cliente:* ${nombre}`,
-        `*Recogida:* ${dia} a las ${hora}`,
-        notas ? `*Notas:* ${notas}` : null,
-        '',
-        '*Productos:*',
-        ...lineas,
-        '',
-        '¡Gracias por confiar en Carnicería Rodri! 🍖',
-      ].filter((x) => x !== null).join('\n')
-
-      enlaceWhatsAppPendiente = `https://wa.me/${TELEFONO}?text=${encodeURIComponent(textoWA)}`;
-
-      // 4. Cerrar panel lateral del carrito y abrir la pantalla explicativa (modal)
-      closeCart();
-      const modal = document.getElementById('modalConfirmacion');
-      if (modal) modal.removeAttribute('hidden');
-
     } catch (error) {
-      console.error("Error al registrar en Sheets:", error);
-      // Fallback directo a WhatsApp si falla la red
-      window.open(`https://wa.me/${TELEFONO}?text=${encodeURIComponent(lineas.join('\n'))}`, '_blank');
+      console.warn("Error background sheets:", error);
     } finally {
       submitBtn.disabled = false;
       submitBtn.textContent = "Enviar encargo por WhatsApp";
+
+      closeCart();
+      const modal = document.getElementById('modalConfirmacion');
+      if (modal) {
+        const modalId = document.getElementById('confirmacionIdPedido');
+        if (modalId) modalId.textContent = idMostrar;
+        modal.removeAttribute('hidden');
+      }
     }
   }
 
@@ -271,7 +265,6 @@
     if (e.target.closest('[data-close-cart]')) return closeCart()
   })
 
-  // Botón del modal explicativo para ir a WhatsApp
   const btnWhatsAppModal = document.getElementById('btnEnviarWhatsApp');
   if (btnWhatsAppModal) {
     btnWhatsAppModal.addEventListener('click', () => {
@@ -280,7 +273,6 @@
       }
       const modal = document.getElementById('modalConfirmacion');
       if (modal) modal.setAttribute('hidden', 'true');
-      // Vaciar carrito tras completar todo el proceso si se desea
       cart = []; save(); renderCart();
     });
   }
@@ -296,10 +288,8 @@
   renderCatalogo()
   renderCart()
 
-  // Animación de entrada de las tarjetas al hacer scroll
   const io = new IntersectionObserver((entries) => {
     entries.forEach((en) => { if (en.isIntersecting) { en.target.classList.add('in'); io.unobserve(en.target) } })
   }, { rootMargin: '0px 0px -8% 0px' })
   $$('.card, .cat-head').forEach((el) => io.observe(el))
 })()
-      
