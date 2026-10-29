@@ -171,13 +171,17 @@
   // ——— Envío por Google Sheets y WhatsApp ———
   async function enviar(e) {
     e.preventDefault();
-    const nombre = $('#nombre').value.trim();
-    const hora = $('#hora').value;
-    const dia = $('#dia').value;
-    const notas = $('#observaciones').value.trim();
+  const nombre = $('#nombre').value.trim();
+const telefono = $('#telefono').value.trim(); // 👈 NUEVO: Capturamos el teléfono
+const hora = $('#hora').value;
+const dia = $('#dia').value;
+const notas = $('#observaciones').value.trim();
 
-    $('[data-err="nombre"]').classList.toggle('show', !nombre);
-    $('[data-err="hora"]').classList.toggle('show', !hora);
+$('[data-err="nombre"]').classList.toggle('show', !nombre);
+$('[data-err="telefono"]').classList.toggle('show', !telefono); // 👈 NUEVO: Validación
+$('[data-err="hora"]').classList.toggle('show', !hora);
+
+if (!nombre || !telefono || !hora) return; // 👈 NUEVO: Requerir teléfono para enviar
     if (!nombre || !hora) return;
 
     const hoy = new Date();
