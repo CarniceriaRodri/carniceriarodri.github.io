@@ -133,19 +133,34 @@
     btn.classList.remove('bump'); void btn.offsetWidth; btn.classList.add('bump')
   }
 
-  const drawer = $('#drawer')
+const drawer = $('#drawer')
   const backdrop = $('.drawer-backdrop')
+
   function openCart() {
     backdrop.hidden = false
-    requestAnimationFrame(() => { drawer.classList.add('open'); backdrop.classList.add('open') })
+    requestAnimationFrame(() => { 
+      drawer.classList.add('open'); 
+      backdrop.classList.add('open') 
+    })
     drawer.setAttribute('aria-hidden', 'false')
     document.body.classList.add('no-scroll')
   }
+
   function closeCart() {
-    drawer.classList.remove('open'); backdrop.classList.remove('open')
+    // 🛑 Quitamos el foco de cualquier elemento dentro del drawer antes de ocultarlo
+    const activeEl = document.activeElement;
+    if (drawer.contains(activeEl)) {
+      activeEl.blur(); 
+    }
+
+    drawer.classList.remove('open'); 
+    backdrop.classList.remove('open')
     drawer.setAttribute('aria-hidden', 'true')
     document.body.classList.remove('no-scroll')
-    setTimeout(() => { if (!drawer.classList.contains('open')) backdrop.hidden = true }, 300)
+    
+    setTimeout(() => { 
+      if (!drawer.classList.contains('open')) backdrop.hidden = true 
+    }, 300)
   }
 
   let toastTimer
