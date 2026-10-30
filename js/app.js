@@ -228,35 +228,36 @@ if (!nombre || !telefono || !hora) return; // 👈 NUEVO: Requerir teléfono par
     submitBtn.textContent = "Registrando pedido...";
 
     const textoWA = [
-      '*🥩 NUEVO ENCARGO - CARNICERÍA RODRI*',
-      `*ID Referencia:* ${idMostrar}`,
-      `*Cliente:* ${nombre}`,
-      `*Recogida:* ${dia} a las ${hora}`,
-      notas ? `*Notas:* ${notas}` : null,
-      '',
-      '*Productos:*',
-      ...lineas,
-      '',
-      '¡Gracias por confiar en Carnicería Rodri! 🍖',
-    ].filter((x) => x !== null).join('\n');
+  '*🥩 NUEVO ENCARGO - CARNICERÍA RODRI*',
+  `*ID Referencia:* ${idMostrar}`,
+  `*Cliente:* ${nombre}`,
+  `*Teléfono:* ${telefono}`, // 👈 NUEVO: Incluido en el mensaje de WhatsApp
+  `*Recogida:* ${dia} a las ${hora}`,
+  notas ? `*Notas:* ${notas}` : null,
+  '',
+  '*Productos:*',
+  ...lineas,
+  '',
+  '¡Gracias por confiar en Carnicería Rodri! 🍖',
+].filter((x) => x !== null).join('\n');
 
     enlaceWhatsAppPendiente = `https://wa.me/${TELEFONO}?text=${encodeURIComponent(textoWA)}`;
 
     try {
       // 🚀 Envío del Payload adaptado a las columnas de tu hoja de cálculo
       await fetch(APPS_SCRIPT_URL, {
-        method: "POST",
-        mode: "no-cors",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          codigoPedido: idMostrar,
-          cliente: nombre,
-          telefono: '', // Puedes mapear un input de teléfono si lo añades al HTML
-          total: Number(totalPedido.toFixed(2)),
-          estado: 'Pendiente',
-          productos: productosParaSheets
-        })
-      });
+  method: "POST",
+  mode: "no-cors",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    codigoPedido: idMostrar,
+    cliente: nombre,
+    telefono: telefono, // 👈 NUEVO: Se envía a la columna 'Teléfono' de tu hoja
+    total: Number(totalPedido.toFixed(2)),
+    estado: 'Pendiente',
+    productos: productosParaSheets
+  })
+});
     } catch (error) {
       console.warn("Error background sheets:", error);
     } finally {
