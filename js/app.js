@@ -307,18 +307,26 @@ if (modal && typeof modal.showModal === 'function') {
     if (e.target.closest('[data-close-cart]')) return closeCart();
   });
 
-  const btnWhatsAppModal = document.getElementById('btnEnviarWhatsApp');
-  if (btnWhatsAppModal) {
-    btnWhatsAppModal.addEventListener('click', () => {
-      if (enlaceWhatsAppPendiente) {
-        window.open(enlaceWhatsAppPendiente, '_blank');
-      }
-      const modal = document.getElementById('modalConfirmacion');
-      if (modal) modal.setAttribute('hidden', 'true');
-      backdrop.hidden = true;
-      cart = []; save(); renderCart();
-    });
-  }
+ const btnWhatsAppModal = document.getElementById('btnEnviarWhatsApp');
+if (btnWhatsAppModal) {
+  btnWhatsAppModal.addEventListener('click', () => {
+    if (enlaceWhatsAppPendiente) {
+      window.open(enlaceWhatsAppPendiente, '_blank', 'noopener,noreferrer');
+    }
+    const modal = document.getElementById('modalConfirmacion');
+    if (modal && typeof modal.close === 'function') modal.close();
+    cart = []; save(); renderCart();
+  });
+}
+
+// Nuevo botón "Cerrar" del modal
+const btnCerrarModal = document.getElementById('btnCerrarModal');
+if (btnCerrarModal) {
+  btnCerrarModal.addEventListener('click', () => {
+    const modal = document.getElementById('modalConfirmacion');
+    if (modal && typeof modal.close === 'function') modal.close();
+  });
+}
 
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeCart(); });
   $('#buscar').addEventListener('input', filtrar);
