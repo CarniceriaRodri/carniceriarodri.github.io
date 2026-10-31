@@ -1,9 +1,11 @@
 (function () {
   const TELEFONO = '34677228251';
   const STORAGE_KEY = 'rodri-encargo';
-   // 👇 AQUÍ VA EL TOKEN (nueva línea)
+
+  // 🔒 Token compartido con Apps Script (debe coincidir con TOKEN_VALIDO en code.gs)
   const TOKEN_SEGURO = "rodri-2026-xK9mP2vLq8Rt";
-  // ⚡ URL NUEVA ACTUALIZADA
+
+  // ⚡ URL del Apps Script
   const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwvcM-Ta_XHbzRnAU_6FxS6h7gwafmGx0VbEKygUCdlS8EsrfjFaftCpUaE0flj4EZX/exec";
 
   const $ = (sel, root = document) => root.querySelector(sel);
@@ -14,26 +16,40 @@
   const escapeHtml = (s) =>
     String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 
-  // ——— Estado del encargo ———
+  // ——— Estado del encargo (con validación de forma) ———
   let cart = [];
-  try { cart = JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch { cart = []; }
+  try {
+    const raw = JSON.parse(localStorage.getItem(STORAGE_KEY));
+    cart = Array.isArray(raw)
+      ? raw
+          .filter((l) =>
+            l &&
+            typeof l.id === 'string' &&
+            typeof l.cantidad === 'string' &&
+            typeof l.opcion === 'string' &&
+            Number.isInteger(l.uds) &&
+            l.uds > 0
+          )
+          .slice(0, 50)
+      : [];
+  } catch { cart = []; }
   const save = () => localStorage.setItem(STORAGE_KEY, JSON.stringify(cart));
 
   // ——— Catálogo ———
   function renderCatalogo() {
     $('#chips').innerHTML =
       `<button type="button" class="chip is-active" data-chip="todo">Todo</button>` +
-      CATEGORIAS.map((c) => `<button type="button" class="chip" data-chip="${c.id}">${c.nombre}</button>`).join('');
+      CATEGORIAS.map((c) => `<button type="button" class="chip" data-chip="${escapeHtml(c.id)}">${escapeHtml(c.nombre)}</button>`).join('');
 
     $('#secciones').innerHTML = CATEGORIAS.map((c, i) => {
       const productos = PRODUCTOS.filter((p) => p.cat === c.id);
       return `
-        <section class="cat" id="cat-${c.id}" data-cat="${c.id}">
+        <section class="cat" id="cat-${escapeHtml(c.id)}" data-cat="${escapeHtml(c.id)}">
           <header class="cat-head">
             <span class="cat-n">${String(i + 1).padStart(2, '0')}</span>
             <div>
-              <h3>${c.nombre}</h3>
-              <p>${c.lema}</p>
+              <h3>${escapeHtml(c.nombre)}</h3>
+              <p>${escapeHtml(c.lema)}</p>
             </div>
           </header>
           <div class="grid">${productos.map(card).join('')}</div>
@@ -44,25 +60,25 @@
   function card(p) {
     const keywords = [p.nombre, p.desc, ...p.opciones].join(' ').toLowerCase();
     return `
-      <article class="card" data-id="${p.id}" data-search="${escapeHtml(normalize(keywords))}">
+      <article class="card" data-id="${escapeHtml(p.id)}" data-search="${escapeHtml(normalize(keywords))}">
         <div class="card-img">
           <img src="${img(p.img, 600, 450)}" srcset="${img(p.img, 400, 300)} 400w, ${img(p.img, 800, 600)} 800w"
-               sizes="(max-width: 640px) 100vw, 360px" alt="${escapeHtml(p.nombre)}" loading="lazy" width="600" height="450"
-               onerror="this.onerror=null;this.removeAttribute('srcset');this.src='img/productos/${p.img}.jpg'">
-          ${p.etiqueta ? `<span class="tag">${p.etiqueta}</span>` : ''}
+               sizes="(max-width: 640px) 100vw, 360px" alt="${escapeHtml(p.nombre)}" loading="lazy" width="600" height="450" decoding="async"
+               onerror="this.onerror=null;this.removeAttribute('srcset');this.src='img/productos/${escapeHtml(p.img)}.jpg'">
+          ${p.etiqueta ? `<span class="tag">${escapeHtml(p.etiqueta)}</span>` : ''}
         </div>
         <div class="card-body">
-          <h4>${p.nombre}</h4>
-          <p class="card-desc">${p.desc}</p>
-          ${p.precio ? `<p class="card-precio">${p.precio} <small>orientativo</small></p>` : ''}
+          <h4>${escapeHtml(p.nombre)}</h4>
+          <p class="card-desc">${escapeHtml(p.desc)}</p>
+          ${p.precio ? `<p class="card-precio">${escapeHtml(p.precio)} <small>orientativo</small></p>` : ''}
           <div class="card-fields">
             <label>
               <span>Cantidad</span>
-              <select data-field="cantidad">${p.cantidades.map((o) => `<option>${o}</option>`).join('')}</select>
+              <select data-field="cantidad">${p.cantidades.map((o) => `<option>${escapeHtml(o)}</option>`).join('')}</select>
             </label>
             <label>
-              <span>${p.opcionLabel}</span>
-              <select data-field="opcion">${p.opciones.map((o) => `<option>${o}</option>`).join('')}</select>
+              <span>${escapeHtml(p.opcionLabel)}</span>
+              <select data-field="opcion">${p.opciones.map((o) => `<option>${escapeHtml(o)}</option>`).join('')}</select>
             </label>
           </div>
           <button type="button" class="btn btn-add" data-add>
@@ -73,7 +89,7 @@
   }
 
   function normalize(s) {
-    return s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+    return s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
   }
 
   // ——— Filtros: categorías y búsqueda ———
@@ -110,7 +126,7 @@
       if (!p) return '';
       return `
         <li class="line">
-          <img src="${img(p.img, 120, 120)}" alt="" width="60" height="60">
+          <img src="${img(p.img, 120, 120)}" alt="" width="60" height="60" loading="lazy" decoding="async">
           <div class="line-info">
             <strong>${escapeHtml(p.nombre)}</strong>
             <span>${escapeHtml(l.cantidad)} · ${escapeHtml(l.opcion)}</span>
@@ -136,22 +152,25 @@
 
   const drawer = $('#drawer');
   const backdrop = $('.drawer-backdrop');
+  const cartBtn = $('.cart-btn');
 
   function openCart() {
     backdrop.hidden = false;
     drawer.removeAttribute('inert');
-    requestAnimationFrame(() => { 
-      drawer.classList.add('open'); 
+    requestAnimationFrame(() => {
+      drawer.classList.add('open');
       backdrop.classList.add('open');
     });
     document.body.classList.add('no-scroll');
+    if (cartBtn) cartBtn.setAttribute('aria-expanded', 'true');
   }
 
   function closeCart() {
-    drawer.classList.remove('open'); 
+    drawer.classList.remove('open');
     backdrop.classList.remove('open');
     document.body.classList.remove('no-scroll');
-    setTimeout(() => { 
+    if (cartBtn) cartBtn.setAttribute('aria-expanded', 'false');
+    setTimeout(() => {
       if (!drawer.classList.contains('open')) {
         backdrop.hidden = true;
         drawer.setAttribute('inert', '');
@@ -173,6 +192,7 @@
   // ——— Envío por Google Sheets y WhatsApp ———
   async function enviar(e) {
     e.preventDefault();
+
     const nombre = $('#nombre').value.trim();
     const telefono = $('#telefono').value.trim();
     const hora = $('#hora').value;
@@ -182,7 +202,18 @@
     $('[data-err="nombre"]').classList.toggle('show', !nombre);
     $('[data-err="telefono"]').classList.toggle('show', !telefono);
     $('[data-err="hora"]').classList.toggle('show', !hora);
-    if (!nombre || !hora) return;
+
+    // ✅ CORREGIDO: también valida el teléfono
+    if (!nombre || !telefono || !hora) return;
+
+    // Validación básica del teléfono (mínimo 9 dígitos)
+    const soloDigitos = telefono.replace(/\D/g, '');
+    if (soloDigitos.length < 9) {
+      const err = $('[data-err="telefono"]');
+      err.textContent = "El teléfono debe tener al menos 9 dígitos.";
+      err.classList.add('show');
+      return;
+    }
 
     const hoy = new Date();
     const dd = String(hoy.getDate()).padStart(2, '0');
@@ -193,7 +224,7 @@
     const productosParaSheets = cart.map((l) => {
       const p = PRODUCTOS.find((x) => x.id === l.id);
       const nombreProd = p ? p.nombre : l.id;
-      
+
       const matchNum = l.cantidad.replace(',', '.').match(/[\d.]+/);
       const cantidadNum = matchNum ? parseFloat(matchNum[0]) * l.uds : l.uds;
       const unidadStr = l.cantidad.replace(/[\d.,]/g, '').trim() || 'ud';
@@ -207,7 +238,6 @@
       const subtotalNum = Number((precioNum * (matchNum ? parseFloat(matchNum[0]) : 1) * l.uds).toFixed(2));
       totalPedido += subtotalNum;
 
-      // ⚙️ Nombres ajustados exactamente a lo que espera Apps Script
       return {
         nombre: nombreProd,
         cantidad: cantidadNum,
@@ -231,7 +261,7 @@
       '*🥩 NUEVO ENCARGO - CARNICERÍA RODRI*',
       `*ID Referencia:* ${idMostrar}`,
       `*Cliente:* ${nombre}`,
-       `*Teléfono:* ${telefono}`,   // ← NUEVO
+      `*Teléfono:* ${telefono}`,
       `*Recogida:* ${dia} a las ${hora}`,
       notas ? `*Notas:* ${notas}` : null,
       '',
@@ -243,17 +273,16 @@
 
     enlaceWhatsAppPendiente = `https://wa.me/${TELEFONO}?text=${encodeURIComponent(textoWA)}`;
 
-      try {
-      // 🚀 Envío del Payload adaptado a las columnas de tu hoja de cálculo
+    try {
       await fetch(APPS_SCRIPT_URL, {
         method: "POST",
         mode: "no-cors",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          token: TOKEN_SEGURO,   // 👈 AQUÍ VA EL TOKEN (nueva línea)
+          token: TOKEN_SEGURO,
           codigoPedido: idMostrar,
           cliente: nombre,
-          telefono: telefono,    // 👈 y aquí el teléfono real (ya no '')
+          telefono: telefono,
           total: Number(totalPedido.toFixed(2)),
           estado: 'Pendiente',
           productos: productosParaSheets
@@ -266,13 +295,14 @@
       submitBtn.textContent = "Enviar encargo por WhatsApp";
 
       closeCart();
+
+      // ✅ CORREGIDO: una sola declaración de modal
       const modal = document.getElementById('modalConfirmacion');
-      const modal = document.getElementById('modalConfirmacion');
-if (modal && typeof modal.showModal === 'function') {
-  const modalId = document.getElementById('confirmacionIdPedido');
-  if (modalId) modalId.textContent = idMostrar;
-  modal.showModal();
-}
+      if (modal && typeof modal.showModal === 'function') {
+        const modalId = document.getElementById('confirmacionIdPedido');
+        if (modalId) modalId.textContent = idMostrar;
+        modal.showModal();
+      }
     }
   }
 
@@ -310,34 +340,40 @@ if (modal && typeof modal.showModal === 'function') {
     if (e.target.closest('[data-close-cart]')) return closeCart();
   });
 
- const btnWhatsAppModal = document.getElementById('btnEnviarWhatsApp');
-if (btnWhatsAppModal) {
-  btnWhatsAppModal.addEventListener('click', () => {
-    if (enlaceWhatsAppPendiente) {
-      window.open(enlaceWhatsAppPendiente, '_blank', 'noopener,noreferrer');
-    }
-    const modal = document.getElementById('modalConfirmacion');
-    if (modal && typeof modal.close === 'function') modal.close();
-    cart = []; save(); renderCart();
-  });
-}
+  // Botón WhatsApp del modal
+  const btnWhatsAppModal = document.getElementById('btnEnviarWhatsApp');
+  if (btnWhatsAppModal) {
+    btnWhatsAppModal.addEventListener('click', () => {
+      if (enlaceWhatsAppPendiente) {
+        window.open(enlaceWhatsAppPendiente, '_blank', 'noopener,noreferrer');
+      }
+      const modal = document.getElementById('modalConfirmacion');
+      if (modal && typeof modal.close === 'function') modal.close();
+      cart = []; save(); renderCart();
+    });
+  }
 
-// Nuevo botón "Cerrar" del modal
-const btnCerrarModal = document.getElementById('btnCerrarModal');
-if (btnCerrarModal) {
-  btnCerrarModal.addEventListener('click', () => {
-    const modal = document.getElementById('modalConfirmacion');
-    if (modal && typeof modal.close === 'function') modal.close();
-  });
-}
+  // Botón "Cerrar" del modal
+  const btnCerrarModal = document.getElementById('btnCerrarModal');
+  if (btnCerrarModal) {
+    btnCerrarModal.addEventListener('click', () => {
+      const modal = document.getElementById('modalConfirmacion');
+      if (modal && typeof modal.close === 'function') modal.close();
+    });
+  }
 
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeCart(); });
   $('#buscar').addEventListener('input', filtrar);
   const checkoutForm = $('#checkout');
   if (checkoutForm) checkoutForm.addEventListener('submit', enviar);
   $('#vaciar').addEventListener('click', () => { cart = []; save(); renderCart(); });
- $$('#nombre, #telefono, #hora').forEach((el) =>
-  el.addEventListener('input', () => $(`[data-err="${el.id}"]`).classList.remove('show')));
+
+  // Limpia el error al escribir (incluye teléfono)
+  $$('#nombre, #telefono, #hora').forEach((el) =>
+    el.addEventListener('input', () => {
+      const err = $(`[data-err="${el.id}"]`);
+      if (err) err.classList.remove('show');
+    }));
 
   renderCatalogo();
   renderCart();
