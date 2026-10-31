@@ -294,32 +294,6 @@ textarea { resize: vertical; }
 .line-info { display: grid; gap: .15rem; min-width: 0; }
 .line-info strong { font: 700 1rem var(--display); }
 .line-info span { font-size: .82rem; color: var(--muted); }
-/* ✅ NUEVO: precio en cada línea de la cesta */
-.line-precio {
-  font: 700 .9rem var(--display);
-  color: var(--blood);
-  margin-top: .15rem;
-}
-
-/* ✅ NUEVO: total orientativo debajo de la lista */
-.cart-total {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 1rem;
-  padding: .9rem 1rem;
-  background: var(--paper-2);
-  border-radius: 12px;
-  font-size: .9rem;
-}
-.cart-total span {
-  color: var(--ink-2);
-  font-weight: 500;
-}
-.cart-total strong {
-  font: 700 1.15rem var(--display);
-  color: var(--blood);
-}
 .stepper { display: flex; align-items: center; gap: .1rem; border: 1.5px solid var(--line); border-radius: 999px; }
 .stepper button { width: 30px; height: 30px; border: 0; background: none; cursor: pointer; font-size: 1.1rem; color: var(--blood); border-radius: 50%; }
 .stepper button:hover { background: var(--paper-2); }
@@ -345,22 +319,8 @@ textarea { resize: vertical; }
 }
 .toast.show { opacity: 1; transform: translate(-50%, 0); }
 
-/* ——— Modal de confirmación (compatible con todos los navegadores) ——— */
-.modal-backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 999;
-  background: rgba(0, 0, 0, .55);
-  -webkit-backdrop-filter: blur(2px);
-  backdrop-filter: blur(2px);
-}
-
+/* ——— Modal de confirmación ——— */
 .modal {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 1000;
   border: none;
   border-radius: 1rem;
   padding: 2rem 1.5rem;
@@ -374,7 +334,11 @@ textarea { resize: vertical; }
   font-family: inherit;
   color: inherit;
 }
-
+.modal::backdrop {
+  background: rgba(0, 0, 0, .55);
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
+}
 .modal-inner { display: grid; gap: .75rem; }
 .modal-icon { font-size: 3rem; line-height: 1; display: block; }
 .modal h3 {
