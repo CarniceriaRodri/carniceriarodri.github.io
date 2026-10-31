@@ -268,7 +268,7 @@ const productosParaSheets = cart.map((l) => {
     submitBtn.disabled = true;
     submitBtn.textContent = "Registrando pedido...";
 
-    const textoWA = [
+      const textoWA = [
       '*🥩 NUEVO ENCARGO - CARNICERÍA RODRI*',
       `*ID Referencia:* ${idMostrar}`,
       `*Cliente:* ${nombre}`,
@@ -278,7 +278,9 @@ const productosParaSheets = cart.map((l) => {
       '',
       '*Productos:*',
       ...lineas,
-      '',
+      '',                                          // ← línea en blanco
+      `*Total orientativo:* ${totalPedido.toFixed(2).replace('.', ',')} €`,  // ← NUEVA
+      '',                                          // ← otra línea en blanco
       '¡Gracias por confiar en Carnicería Rodri! 🍖',
     ].filter((x) => x !== null).join('\n');
 
