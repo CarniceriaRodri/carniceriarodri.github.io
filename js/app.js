@@ -16,7 +16,7 @@
   const escapeHtml = (s) =>
     String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 
-  // ——— Estado del encargo (con validación de forma) ———
+  // ——— Estado del encargo ———
   let cart = [];
   try {
     const raw = JSON.parse(localStorage.getItem(STORAGE_KEY));
@@ -92,7 +92,7 @@
     return s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
   }
 
-  // ——— Filtros: categorías y búsqueda ———
+  // ——— Filtros ———
   function filtrar() {
     const q = normalize($('#buscar').value.trim());
     const chipActivo = $('.chip.is-active');
@@ -114,7 +114,7 @@
     $('[data-query]', sin).textContent = $('#buscar').value.trim();
   }
 
-  // ——— Panel del encargo ———
+  // ——— Cálculo de precio de una línea ———
   function calcularLinea(l, p) {
     const matchNum = l.cantidad.replace(',', '.').match(/[\d.]+/);
     const cantidadNum = matchNum ? parseFloat(matchNum[0]) * l.uds : l.uds;
@@ -132,51 +132,51 @@
     return { cantidadNum, unidadStr, precioNum, factorPeso };
   }
 
+  // ——— Panel del encargo ———
+  function renderCart() {
+    const total = cart.reduce((n, l) => n + l.uds, 0);
+    $$('[data-cart-count]').forEach((el) => (el.textContent = total));
+    $('.float-bar').hidden = total === 0;
+    $('#cartEmpty').hidden = cart.length > 0;
+    $('#checkout').hidden = cart.length === 0;
 
-function renderCart() {
-  const total = cart.reduce((n, l) => n + l.uds, 0);
-  $$('[data-cart-count]').forEach((el) => (el.textContent = total));
-  $('.float-bar').hidden = total === 0;
-  $('#cartEmpty').hidden = cart.length > 0;
-  $('#checkout').hidden = cart.length === 0;
+    let totalEuros = 0;
 
-  let totalEuros = 0;
+    $('#cartList').innerHTML = cart.map((l, i) => {
+      const p = PRODUCTOS.find((x) => x.id === l.id);
+      if (!p) return '';
+      const { cantidadNum, unidadStr, precioNum, factorPeso } = calcularLinea(l, p);
+      const subtotal = Number((precioNum * cantidadNum * factorPeso).toFixed(2));
+      totalEuros += subtotal;
+      const precioTexto = precioNum > 0
+        ? `<span class="line-precio">${subtotal.toFixed(2).replace('.', ',')} €</span>`
+        : '';
+      return `
+        <li class="line">
+          <img src="${img(p.img, 120, 120)}" alt="" width="60" height="60" loading="lazy" decoding="async">
+          <div class="line-info">
+            <strong>${escapeHtml(p.nombre)}</strong>
+            <span>${escapeHtml(l.cantidad)} · ${escapeHtml(l.opcion)}</span>
+            ${precioTexto}
+          </div>
+          <div class="stepper" aria-label="Unidades">
+            <button type="button" data-dec="${i}" aria-label="Quitar uno">−</button>
+            <b>${l.uds}</b>
+            <button type="button" data-inc="${i}" aria-label="Añadir uno">+</button>
+          </div>
+        </li>`;
+    }).join('');
 
-  $('#cartList').innerHTML = cart.map((l, i) => {
-    const p = PRODUCTOS.find((x) => x.id === l.id);
-    if (!p) return '';
-    const { cantidadNum, unidadStr, precioNum, factorPeso } = calcularLinea(l, p);
-    const subtotal = Number((precioNum * cantidadNum * factorPeso).toFixed(2));
-    totalEuros += subtotal;
-    const precioTexto = precioNum > 0
-      ? `<span class="line-precio">${subtotal.toFixed(2).replace('.', ',')} €</span>`
-      : '';
-    return `
-      <li class="line">
-        <img src="${img(p.img, 120, 120)}" alt="" width="60" height="60" loading="lazy" decoding="async">
-        <div class="line-info">
-          <strong>${escapeHtml(p.nombre)}</strong>
-          <span>${escapeHtml(l.cantidad)} · ${escapeHtml(l.opcion)}</span>
-          ${precioTexto}
-        </div>
-        <div class="stepper" aria-label="Unidades">
-          <button type="button" data-dec="${i}" aria-label="Quitar uno">−</button>
-          <b>${l.uds}</b>
-          <button type="button" data-inc="${i}" aria-label="Añadir uno">+</button>
-        </div>
-      </li>`;
-  }).join('');
-
-  const totalEl = $('#cartTotal');
-  if (totalEl) {
-    if (totalEuros > 0) {
-      totalEl.hidden = false;
-      totalEl.innerHTML = `<span>Total orientativo</span><strong>${totalEuros.toFixed(2).replace('.', ',')} €</strong>`;
-    } else {
-      totalEl.hidden = true;
+    const totalEl = $('#cartTotal');
+    if (totalEl) {
+      if (totalEuros > 0) {
+        totalEl.hidden = false;
+        totalEl.innerHTML = `<span>Total orientativo</span><strong>${totalEuros.toFixed(2).replace('.', ',')} €</strong>`;
+      } else {
+        totalEl.hidden = true;
+      }
     }
   }
-}
 
   function addToCart(id, cantidad, opcion) {
     const existing = cart.find((l) => l.id === id && l.cantidad === cantidad && l.opcion === opcion);
@@ -241,10 +241,8 @@ function renderCart() {
     $('[data-err="nombre"]').classList.toggle('show', !nombre);
     $('[data-err="telefono"]').classList.toggle('show', !telefono);
     $('[data-err="hora"]').classList.toggle('show', !hora);
-
     if (!nombre || !telefono || !hora) return;
 
-    // Validación básica del teléfono (mínimo 9 dígitos)
     const soloDigitos = telefono.replace(/\D/g, '');
     if (soloDigitos.length < 9) {
       const err = $('[data-err="telefono"]');
@@ -259,34 +257,34 @@ function renderCart() {
     const idMostrar = `rod-${dd}${mm}-${Math.floor(10 + Math.random() * 90)}`;
 
     let totalPedido = 0;
-const productosParaSheets = cart.map((l) => {
-  const p = PRODUCTOS.find((x) => x.id === l.id);
-  const nombreProd = p ? p.nombre : l.id;
-  const { cantidadNum, unidadStr, precioNum, factorPeso } = calcularLinea(l, p);
-  const subtotalNum = Number((precioNum * cantidadNum * factorPeso).toFixed(2));
-  totalPedido += subtotalNum;
-  return {
-    nombre: nombreProd,
-    cantidad: cantidadNum,
-    unidad: unidadStr,
-    precioUnitario: precioNum,
-    subtotal: subtotalNum
-  };
-});
+    const productosParaSheets = cart.map((l) => {
+      const p = PRODUCTOS.find((x) => x.id === l.id);
+      const nombreProd = p ? p.nombre : l.id;
+      const { cantidadNum, unidadStr, precioNum, factorPeso } = calcularLinea(l, p);
+      const subtotalNum = Number((precioNum * cantidadNum * factorPeso).toFixed(2));
+      totalPedido += subtotalNum;
+      return {
+        nombre: nombreProd,
+        cantidad: cantidadNum,
+        unidad: unidadStr,
+        precioUnitario: precioNum,
+        subtotal: subtotalNum
+      };
+    });
 
-   const lineas = cart.map((l) => {
-  const p = PRODUCTOS.find((x) => x.id === l.id);
-  const uds = l.uds > 1 ? `${l.uds} × ` : '';
-  const { cantidadNum, unidadStr, precioNum, factorPeso } = calcularLinea(l, p);
-  const sub = Number((precioNum * cantidadNum * factorPeso).toFixed(2));
-  return `• ${uds}*${p ? p.nombre : l.id}* — ${l.cantidad} (${l.opcion}) → ${sub.toFixed(2).replace('.', ',')} €`;
-});
+    const lineas = cart.map((l) => {
+      const p = PRODUCTOS.find((x) => x.id === l.id);
+      const uds = l.uds > 1 ? `${l.uds} × ` : '';
+      const { cantidadNum, unidadStr, precioNum, factorPeso } = calcularLinea(l, p);
+      const sub = Number((precioNum * cantidadNum * factorPeso).toFixed(2));
+      return `• ${uds}*${p ? p.nombre : l.id}* — ${l.cantidad} (${l.opcion}) → ${sub.toFixed(2).replace('.', ',')} €`;
+    });
 
     const submitBtn = checkoutForm.querySelector('button[type="submit"]');
     submitBtn.disabled = true;
     submitBtn.textContent = "Registrando pedido...";
 
-      const textoWA = [
+    const textoWA = [
       '*🥩 NUEVO ENCARGO - CARNICERÍA RODRI*',
       `*ID Referencia:* ${idMostrar}`,
       `*Cliente:* ${nombre}`,
@@ -296,15 +294,29 @@ const productosParaSheets = cart.map((l) => {
       '',
       '*Productos:*',
       ...lineas,
-      '',                                          // ← línea en blanco
-      `*Total orientativo:* ${totalPedido.toFixed(2).replace('.', ',')} €`,  // ← NUEVA
-      '',                                          // ← otra línea en blanco
+      '',
+      `*Total orientativo:* ${totalPedido.toFixed(2).replace('.', ',')} €`,
+      '',
       '¡Gracias por confiar en Carnicería Rodri! 🍖',
     ].filter((x) => x !== null).join('\n');
 
     enlaceWhatsAppPendiente = `https://wa.me/${TELEFONO}?text=${encodeURIComponent(textoWA)}`;
 
-        // 🔧 NUEVO: timeout para que el fetch no se quede colgado
+    // 🔧 NUEVO: función para mostrar el modal SIEMPRE
+    function mostrarModal() {
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Enviar encargo por WhatsApp";
+      closeCart();
+      const modal = document.getElementById('modalConfirmacion');
+      const modalBackdrop = document.getElementById('modalBackdrop');
+      const modalId = document.getElementById('confirmacionIdPedido');
+      if (modalId) modalId.textContent = idMostrar;
+      if (modal) modal.removeAttribute('hidden');
+      if (modalBackdrop) modalBackdrop.removeAttribute('hidden');
+      document.body.classList.add('no-scroll');
+    }
+
+    // 🔧 NUEVO: timeout de 8s + modal garantizado
     try {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 8000);
@@ -326,22 +338,12 @@ const productosParaSheets = cart.map((l) => {
       clearTimeout(timeoutId);
     } catch (error) {
       console.warn("Error background sheets:", error);
-    } finally {
-      // 🔧 NUEVO: el modal se muestra SIEMPRE, pase lo que pase
-      submitBtn.disabled = false;
-      submitBtn.textContent = "Enviar encargo por WhatsApp";
-
-      closeCart();
-
-      const modal = document.getElementById('modalConfirmacion');
-      const modalBackdrop = document.getElementById('modalBackdrop');
-      const modalId = document.getElementById('confirmacionIdPedido');
-      if (modalId) modalId.textContent = idMostrar;
-      if (modal) modal.removeAttribute('hidden');
-      if (modalBackdrop) modalBackdrop.removeAttribute('hidden');
-      document.body.classList.add('no-scroll');
     }
+
+    // 🔧 NUEVO: el modal se muestra SIEMPRE, fuera del try/catch
+    mostrarModal();
   }
+
   // ——— Eventos ———
   document.addEventListener('click', (e) => {
     const add = e.target.closest('[data-add]');
@@ -377,7 +379,7 @@ const productosParaSheets = cart.map((l) => {
     if (e.target.closest('[data-close-cart]')) return closeCart();
   });
 
-  // 🔧 NUEVO: Botón WhatsApp del modal (onclick en vez de addEventListener)
+  // Botón WhatsApp del modal
   const btnWhatsAppModal = document.getElementById('btnEnviarWhatsApp');
   if (btnWhatsAppModal) {
     btnWhatsAppModal.onclick = () => {
@@ -392,9 +394,8 @@ const productosParaSheets = cart.map((l) => {
       cart = []; save(); renderCart();
     };
   }
-  // 🔧 FIN NUEVO
 
-    // 🔧 NUEVO: Botón "Cerrar" del modal (onclick en vez de addEventListener)
+  // Botón "Cerrar" del modal
   const btnCerrarModal = document.getElementById('btnCerrarModal');
   if (btnCerrarModal) {
     btnCerrarModal.onclick = () => {
@@ -405,13 +406,12 @@ const productosParaSheets = cart.map((l) => {
       document.body.classList.remove('no-scroll');
     };
   }
-  // 🔧 FIN NUEVO
+
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeCart(); });
   $('#buscar').addEventListener('input', filtrar);
   if (checkoutForm) checkoutForm.addEventListener('submit', enviar);
   $('#vaciar').addEventListener('click', () => { cart = []; save(); renderCart(); });
 
-  // Limpia el error al escribir (incluye teléfono)
   $$('#nombre, #telefono, #hora').forEach((el) =>
     el.addEventListener('input', () => {
       const err = $(`[data-err="${el.id}"]`);
