@@ -229,6 +229,7 @@
       '*🥩 NUEVO ENCARGO - CARNICERÍA RODRI*',
       `*ID Referencia:* ${idMostrar}`,
       `*Cliente:* ${nombre}`,
+       `*Teléfono:* ${telefono}`,   // ← NUEVO
       `*Recogida:* ${dia} a las ${hora}`,
       notas ? `*Notas:* ${notas}` : null,
       '',
@@ -249,7 +250,7 @@
         body: JSON.stringify({
           codigoPedido: idMostrar,
           cliente: nombre,
-          telefono: '', // Puedes mapear un input de teléfono si lo añades al HTML
+           telefono: telefono,          // ← NUEVO (ya no vacío)
           total: Number(totalPedido.toFixed(2)),
           estado: 'Pendiente',
           productos: productosParaSheets
