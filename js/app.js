@@ -172,11 +172,13 @@
   async function enviar(e) {
     e.preventDefault();
     const nombre = $('#nombre').value.trim();
+    const telefono = $('#telefono').value.trim();
     const hora = $('#hora').value;
     const dia = $('#dia').value;
     const notas = $('#observaciones').value.trim();
 
     $('[data-err="nombre"]').classList.toggle('show', !nombre);
+    $('[data-err="telefono"]').classList.toggle('show', !telefono);
     $('[data-err="hora"]').classList.toggle('show', !hora);
     if (!nombre || !hora) return;
 
