@@ -3,7 +3,7 @@
   const STORAGE_KEY = 'rodri-encargo';
 
   // 🔒 Token compartido con Apps Script (debe coincidir con TOKEN_VALIDO en code.gs)
-  const TOKEN_SEGURO = "rodri-xr1s7na-2026-vK6mP2vQs9WRt";
+  const TOKEN_SEGURO = "xr1st1na_R0dr1-roldayan-xW590ÑoqR339";
 
   // ⚡ URL del Apps Script
   const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwvcM-Ta_XHbzRnAU_6FxS6h7gwafmGx0VbEKygUCdlS8EsrfjFaftCpUaE0flj4EZX/exec";
