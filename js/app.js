@@ -95,7 +95,8 @@
   // ——— Filtros: categorías y búsqueda ———
   function filtrar() {
     const q = normalize($('#buscar').value.trim());
-    const activa = $('.chip.is-active')?.dataset.chip || 'todo';
+    const chipActivo = $('.chip.is-active');
+const activa = (chipActivo && chipActivo.dataset.chip) || 'todo';
     let visibles = 0;
     $$('.cat').forEach((sec) => {
       const catOk = activa === 'todo' || sec.dataset.cat === activa;
@@ -370,7 +371,8 @@ function calcularLinea(l, p) {
     const inc = e.target.closest('[data-inc]');
     const dec = e.target.closest('[data-dec]');
     if (inc || dec) {
-      const i = Number((inc || dec).dataset.inc ?? (inc || dec).dataset.dec);
+      const el = inc || dec;
+const i = Number(el.dataset.inc != null ? el.dataset.inc : el.dataset.dec);
       cart[i].uds += inc ? 1 : -1;
       if (cart[i].uds <= 0) cart.splice(i, 1);
       save(); renderCart();
