@@ -312,6 +312,10 @@
       const modalId = document.getElementById('confirmacionIdPedido');
       if (modalId) modalId.textContent = idMostrar;
       if (modal) modal.removeAttribute('hidden');
+       if (modal) {
+        modal.removeAttribute('hidden');
+        modal.style.display = 'block';  // 🔧 NUEVO: forzar display
+      }
       if (modalBackdrop) modalBackdrop.removeAttribute('hidden');
       document.body.classList.add('no-scroll');
     }
