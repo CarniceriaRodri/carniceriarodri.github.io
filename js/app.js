@@ -3,7 +3,7 @@
   const STORAGE_KEY = 'rodri-encargo';
 
   // 🔒 Token compartido con Apps Script (debe coincidir con TOKEN_VALIDO en code.gs)
-  const TOKEN_SEGURO = "rodri-xr1s7na-2026-vK6mP2vQs9WRt";
+  const TOKEN_SEGURO = "rodri-2026-xK9mP2vLq8Rt";
 
   // ⚡ URL del Apps Script
   const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwvcM-Ta_XHbzRnAU_6FxS6h7gwafmGx0VbEKygUCdlS8EsrfjFaftCpUaE0flj4EZX/exec";
@@ -95,8 +95,7 @@
   // ——— Filtros: categorías y búsqueda ———
   function filtrar() {
     const q = normalize($('#buscar').value.trim());
-    const chipActivo = $('.chip.is-active');
-const activa = (chipActivo && chipActivo.dataset.chip) || 'todo';
+    const activa = $('.chip.is-active')?.dataset.chip || 'todo';
     let visibles = 0;
     $$('.cat').forEach((sec) => {
       const catOk = activa === 'todo' || sec.dataset.cat === activa;
@@ -113,76 +112,33 @@ const activa = (chipActivo && chipActivo.dataset.chip) || 'todo';
     sin.hidden = visibles > 0;
     $('[data-query]', sin).textContent = $('#buscar').value.trim();
   }
-// ✅ NUEVO: extrae cantidad, unidad y precio de una línea del carrito
-function calcularLinea(l, p) {
-  const matchNum = l.cantidad.replace(',', '.').match(/[\d.]+/);
-  const cantidadNum = matchNum ? parseFloat(matchNum[0]) * l.uds : l.uds;
-  const unidadStr = l.cantidad.replace(/[\d.,]/g, '').trim() || 'ud';
 
-  let precioNum = 0;
-  if (p && p.precio) {
-    const matchPrecio = p.precio.replace(',', '.').match(/[\d.]+/);
-    if (matchPrecio) precioNum = parseFloat(matchPrecio[0]);
-  }
-  return { cantidadNum, unidadStr, precioNum };
-}
   // ——— Panel del encargo ———
   function renderCart() {
-  const total = cart.reduce((n, l) => n + l.uds, 0);
-  $$('[data-cart-count]').forEach((el) => (el.textContent = total));
-  $('.float-bar').hidden = total === 0;
-  $('#cartEmpty').hidden = cart.length > 0;
-  $('#checkout').hidden = cart.length === 0;
+    const total = cart.reduce((n, l) => n + l.uds, 0);
+    $$('[data-cart-count]').forEach((el) => (el.textContent = total));
+    $('.float-bar').hidden = total === 0;
+    $('#cartEmpty').hidden = cart.length > 0;
+    $('#checkout').hidden = cart.length === 0;
 
-  // ✅ NUEVO: calcular el total en euros de la cesta
-  let totalEuros = 0;
-
-  $('#cartList').innerHTML = cart.map((l, i) => {
-    const p = PRODUCTOS.find((x) => x.id === l.id);
-    if (!p) return '';
-
-    // ✅ NUEVO: calcular el subtotal de esta línea
-    const { cantidadNum, unidadStr, precioNum } = calcularLinea(l, p);
-    let cantidadParaPrecio = cantidadNum;
-    if (/^gr$/i.test(unidadStr)) cantidadParaPrecio = cantidadNum / 1000;
-    const subtotal = Number((precioNum * cantidadParaPrecio).toFixed(2));
-    totalEuros += subtotal;
-
-    // ✅ NUEVO: texto de precio (si el producto tiene precio)
-    const precioTexto = precioNum > 0
-      ? `<span class="line-precio">${subtotal.toFixed(2).replace('.', ',')} €</span>`
-      : '';
-
-    return `
-      <li class="line">
-        <img src="${img(p.img, 120, 120)}" alt="" width="60" height="60" loading="lazy" decoding="async">
-        <div class="line-info">
-          <strong>${escapeHtml(p.nombre)}</strong>
-          <span>${escapeHtml(l.cantidad)} · ${escapeHtml(l.opcion)}</span>
-          ${precioTexto}
-        </div>
-        <div class="stepper" aria-label="Unidades">
-          <button type="button" data-dec="${i}" aria-label="Quitar uno">−</button>
-          <b>${l.uds}</b>
-          <button type="button" data-inc="${i}" aria-label="Añadir uno">+</button>
-        </div>
-      </li>`;
-  }).join('');
-
-  // ✅ NUEVO: pintar el total en euros debajo de la lista
-  const totalEl = $('#cartTotal');
-  if (totalEl) {
-    if (totalEuros > 0) {
-      totalEl.hidden = false;
-      totalEl.innerHTML = `
-        <span>Total orientativo</span>
-        <strong>${totalEuros.toFixed(2).replace('.', ',')} €</strong>
-      `;
-    } else {
-      totalEl.hidden = true;
-    }
+    $('#cartList').innerHTML = cart.map((l, i) => {
+      const p = PRODUCTOS.find((x) => x.id === l.id);
+      if (!p) return '';
+      return `
+        <li class="line">
+          <img src="${img(p.img, 120, 120)}" alt="" width="60" height="60" loading="lazy" decoding="async">
+          <div class="line-info">
+            <strong>${escapeHtml(p.nombre)}</strong>
+            <span>${escapeHtml(l.cantidad)} · ${escapeHtml(l.opcion)}</span>
+          </div>
+          <div class="stepper" aria-label="Unidades">
+            <button type="button" data-dec="${i}" aria-label="Quitar uno">−</button>
+            <b>${l.uds}</b>
+            <button type="button" data-inc="${i}" aria-label="Añadir uno">+</button>
+          </div>
+        </li>`;
+    }).join('');
   }
-}
 
   function addToCart(id, cantidad, opcion) {
     const existing = cart.find((l) => l.id === id && l.cantidad === cantidad && l.opcion === opcion);
@@ -265,26 +221,31 @@ function calcularLinea(l, p) {
     const idMostrar = `rod-${dd}${mm}-${Math.floor(10 + Math.random() * 90)}`;
 
     let totalPedido = 0;
-   const productosParaSheets = cart.map((l) => {
-  const p = PRODUCTOS.find((x) => x.id === l.id);
-  const nombreProd = p ? p.nombre : l.id;
+    const productosParaSheets = cart.map((l) => {
+      const p = PRODUCTOS.find((x) => x.id === l.id);
+      const nombreProd = p ? p.nombre : l.id;
 
-  // ✅ Usa el helper
-  const { cantidadNum, unidadStr, precioNum } = calcularLinea(l, p);
-  let cantidadParaPrecio = cantidadNum;
-  if (/^gr$/i.test(unidadStr)) cantidadParaPrecio = cantidadNum / 1000;
+      const matchNum = l.cantidad.replace(',', '.').match(/[\d.]+/);
+      const cantidadNum = matchNum ? parseFloat(matchNum[0]) * l.uds : l.uds;
+      const unidadStr = l.cantidad.replace(/[\d.,]/g, '').trim() || 'ud';
 
-  const subtotalNum = Number((precioNum * cantidadParaPrecio).toFixed(2));
-  totalPedido += subtotalNum;
+      let precioNum = 0;
+      if (p && p.precio) {
+        const matchPrecio = p.precio.replace(',', '.').match(/[\d.]+/);
+        if (matchPrecio) precioNum = parseFloat(matchPrecio[0]);
+      }
 
-  return {
-    nombre: nombreProd,
-    cantidad: cantidadNum,
-    unidad: unidadStr,
-    precioUnitario: precioNum,
-    subtotal: subtotalNum
-  };
-});
+      const subtotalNum = Number((precioNum * (matchNum ? parseFloat(matchNum[0]) : 1) * l.uds).toFixed(2));
+      totalPedido += subtotalNum;
+
+      return {
+        nombre: nombreProd,
+        cantidad: cantidadNum,
+        unidad: unidadStr,
+        precioUnitario: precioNum,
+        subtotal: subtotalNum
+      };
+    });
 
     const lineas = cart.map((l) => {
       const p = PRODUCTOS.find((x) => x.id === l.id);
@@ -332,17 +293,15 @@ function calcularLinea(l, p) {
     } finally {
       submitBtn.disabled = false;
       submitBtn.textContent = "Enviar encargo por WhatsApp";
+
       closeCart();
 
-      // ✅ Compatible con todos los navegadores
+      // ✅ CORREGIDO: una sola declaración de modal
       const modal = document.getElementById('modalConfirmacion');
-      const modalBackdrop = document.getElementById('modalBackdrop');
-      const modalId = document.getElementById('confirmacionIdPedido');
-      if (modalId) modalId.textContent = idMostrar;
-      if (modal) {
-        modal.removeAttribute('hidden');
-        if (modalBackdrop) modalBackdrop.removeAttribute('hidden');
-        document.body.classList.add('no-scroll');
+      if (modal && typeof modal.showModal === 'function') {
+        const modalId = document.getElementById('confirmacionIdPedido');
+        if (modalId) modalId.textContent = idMostrar;
+        modal.showModal();
       }
     }
   }
@@ -371,8 +330,7 @@ function calcularLinea(l, p) {
     const inc = e.target.closest('[data-inc]');
     const dec = e.target.closest('[data-dec]');
     if (inc || dec) {
-      const el = inc || dec;
-const i = Number(el.dataset.inc != null ? el.dataset.inc : el.dataset.dec);
+      const i = Number((inc || dec).dataset.inc ?? (inc || dec).dataset.dec);
       cart[i].uds += inc ? 1 : -1;
       if (cart[i].uds <= 0) cart.splice(i, 1);
       save(); renderCart();
@@ -383,45 +341,26 @@ const i = Number(el.dataset.inc != null ? el.dataset.inc : el.dataset.dec);
   });
 
   // Botón WhatsApp del modal
-   const btnWhatsAppModal = document.getElementById('btnEnviarWhatsApp');
+  const btnWhatsAppModal = document.getElementById('btnEnviarWhatsApp');
   if (btnWhatsAppModal) {
     btnWhatsAppModal.addEventListener('click', () => {
       if (enlaceWhatsAppPendiente) {
         window.open(enlaceWhatsAppPendiente, '_blank', 'noopener,noreferrer');
       }
-      cerrarModal();
+      const modal = document.getElementById('modalConfirmacion');
+      if (modal && typeof modal.close === 'function') modal.close();
       cart = []; save(); renderCart();
     });
   }
 
-  // ✅ Función reutilizable para cerrar el modal
-  function cerrarModal() {
-    const modal = document.getElementById('modalConfirmacion');
-    const modalBackdrop = document.getElementById('modalBackdrop');
-    if (modal) modal.setAttribute('hidden', '');
-    if (modalBackdrop) modalBackdrop.setAttribute('hidden', '');
-    document.body.classList.remove('no-scroll');
-  }
-
   // Botón "Cerrar" del modal
-   const btnCerrarModal = document.getElementById('btnCerrarModal');
+  const btnCerrarModal = document.getElementById('btnCerrarModal');
   if (btnCerrarModal) {
-    btnCerrarModal.addEventListener('click', cerrarModal);
+    btnCerrarModal.addEventListener('click', () => {
+      const modal = document.getElementById('modalConfirmacion');
+      if (modal && typeof modal.close === 'function') modal.close();
+    });
   }
-
-  // ✅ Cerrar el modal al pulsar el backdrop
-  const modalBackdrop = document.getElementById('modalBackdrop');
-  if (modalBackdrop) {
-    modalBackdrop.addEventListener('click', cerrarModal);
-  }
-
-  // ✅ Cerrar el modal con Esc
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') {
-      cerrarModal();
-      closeCart();
-    }
-  });
 
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeCart(); });
   $('#buscar').addEventListener('input', filtrar);
