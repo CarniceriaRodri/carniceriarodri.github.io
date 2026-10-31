@@ -228,6 +228,41 @@
 
   let enlaceWhatsAppPendiente = "";
 
+  // ——— Función para mostrar el modal ———
+  function mostrarModal(idMostrar) {
+    const submitBtn = checkoutForm ? checkoutForm.querySelector('button[type="submit"]') : null;
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Enviar encargo por WhatsApp";
+    }
+    closeCart();
+    const modal = document.getElementById('modalConfirmacion');
+    const modalBackdrop = document.getElementById('modalBackdrop');
+    const modalId = document.getElementById('confirmacionIdPedido');
+    if (modalId) modalId.textContent = idMostrar;
+    if (modal) {
+      modal.removeAttribute('hidden');
+      modal.style.display = 'block';
+      modal.style.position = 'fixed';
+      modal.style.top = '50%';
+      modal.style.left = '50%';
+      modal.style.transform = 'translate(-50%, -50%)';
+      modal.style.zIndex = '9999';
+      modal.style.background = '#fff';
+      modal.style.padding = '2rem';
+      modal.style.borderRadius = '1rem';
+    }
+    if (modalBackdrop) {
+      modalBackdrop.removeAttribute('hidden');
+      modalBackdrop.style.display = 'block';
+      modalBackdrop.style.position = 'fixed';
+      modalBackdrop.style.inset = '0';
+      modalBackdrop.style.background = 'rgba(0,0,0,0.5)';
+      modalBackdrop.style.zIndex = '9998';
+    }
+    document.body.classList.add('no-scroll');
+  }
+
   // ——— Envío por Google Sheets y WhatsApp ———
   async function enviar(e) {
     e.preventDefault();
@@ -302,27 +337,7 @@
 
     enlaceWhatsAppPendiente = `https://wa.me/${TELEFONO}?text=${encodeURIComponent(textoWA)}`;
 
-    // 🔧 NUEVO: función para mostrar el modal SIEMPRE
-   function mostrarModal() {
-  submitBtn.disabled = false;
-  submitBtn.textContent = "Enviar encargo por WhatsApp";
-  closeCart();
-  const modal = document.getElementById('modalConfirmacion');
-  const modalBackdrop = document.getElementById('modalBackdrop');
-  const modalId = document.getElementById('confirmacionIdPedido');
-  if (modalId) modalId.textContent = idMostrar;
-  if (modal) {
-    modal.removeAttribute('hidden');
-    modal.style.display = 'block';
-  }
-  if (modalBackdrop) {
-    modalBackdrop.removeAttribute('hidden');
-    modalBackdrop.style.display = 'block';
-  }
-  document.body.classList.add('no-scroll');
-}
-
-    // 🔧 NUEVO: timeout de 8s + modal garantizado
+    // Timeout de 8s para el fetch
     try {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 8000);
@@ -346,37 +361,8 @@
       console.warn("Error background sheets:", error);
     }
 
-    // 🔧 NUEVO: el modal se muestra SIEMPRE, fuera del try/catch
-        // 🔧 NUEVO: forzar el modal directamente, sin depender de mostrarModal()
-    submitBtn.disabled = false;
-    submitBtn.textContent = "Enviar encargo por WhatsApp";
-    closeCart();
-    const modal = document.getElementById('modalConfirmacion');
-    const modalBackdrop = document.getElementById('modalBackdrop');
-    const modalId = document.getElementById('confirmacionIdPedido');
-    if (modalId) modalId.textContent = idMostrar;
-    if (modal) {
-      modal.removeAttribute('hidden');
-      modal.style.display = 'block';
-      modal.style.position = 'fixed';
-      modal.style.top = '50%';
-      modal.style.left = '50%';
-      modal.style.transform = 'translate(-50%, -50%)';
-      modal.style.zIndex = '9999';
-      modal.style.background = '#fff';
-      modal.style.padding = '2rem';
-      modal.style.borderRadius = '1rem';
-    }
-    if (modalBackdrop) {
-      modalBackdrop.removeAttribute('hidden');
-      modalBackdrop.style.display = 'block';
-      modalBackdrop.style.position = 'fixed';
-      modalBackdrop.style.inset = '0';
-      modalBackdrop.style.background = 'rgba(0,0,0,0.5)';
-      modalBackdrop.style.zIndex = '9998';
-    }
-    document.body.classList.add('no-scroll');
-  }
+    // Mostrar el modal SIEMPRE, pase lo que pase
+    mostrarModal(idMostrar);
   }
 
   // ——— Eventos ———
