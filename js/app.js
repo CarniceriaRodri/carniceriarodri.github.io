@@ -321,19 +321,21 @@ const productosParaSheets = cart.map((l) => {
       });
     } catch (error) {
       console.warn("Error background sheets:", error);
-    } finally {
+       } finally {
       submitBtn.disabled = false;
       submitBtn.textContent = "Enviar encargo por WhatsApp";
 
       closeCart();
 
-      // ✅ Una sola declaración de modal, compatible con todos los navegadores
+      // 🔧 NUEVO: mostrar el modal (es un <div>, no un <dialog>)
       const modal = document.getElementById('modalConfirmacion');
-      if (modal && typeof modal.showModal === 'function') {
-        const modalId = document.getElementById('confirmacionIdPedido');
-        if (modalId) modalId.textContent = idMostrar;
-        modal.showModal();
-      }
+      const modalBackdrop = document.getElementById('modalBackdrop');
+      const modalId = document.getElementById('confirmacionIdPedido');
+      if (modalId) modalId.textContent = idMostrar;
+      if (modal) modal.removeAttribute('hidden');
+      if (modalBackdrop) modalBackdrop.removeAttribute('hidden');
+      document.body.classList.add('no-scroll');
+      // 🔧 FIN NUEVO
     }
   }
 
@@ -372,28 +374,35 @@ const productosParaSheets = cart.map((l) => {
     if (e.target.closest('[data-close-cart]')) return closeCart();
   });
 
-  // Botón WhatsApp del modal
+  // 🔧 NUEVO: Botón WhatsApp del modal (onclick en vez de addEventListener)
   const btnWhatsAppModal = document.getElementById('btnEnviarWhatsApp');
   if (btnWhatsAppModal) {
-    btnWhatsAppModal.addEventListener('click', () => {
+    btnWhatsAppModal.onclick = () => {
       if (enlaceWhatsAppPendiente) {
         window.open(enlaceWhatsAppPendiente, '_blank', 'noopener,noreferrer');
       }
       const modal = document.getElementById('modalConfirmacion');
-      if (modal && typeof modal.close === 'function') modal.close();
+      const modalBackdrop = document.getElementById('modalBackdrop');
+      if (modal) modal.setAttribute('hidden', '');
+      if (modalBackdrop) modalBackdrop.setAttribute('hidden', '');
+      document.body.classList.remove('no-scroll');
       cart = []; save(); renderCart();
-    });
+    };
   }
+  // 🔧 FIN NUEVO
 
-  // Botón "Cerrar" del modal
+    // 🔧 NUEVO: Botón "Cerrar" del modal (onclick en vez de addEventListener)
   const btnCerrarModal = document.getElementById('btnCerrarModal');
   if (btnCerrarModal) {
-    btnCerrarModal.addEventListener('click', () => {
+    btnCerrarModal.onclick = () => {
       const modal = document.getElementById('modalConfirmacion');
-      if (modal && typeof modal.close === 'function') modal.close();
-    });
+      const modalBackdrop = document.getElementById('modalBackdrop');
+      if (modal) modal.setAttribute('hidden', '');
+      if (modalBackdrop) modalBackdrop.setAttribute('hidden', '');
+      document.body.classList.remove('no-scroll');
+    };
   }
-
+  // 🔧 FIN NUEVO
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeCart(); });
   $('#buscar').addEventListener('input', filtrar);
   if (checkoutForm) checkoutForm.addEventListener('submit', enviar);
