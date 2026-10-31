@@ -5,7 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <!-- 🛑 METAS PARA EVITAR LA CACHÉ -->
+  <!-- ?? METAS PARA EVITAR LA CACHé -->
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
@@ -115,7 +115,7 @@
     <div id="secciones"></div>
 
     <div class="empty-search" id="sinResultados" hidden>
-      <p class="empty-title">No encontramos «<span data-query></span>»</p>
+      <p class="empty-title">No encontramos ?<span data-query></span>?</p>
       <p>Prueba con otra palabra o pídelo en las notas del encargo: si lo tenemos en tienda, te lo preparamos.</p>
     </div>
   </section>
@@ -126,7 +126,7 @@
       <img src="img/logo.jpg" alt="Logotipo de Carnicer铆a Rodri &amp; Charcuter铆a" loading="lazy">
     </div>
     <div class="contacto-text">
-      <p class="eyebrow">¿Algo que no ves en la lista?</p>
+      <p class="eyebrow">?Algo que no ves en la lista?</p>
       <h2>Pregúntanos sin compromiso</h2>
       <p>Encargos especiales para celebraciones, barbacoas o piezas enteras. Escríbenos y te lo preparamos.</p>
       <a class="btn btn-whatsapp" href="https://wa.me/34677228251" target="_blank" rel="noopener">
@@ -153,16 +153,16 @@
 <aside class="drawer" id="drawer" aria-label="Mi encargo" inert>
   <div class="drawer-head">
     <h2>Mi encargo</h2>
-       <button type="button" class="icon-btn" data-close-cart aria-label="Cerrar">✕</button>
+       <button type="button" class="icon-btn" data-close-cart aria-label="Cerrar">?</button>
   </div>
 
   <div class="drawer-body">
     <ul class="cart-list" id="cartList"></ul>
 
     <div class="cart-empty" id="cartEmpty">
-     <div class="cart-empty-art" aria-hidden="true">🔪</div>
+     <div class="cart-empty-art" aria-hidden="true">??</div>
         <p class="empty-title">Tu encargo está vacío</p>
-      <p>Añade cortes, embutidos o bebidas desde el mostrador y aparecerán aquí.</p>
+      <p>A?ade cortes, embutidos o bebidas desde el mostrador y aparecerán aquí.</p>
       <button type="button" class="btn btn-primary" data-close-cart>Ver productos</button>
     </div>
 
@@ -181,8 +181,8 @@
           <span>Día de recogida *</span>
           <select id="dia">
             <option value="Hoy">Hoy</option>
-            <option value="Ma帽ana">Mañana</option>
-            <option value="Pasado ma帽ana">Pasado mañana</option>
+            <option value="Ma帽ana">Ma?ana</option>
+            <option value="Pasado ma帽ana">Pasado ma?ana</option>
           </select>
         </label>
       </div>
@@ -203,7 +203,7 @@
 <!-- Modal de Confirmaci贸n de Pedido -->
 <div class="modal" id="modalConfirmacion" hidden style="position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background:var(--bg-card, #fff); padding:2rem; border-radius:1rem; z-index:1000; max-width:90%; width:400px; box-shadow:0 10px 30px rgba(0,0,0,0.2); text-align:center;">
   <button type="submit" class="btn btn-whatsapp btn-block">
-  <h3 style="margin-bottom:0.5rem; font-family:var(--font-serif);">¡Encargo registrado!</h3>
+  <h3 style="margin-bottom:0.5rem; font-family:var(--font-serif);">?Encargo registrado!</h3>
   <p style="margin-bottom:1rem; color:var(--text-muted);">Tu código de referencia es: <strong id="confirmacionIdPedido" style="color:var(--primary);"></strong></p>
   <p style="font-size:0.9rem; margin-bottom:1.5rem; color:var(--text-muted);">Para finalizar y enviar el detalle a nuestro WhatsApp, pulsa el botón de abajo.</p>
   <button type="button" class="btn btn-whatsapp btn-block" id="btnEnviarWhatsApp" style="margin-bottom:0.75rem;">
