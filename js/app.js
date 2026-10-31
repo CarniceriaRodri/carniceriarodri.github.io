@@ -331,15 +331,17 @@ function calcularLinea(l, p) {
     } finally {
       submitBtn.disabled = false;
       submitBtn.textContent = "Enviar encargo por WhatsApp";
-
       closeCart();
 
-      // ✅ CORREGIDO: una sola declaración de modal
+      // ✅ Compatible con todos los navegadores
       const modal = document.getElementById('modalConfirmacion');
-      if (modal && typeof modal.showModal === 'function') {
-        const modalId = document.getElementById('confirmacionIdPedido');
-        if (modalId) modalId.textContent = idMostrar;
-        modal.showModal();
+      const modalBackdrop = document.getElementById('modalBackdrop');
+      const modalId = document.getElementById('confirmacionIdPedido');
+      if (modalId) modalId.textContent = idMostrar;
+      if (modal) {
+        modal.removeAttribute('hidden');
+        if (modalBackdrop) modalBackdrop.removeAttribute('hidden');
+        document.body.classList.add('no-scroll');
       }
     }
   }
