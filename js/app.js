@@ -304,7 +304,10 @@ const productosParaSheets = cart.map((l) => {
 
     enlaceWhatsAppPendiente = `https://wa.me/${TELEFONO}?text=${encodeURIComponent(textoWA)}`;
 
-     try {
+        // 🔧 NUEVO: timeout para que el fetch no se quede colgado
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 8000);
       await fetch(APPS_SCRIPT_URL, {
         method: "POST",
         mode: "no-cors",
@@ -317,17 +320,19 @@ const productosParaSheets = cart.map((l) => {
           total: Number(totalPedido.toFixed(2)),
           estado: 'Pendiente',
           productos: productosParaSheets
-        })
+        }),
+        signal: controller.signal
       });
+      clearTimeout(timeoutId);
     } catch (error) {
       console.warn("Error background sheets:", error);
     } finally {
+      // 🔧 NUEVO: el modal se muestra SIEMPRE, pase lo que pase
       submitBtn.disabled = false;
       submitBtn.textContent = "Enviar encargo por WhatsApp";
 
       closeCart();
 
-      // Mostrar el modal (es un <div>, no un <dialog>)
       const modal = document.getElementById('modalConfirmacion');
       const modalBackdrop = document.getElementById('modalBackdrop');
       const modalId = document.getElementById('confirmacionIdPedido');
@@ -337,7 +342,6 @@ const productosParaSheets = cart.map((l) => {
       document.body.classList.add('no-scroll');
     }
   }
-
   // ——— Eventos ———
   document.addEventListener('click', (e) => {
     const add = e.target.closest('[data-add]');
