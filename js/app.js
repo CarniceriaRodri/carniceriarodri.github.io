@@ -115,31 +115,50 @@
   }
 
   // ——— Panel del encargo ———
-  function renderCart() {
-    const total = cart.reduce((n, l) => n + l.uds, 0);
-    $$('[data-cart-count]').forEach((el) => (el.textContent = total));
-    $('.float-bar').hidden = total === 0;
-    $('#cartEmpty').hidden = cart.length > 0;
-    $('#checkout').hidden = cart.length === 0;
+function renderCart() {
+  const total = cart.reduce((n, l) => n + l.uds, 0);
+  $$('[data-cart-count]').forEach((el) => (el.textContent = total));
+  $('.float-bar').hidden = total === 0;
+  $('#cartEmpty').hidden = cart.length > 0;
+  $('#checkout').hidden = cart.length === 0;
 
-    $('#cartList').innerHTML = cart.map((l, i) => {
-      const p = PRODUCTOS.find((x) => x.id === l.id);
-      if (!p) return '';
-      return `
-        <li class="line">
-          <img src="${img(p.img, 120, 120)}" alt="" width="60" height="60" loading="lazy" decoding="async">
-          <div class="line-info">
-            <strong>${escapeHtml(p.nombre)}</strong>
-            <span>${escapeHtml(l.cantidad)} · ${escapeHtml(l.opcion)}</span>
-          </div>
-          <div class="stepper" aria-label="Unidades">
-            <button type="button" data-dec="${i}" aria-label="Quitar uno">−</button>
-            <b>${l.uds}</b>
-            <button type="button" data-inc="${i}" aria-label="Añadir uno">+</button>
-          </div>
-        </li>`;
-    }).join('');
+  let totalEuros = 0;
+
+  $('#cartList').innerHTML = cart.map((l, i) => {
+    const p = PRODUCTOS.find((x) => x.id === l.id);
+    if (!p) return '';
+    const { cantidadNum, unidadStr, precioNum, factorPeso } = calcularLinea(l, p);
+    const subtotal = Number((precioNum * cantidadNum * factorPeso).toFixed(2));
+    totalEuros += subtotal;
+    const precioTexto = precioNum > 0
+      ? `<span class="line-precio">${subtotal.toFixed(2).replace('.', ',')} €</span>`
+      : '';
+    return `
+      <li class="line">
+        <img src="${img(p.img, 120, 120)}" alt="" width="60" height="60" loading="lazy" decoding="async">
+        <div class="line-info">
+          <strong>${escapeHtml(p.nombre)}</strong>
+          <span>${escapeHtml(l.cantidad)} · ${escapeHtml(l.opcion)}</span>
+          ${precioTexto}
+        </div>
+        <div class="stepper" aria-label="Unidades">
+          <button type="button" data-dec="${i}" aria-label="Quitar uno">−</button>
+          <b>${l.uds}</b>
+          <button type="button" data-inc="${i}" aria-label="Añadir uno">+</button>
+        </div>
+      </li>`;
+  }).join('');
+
+  const totalEl = $('#cartTotal');
+  if (totalEl) {
+    if (totalEuros > 0) {
+      totalEl.hidden = false;
+      totalEl.innerHTML = `<span>Total orientativo</span><strong>${totalEuros.toFixed(2).replace('.', ',')} €</strong>`;
+    } else {
+      totalEl.hidden = true;
+    }
   }
+}
 
   function addToCart(id, cantidad, opcion) {
     const existing = cart.find((l) => l.id === id && l.cantidad === cantidad && l.opcion === opcion);
@@ -222,37 +241,28 @@
     const idMostrar = `rod-${dd}${mm}-${Math.floor(10 + Math.random() * 90)}`;
 
     let totalPedido = 0;
-    const productosParaSheets = cart.map((l) => {
-      const p = PRODUCTOS.find((x) => x.id === l.id);
-      const nombreProd = p ? p.nombre : l.id;
+const productosParaSheets = cart.map((l) => {
+  const p = PRODUCTOS.find((x) => x.id === l.id);
+  const nombreProd = p ? p.nombre : l.id;
+  const { cantidadNum, unidadStr, precioNum, factorPeso } = calcularLinea(l, p);
+  const subtotalNum = Number((precioNum * cantidadNum * factorPeso).toFixed(2));
+  totalPedido += subtotalNum;
+  return {
+    nombre: nombreProd,
+    cantidad: cantidadNum,
+    unidad: unidadStr,
+    precioUnitario: precioNum,
+    subtotal: subtotalNum
+  };
+});
 
-      const matchNum = l.cantidad.replace(',', '.').match(/[\d.]+/);
-      const cantidadNum = matchNum ? parseFloat(matchNum[0]) * l.uds : l.uds;
-      const unidadStr = l.cantidad.replace(/[\d.,]/g, '').trim() || 'ud';
-
-      let precioNum = 0;
-      if (p && p.precio) {
-        const matchPrecio = p.precio.replace(',', '.').match(/[\d.]+/);
-        if (matchPrecio) precioNum = parseFloat(matchPrecio[0]);
-      }
-
-      const subtotalNum = Number((precioNum * (matchNum ? parseFloat(matchNum[0]) : 1) * l.uds).toFixed(2));
-      totalPedido += subtotalNum;
-
-      return {
-        nombre: nombreProd,
-        cantidad: cantidadNum,
-        unidad: unidadStr,
-        precioUnitario: precioNum,
-        subtotal: subtotalNum
-      };
-    });
-
-    const lineas = cart.map((l) => {
-      const p = PRODUCTOS.find((x) => x.id === l.id);
-      const uds = l.uds > 1 ? `${l.uds} × ` : '';
-      return `• ${uds}*${p ? p.nombre : l.id}* — ${l.cantidad} (${l.opcion})`;
-    });
+   const lineas = cart.map((l) => {
+  const p = PRODUCTOS.find((x) => x.id === l.id);
+  const uds = l.uds > 1 ? `${l.uds} × ` : '';
+  const { cantidadNum, unidadStr, precioNum, factorPeso } = calcularLinea(l, p);
+  const sub = Number((precioNum * cantidadNum * factorPeso).toFixed(2));
+  return `• ${uds}*${p ? p.nombre : l.id}* — ${l.cantidad} (${l.opcion}) → ${sub.toFixed(2).replace('.', ',')} €`;
+});
 
     const submitBtn = checkoutForm.querySelector('button[type="submit"]');
     submitBtn.disabled = true;
