@@ -1,6 +1,8 @@
 (function () {
   const TELEFONO = '34677228251';
   const STORAGE_KEY = 'rodri-encargo';
+   // 👇 AQUÍ VA EL TOKEN (nueva línea)
+  const TOKEN_SEGURO = "rodri-2026-xK9mP2vLq8Rt";
   // ⚡ URL NUEVA ACTUALIZADA
   const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxEdMdBsmVPB2eIb2IVkzxhdkckcU6SZdK1qAtBlUEEJ7crK2U0264TJc6Si1RyHwdz/exec";
 
