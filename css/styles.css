@@ -392,3 +392,20 @@ textarea { resize: vertical; }
   }
   .card, .cat-head, .reveal { opacity: 1; transform: none; }
 }
+.line-precio {
+  font: 700 .9rem var(--display);
+  color: var(--blood);
+  margin-top: .15rem;
+}
+.cart-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1rem;
+  padding: .9rem 1rem;
+  background: var(--paper-2);
+  border-radius: 12px;
+  font-size: .9rem;
+}
+.cart-total span { color: var(--ink-2); font-weight: 500; }
+.cart-total strong { font: 700 1.15rem var(--display); color: var(--blood); }
