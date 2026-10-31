@@ -325,8 +325,8 @@
   const checkoutForm = $('#checkout');
   if (checkoutForm) checkoutForm.addEventListener('submit', enviar);
   $('#vaciar').addEventListener('click', () => { cart = []; save(); renderCart(); });
-  $$('#nombre, #hora').forEach((el) =>
-    el.addEventListener('input', () => $(`[data-err="${el.id}"]`).classList.remove('show')));
+ $$('#nombre, #telefono, #hora').forEach((el) =>
+  el.addEventListener('input', () => $(`[data-err="${el.id}"]`).classList.remove('show')));
 
   renderCatalogo();
   renderCart();
