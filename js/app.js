@@ -335,7 +335,7 @@ const productosParaSheets = cart.map((l) => {
       if (modal) modal.removeAttribute('hidden');
       if (modalBackdrop) modalBackdrop.removeAttribute('hidden');
       document.body.classList.add('no-scroll');
-      // 🔧 FIN NUEVO
+      
     }
   }
 
