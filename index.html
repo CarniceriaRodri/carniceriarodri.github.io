@@ -238,8 +238,11 @@
   </div>
 </aside>
 
-<!-- Modal de Confirmación (dialog nativo) -->
-<dialog id="modalConfirmacion" class="modal" aria-labelledby="modalTitulo">
+<!-- Backdrop del modal -->
+<div class="modal-backdrop" id="modalBackdrop" hidden></div>
+
+<!-- Modal (div en vez de dialog) -->
+<div id="modalConfirmacion" class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitulo" hidden>
   <div class="modal-inner">
     <div class="modal-icon" aria-hidden="true">✅</div>
     <h3 id="modalTitulo">¡Encargo registrado!</h3>
@@ -250,7 +253,7 @@
     </button>
     <button type="button" class="link-btn" id="btnCerrarModal">Cerrar</button>
   </div>
-</dialog>
+</div>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
