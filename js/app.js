@@ -303,22 +303,24 @@
     enlaceWhatsAppPendiente = `https://wa.me/${TELEFONO}?text=${encodeURIComponent(textoWA)}`;
 
     // 🔧 NUEVO: función para mostrar el modal SIEMPRE
-    function mostrarModal() {
-      submitBtn.disabled = false;
-      submitBtn.textContent = "Enviar encargo por WhatsApp";
-      closeCart();
-      const modal = document.getElementById('modalConfirmacion');
-      const modalBackdrop = document.getElementById('modalBackdrop');
-      const modalId = document.getElementById('confirmacionIdPedido');
-      if (modalId) modalId.textContent = idMostrar;
-      if (modal) modal.removeAttribute('hidden');
-       if (modal) {
-        modal.removeAttribute('hidden');
-        modal.style.display = 'block';  // 🔧 NUEVO: forzar display
-      }
-      if (modalBackdrop) modalBackdrop.removeAttribute('hidden');
-      document.body.classList.add('no-scroll');
-    }
+   function mostrarModal() {
+  submitBtn.disabled = false;
+  submitBtn.textContent = "Enviar encargo por WhatsApp";
+  closeCart();
+  const modal = document.getElementById('modalConfirmacion');
+  const modalBackdrop = document.getElementById('modalBackdrop');
+  const modalId = document.getElementById('confirmacionIdPedido');
+  if (modalId) modalId.textContent = idMostrar;
+  if (modal) {
+    modal.removeAttribute('hidden');
+    modal.style.display = 'block';
+  }
+  if (modalBackdrop) {
+    modalBackdrop.removeAttribute('hidden');
+    modalBackdrop.style.display = 'block';
+  }
+  document.body.classList.add('no-scroll');
+}
 
     // 🔧 NUEVO: timeout de 8s + modal garantizado
     try {
@@ -345,7 +347,36 @@
     }
 
     // 🔧 NUEVO: el modal se muestra SIEMPRE, fuera del try/catch
-    mostrarModal();
+        // 🔧 NUEVO: forzar el modal directamente, sin depender de mostrarModal()
+    submitBtn.disabled = false;
+    submitBtn.textContent = "Enviar encargo por WhatsApp";
+    closeCart();
+    const modal = document.getElementById('modalConfirmacion');
+    const modalBackdrop = document.getElementById('modalBackdrop');
+    const modalId = document.getElementById('confirmacionIdPedido');
+    if (modalId) modalId.textContent = idMostrar;
+    if (modal) {
+      modal.removeAttribute('hidden');
+      modal.style.display = 'block';
+      modal.style.position = 'fixed';
+      modal.style.top = '50%';
+      modal.style.left = '50%';
+      modal.style.transform = 'translate(-50%, -50%)';
+      modal.style.zIndex = '9999';
+      modal.style.background = '#fff';
+      modal.style.padding = '2rem';
+      modal.style.borderRadius = '1rem';
+    }
+    if (modalBackdrop) {
+      modalBackdrop.removeAttribute('hidden');
+      modalBackdrop.style.display = 'block';
+      modalBackdrop.style.position = 'fixed';
+      modalBackdrop.style.inset = '0';
+      modalBackdrop.style.background = 'rgba(0,0,0,0.5)';
+      modalBackdrop.style.zIndex = '9998';
+    }
+    document.body.classList.add('no-scroll');
+  }
   }
 
   // ——— Eventos ———
