@@ -402,13 +402,24 @@ function calcularLinea(l, p) {
   }
 
   // Botón "Cerrar" del modal
-  const btnCerrarModal = document.getElementById('btnCerrarModal');
+   const btnCerrarModal = document.getElementById('btnCerrarModal');
   if (btnCerrarModal) {
-    btnCerrarModal.addEventListener('click', () => {
-      const modal = document.getElementById('modalConfirmacion');
-      if (modal && typeof modal.close === 'function') modal.close();
-    });
+    btnCerrarModal.addEventListener('click', cerrarModal);
   }
+
+  // ✅ Cerrar el modal al pulsar el backdrop
+  const modalBackdrop = document.getElementById('modalBackdrop');
+  if (modalBackdrop) {
+    modalBackdrop.addEventListener('click', cerrarModal);
+  }
+
+  // ✅ Cerrar el modal con Esc
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      cerrarModal();
+      closeCart();
+    }
+  });
 
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeCart(); });
   $('#buscar').addEventListener('input', filtrar);
