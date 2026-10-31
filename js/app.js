@@ -304,7 +304,7 @@ const productosParaSheets = cart.map((l) => {
 
     enlaceWhatsAppPendiente = `https://wa.me/${TELEFONO}?text=${encodeURIComponent(textoWA)}`;
 
-    try {
+     try {
       await fetch(APPS_SCRIPT_URL, {
         method: "POST",
         mode: "no-cors",
@@ -321,13 +321,13 @@ const productosParaSheets = cart.map((l) => {
       });
     } catch (error) {
       console.warn("Error background sheets:", error);
-       } finally {
+    } finally {
       submitBtn.disabled = false;
       submitBtn.textContent = "Enviar encargo por WhatsApp";
 
       closeCart();
 
-      // 🔧 NUEVO: mostrar el modal (es un <div>, no un <dialog>)
+      // Mostrar el modal (es un <div>, no un <dialog>)
       const modal = document.getElementById('modalConfirmacion');
       const modalBackdrop = document.getElementById('modalBackdrop');
       const modalId = document.getElementById('confirmacionIdPedido');
@@ -335,7 +335,6 @@ const productosParaSheets = cart.map((l) => {
       if (modal) modal.removeAttribute('hidden');
       if (modalBackdrop) modalBackdrop.removeAttribute('hidden');
       document.body.classList.add('no-scroll');
-      
     }
   }
 
