@@ -345,8 +345,22 @@ textarea { resize: vertical; }
 }
 .toast.show { opacity: 1; transform: translate(-50%, 0); }
 
-/* ——— Modal de confirmación ——— */
+/* ——— Modal de confirmación (compatible con todos los navegadores) ——— */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  background: rgba(0, 0, 0, .55);
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
+}
+
 .modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1000;
   border: none;
   border-radius: 1rem;
   padding: 2rem 1.5rem;
@@ -360,11 +374,7 @@ textarea { resize: vertical; }
   font-family: inherit;
   color: inherit;
 }
-.modal::backdrop {
-  background: rgba(0, 0, 0, .55);
-  -webkit-backdrop-filter: blur(2px);
-  backdrop-filter: blur(2px);
-}
+
 .modal-inner { display: grid; gap: .75rem; }
 .modal-icon { font-size: 3rem; line-height: 1; display: block; }
 .modal h3 {
