@@ -112,33 +112,76 @@
     sin.hidden = visibles > 0;
     $('[data-query]', sin).textContent = $('#buscar').value.trim();
   }
+// ✅ NUEVO: extrae cantidad, unidad y precio de una línea del carrito
+function calcularLinea(l, p) {
+  const matchNum = l.cantidad.replace(',', '.').match(/[\d.]+/);
+  const cantidadNum = matchNum ? parseFloat(matchNum[0]) * l.uds : l.uds;
+  const unidadStr = l.cantidad.replace(/[\d.,]/g, '').trim() || 'ud';
 
+  let precioNum = 0;
+  if (p && p.precio) {
+    const matchPrecio = p.precio.replace(',', '.').match(/[\d.]+/);
+    if (matchPrecio) precioNum = parseFloat(matchPrecio[0]);
+  }
+  return { cantidadNum, unidadStr, precioNum };
+}
   // ——— Panel del encargo ———
   function renderCart() {
-    const total = cart.reduce((n, l) => n + l.uds, 0);
-    $$('[data-cart-count]').forEach((el) => (el.textContent = total));
-    $('.float-bar').hidden = total === 0;
-    $('#cartEmpty').hidden = cart.length > 0;
-    $('#checkout').hidden = cart.length === 0;
+  const total = cart.reduce((n, l) => n + l.uds, 0);
+  $$('[data-cart-count]').forEach((el) => (el.textContent = total));
+  $('.float-bar').hidden = total === 0;
+  $('#cartEmpty').hidden = cart.length > 0;
+  $('#checkout').hidden = cart.length === 0;
 
-    $('#cartList').innerHTML = cart.map((l, i) => {
-      const p = PRODUCTOS.find((x) => x.id === l.id);
-      if (!p) return '';
-      return `
-        <li class="line">
-          <img src="${img(p.img, 120, 120)}" alt="" width="60" height="60" loading="lazy" decoding="async">
-          <div class="line-info">
-            <strong>${escapeHtml(p.nombre)}</strong>
-            <span>${escapeHtml(l.cantidad)} · ${escapeHtml(l.opcion)}</span>
-          </div>
-          <div class="stepper" aria-label="Unidades">
-            <button type="button" data-dec="${i}" aria-label="Quitar uno">−</button>
-            <b>${l.uds}</b>
-            <button type="button" data-inc="${i}" aria-label="Añadir uno">+</button>
-          </div>
-        </li>`;
-    }).join('');
+  // ✅ NUEVO: calcular el total en euros de la cesta
+  let totalEuros = 0;
+
+  $('#cartList').innerHTML = cart.map((l, i) => {
+    const p = PRODUCTOS.find((x) => x.id === l.id);
+    if (!p) return '';
+
+    // ✅ NUEVO: calcular el subtotal de esta línea
+    const { cantidadNum, unidadStr, precioNum } = calcularLinea(l, p);
+    let cantidadParaPrecio = cantidadNum;
+    if (/^gr$/i.test(unidadStr)) cantidadParaPrecio = cantidadNum / 1000;
+    const subtotal = Number((precioNum * cantidadParaPrecio).toFixed(2));
+    totalEuros += subtotal;
+
+    // ✅ NUEVO: texto de precio (si el producto tiene precio)
+    const precioTexto = precioNum > 0
+      ? `<span class="line-precio">${subtotal.toFixed(2).replace('.', ',')} €</span>`
+      : '';
+
+    return `
+      <li class="line">
+        <img src="${img(p.img, 120, 120)}" alt="" width="60" height="60" loading="lazy" decoding="async">
+        <div class="line-info">
+          <strong>${escapeHtml(p.nombre)}</strong>
+          <span>${escapeHtml(l.cantidad)} · ${escapeHtml(l.opcion)}</span>
+          ${precioTexto}
+        </div>
+        <div class="stepper" aria-label="Unidades">
+          <button type="button" data-dec="${i}" aria-label="Quitar uno">−</button>
+          <b>${l.uds}</b>
+          <button type="button" data-inc="${i}" aria-label="Añadir uno">+</button>
+        </div>
+      </li>`;
+  }).join('');
+
+  // ✅ NUEVO: pintar el total en euros debajo de la lista
+  const totalEl = $('#cartTotal');
+  if (totalEl) {
+    if (totalEuros > 0) {
+      totalEl.hidden = false;
+      totalEl.innerHTML = `
+        <span>Total orientativo</span>
+        <strong>${totalEuros.toFixed(2).replace('.', ',')} €</strong>
+      `;
+    } else {
+      totalEl.hidden = true;
+    }
   }
+}
 
   function addToCart(id, cantidad, opcion) {
     const existing = cart.find((l) => l.id === id && l.cantidad === cantidad && l.opcion === opcion);
@@ -221,31 +264,26 @@
     const idMostrar = `rod-${dd}${mm}-${Math.floor(10 + Math.random() * 90)}`;
 
     let totalPedido = 0;
-    const productosParaSheets = cart.map((l) => {
-      const p = PRODUCTOS.find((x) => x.id === l.id);
-      const nombreProd = p ? p.nombre : l.id;
+   const productosParaSheets = cart.map((l) => {
+  const p = PRODUCTOS.find((x) => x.id === l.id);
+  const nombreProd = p ? p.nombre : l.id;
 
-      const matchNum = l.cantidad.replace(',', '.').match(/[\d.]+/);
-      const cantidadNum = matchNum ? parseFloat(matchNum[0]) * l.uds : l.uds;
-      const unidadStr = l.cantidad.replace(/[\d.,]/g, '').trim() || 'ud';
+  // ✅ Usa el helper
+  const { cantidadNum, unidadStr, precioNum } = calcularLinea(l, p);
+  let cantidadParaPrecio = cantidadNum;
+  if (/^gr$/i.test(unidadStr)) cantidadParaPrecio = cantidadNum / 1000;
 
-      let precioNum = 0;
-      if (p && p.precio) {
-        const matchPrecio = p.precio.replace(',', '.').match(/[\d.]+/);
-        if (matchPrecio) precioNum = parseFloat(matchPrecio[0]);
-      }
+  const subtotalNum = Number((precioNum * cantidadParaPrecio).toFixed(2));
+  totalPedido += subtotalNum;
 
-      const subtotalNum = Number((precioNum * (matchNum ? parseFloat(matchNum[0]) : 1) * l.uds).toFixed(2));
-      totalPedido += subtotalNum;
-
-      return {
-        nombre: nombreProd,
-        cantidad: cantidadNum,
-        unidad: unidadStr,
-        precioUnitario: precioNum,
-        subtotal: subtotalNum
-      };
-    });
+  return {
+    nombre: nombreProd,
+    cantidad: cantidadNum,
+    unidad: unidadStr,
+    precioUnitario: precioNum,
+    subtotal: subtotalNum
+  };
+});
 
     const lineas = cart.map((l) => {
       const p = PRODUCTOS.find((x) => x.id === l.id);
