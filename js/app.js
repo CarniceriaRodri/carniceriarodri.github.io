@@ -95,7 +95,8 @@
   // ——— Filtros: categorías y búsqueda ———
   function filtrar() {
     const q = normalize($('#buscar').value.trim());
-    const activa = $('.chip.is-active')?.dataset.chip || 'todo';
+    const chipActivo = $('.chip.is-active');
+    const activa = (chipActivo && chipActivo.dataset.chip) || 'todo';
     let visibles = 0;
     $$('.cat').forEach((sec) => {
       const catOk = activa === 'todo' || sec.dataset.cat === activa;
@@ -153,6 +154,7 @@
   const drawer = $('#drawer');
   const backdrop = $('.drawer-backdrop');
   const cartBtn = $('.cart-btn');
+  const checkoutForm = $('#checkout');
 
   function openCart() {
     backdrop.hidden = false;
@@ -203,7 +205,6 @@
     $('[data-err="telefono"]').classList.toggle('show', !telefono);
     $('[data-err="hora"]').classList.toggle('show', !hora);
 
-    // ✅ CORREGIDO: también valida el teléfono
     if (!nombre || !telefono || !hora) return;
 
     // Validación básica del teléfono (mínimo 9 dígitos)
@@ -296,7 +297,7 @@
 
       closeCart();
 
-      // ✅ CORREGIDO: una sola declaración de modal
+      // ✅ Una sola declaración de modal, compatible con todos los navegadores
       const modal = document.getElementById('modalConfirmacion');
       if (modal && typeof modal.showModal === 'function') {
         const modalId = document.getElementById('confirmacionIdPedido');
@@ -330,7 +331,8 @@
     const inc = e.target.closest('[data-inc]');
     const dec = e.target.closest('[data-dec]');
     if (inc || dec) {
-      const i = Number((inc || dec).dataset.inc ?? (inc || dec).dataset.dec);
+      const el = inc || dec;
+      const i = Number(el.dataset.inc != null ? el.dataset.inc : el.dataset.dec);
       cart[i].uds += inc ? 1 : -1;
       if (cart[i].uds <= 0) cart.splice(i, 1);
       save(); renderCart();
@@ -364,7 +366,6 @@
 
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeCart(); });
   $('#buscar').addEventListener('input', filtrar);
-  const checkoutForm = $('#checkout');
   if (checkoutForm) checkoutForm.addEventListener('submit', enviar);
   $('#vaciar').addEventListener('click', () => { cart = []; save(); renderCart(); });
 
