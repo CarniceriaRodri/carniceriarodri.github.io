@@ -82,7 +82,7 @@
             </label>
           </div>
           <button type="button" class="btn btn-add" data-add>
-            <span class="plus" aria-hidden="true">+</span> Añadir al encargo
+            <span class="plus" aria-hidden="true">+</span> Añadir a la cesta
           </button>
         </div>
       </article>`;
