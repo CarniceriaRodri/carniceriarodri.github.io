@@ -1,6 +1,7 @@
 (function () {
   const TELEFONO = '34677228251';
   const STORAGE_KEY = 'rodri-encargo';
+  // ⚡ URL NUEVA ACTUALIZADA
   const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxEdMdBsmVPB2eIb2IVkzxhdkckcU6SZdK1qAtBlUEEJ7crK2U0264TJc6Si1RyHwdz/exec";
 
   const $ = (sel, root = document) => root.querySelector(sel);
@@ -171,26 +172,18 @@
   async function enviar(e) {
     e.preventDefault();
     const nombre = $('#nombre').value.trim();
-    const telefonoEl = $('#telefono');
-    const telefono = telefonoEl ? telefonoEl.value.trim() : '';
     const hora = $('#hora').value;
     const dia = $('#dia').value;
     const notas = $('#observaciones').value.trim();
 
     $('[data-err="nombre"]').classList.toggle('show', !nombre);
-    if ($('[data-err="telefono"]')) {
-      $('[data-err="telefono"]').classList.toggle('show', !telefono);
-    }
     $('[data-err="hora"]').classList.toggle('show', !hora);
+    if (!nombre || !hora) return;
 
-    if (!nombre || !telefono || !hora) return;
-
-    // Generación de ID personalizado: rod-3010-[DDMM]-[RAMDOM]
-    const tienda = '3010';
     const hoy = new Date();
     const dd = String(hoy.getDate()).padStart(2, '0');
     const mm = String(hoy.getMonth() + 1).padStart(2, '0');
-    const idMostrar = `rod-${tienda}-${dd}${mm}-${Math.floor(10 + Math.random() * 90)}`;
+    const idMostrar = `rod-${dd}${mm}-${Math.floor(10 + Math.random() * 90)}`;
 
     let totalPedido = 0;
     const productosParaSheets = cart.map((l) => {
@@ -210,6 +203,7 @@
       const subtotalNum = Number((precioNum * (matchNum ? parseFloat(matchNum[0]) : 1) * l.uds).toFixed(2));
       totalPedido += subtotalNum;
 
+      // ⚙️ Nombres ajustados exactamente a lo que espera Apps Script
       return {
         nombre: nombreProd,
         cantidad: cantidadNum,
@@ -233,7 +227,6 @@
       '*🥩 NUEVO ENCARGO - CARNICERÍA RODRI*',
       `*ID Referencia:* ${idMostrar}`,
       `*Cliente:* ${nombre}`,
-      `*Teléfono:* ${telefono}`,
       `*Recogida:* ${dia} a las ${hora}`,
       notas ? `*Notas:* ${notas}` : null,
       '',
@@ -246,6 +239,7 @@
     enlaceWhatsAppPendiente = `https://wa.me/${TELEFONO}?text=${encodeURIComponent(textoWA)}`;
 
     try {
+      // 🚀 Envío del Payload adaptado a las columnas de tu hoja de cálculo
       await fetch(APPS_SCRIPT_URL, {
         method: "POST",
         mode: "no-cors",
@@ -253,7 +247,7 @@
         body: JSON.stringify({
           codigoPedido: idMostrar,
           cliente: nombre,
-          telefono: telefono,
+          telefono: '', // Puedes mapear un input de teléfono si lo añades al HTML
           total: Number(totalPedido.toFixed(2)),
           estado: 'Pendiente',
           productos: productosParaSheets
@@ -328,13 +322,8 @@
   const checkoutForm = $('#checkout');
   if (checkoutForm) checkoutForm.addEventListener('submit', enviar);
   $('#vaciar').addEventListener('click', () => { cart = []; save(); renderCart(); });
-
-  $$('#nombre, #telefono, #hora').forEach((el) => {
-    el.addEventListener('input', () => {
-      const err = $(`[data-err="${el.id}"]`);
-      if (err) err.classList.remove('show');
-    });
-  });
+  $$('#nombre, #hora').forEach((el) =>
+    el.addEventListener('input', () => $(`[data-err="${el.id}"]`).classList.remove('show')));
 
   renderCatalogo();
   renderCart();
