@@ -381,16 +381,24 @@ function calcularLinea(l, p) {
   });
 
   // Botón WhatsApp del modal
-  const btnWhatsAppModal = document.getElementById('btnEnviarWhatsApp');
+   const btnWhatsAppModal = document.getElementById('btnEnviarWhatsApp');
   if (btnWhatsAppModal) {
     btnWhatsAppModal.addEventListener('click', () => {
       if (enlaceWhatsAppPendiente) {
         window.open(enlaceWhatsAppPendiente, '_blank', 'noopener,noreferrer');
       }
-      const modal = document.getElementById('modalConfirmacion');
-      if (modal && typeof modal.close === 'function') modal.close();
+      cerrarModal();
       cart = []; save(); renderCart();
     });
+  }
+
+  // ✅ Función reutilizable para cerrar el modal
+  function cerrarModal() {
+    const modal = document.getElementById('modalConfirmacion');
+    const modalBackdrop = document.getElementById('modalBackdrop');
+    if (modal) modal.setAttribute('hidden', '');
+    if (modalBackdrop) modalBackdrop.setAttribute('hidden', '');
+    document.body.classList.remove('no-scroll');
   }
 
   // Botón "Cerrar" del modal
