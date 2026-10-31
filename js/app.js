@@ -264,12 +264,12 @@
 
       closeCart();
       const modal = document.getElementById('modalConfirmacion');
-      if (modal) {
-        const modalId = document.getElementById('confirmacionIdPedido');
-        if (modalId) modalId.textContent = idMostrar;
-        modal.removeAttribute('hidden');
-        backdrop.hidden = false;
-      }
+      const modal = document.getElementById('modalConfirmacion');
+if (modal && typeof modal.showModal === 'function') {
+  const modalId = document.getElementById('confirmacionIdPedido');
+  if (modalId) modalId.textContent = idMostrar;
+  modal.showModal();
+}
     }
   }
 
