@@ -243,16 +243,17 @@
 
     enlaceWhatsAppPendiente = `https://wa.me/${TELEFONO}?text=${encodeURIComponent(textoWA)}`;
 
-    try {
+      try {
       // 🚀 Envío del Payload adaptado a las columnas de tu hoja de cálculo
       await fetch(APPS_SCRIPT_URL, {
         method: "POST",
         mode: "no-cors",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          token: TOKEN_SEGURO,   // 👈 AQUÍ VA EL TOKEN (nueva línea)
           codigoPedido: idMostrar,
           cliente: nombre,
-           telefono: telefono,          // ← NUEVO (ya no vacío)
+          telefono: telefono,    // 👈 y aquí el teléfono real (ya no '')
           total: Number(totalPedido.toFixed(2)),
           estado: 'Pendiente',
           productos: productosParaSheets
