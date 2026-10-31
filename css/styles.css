@@ -1,3 +1,8 @@
+/* =========================================================
+   Carnicería Rodri & Charcutería — styles.css
+   ========================================================= */
+
+/* ——— Variables ——— */
 :root {
   --paper: #f3ebdd;
   --paper-2: #e9dfcc;
@@ -15,32 +20,8 @@
   --body: 'Archivo', system-ui, sans-serif;
   --topbar: 68px;
 }
-.modal {
-  border: none;
-  border-radius: 1rem;
-  padding: 2rem 1.5rem;
-  max-width: 420px;
-  width: calc(100% - 2rem);
-  background: #fff;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, .25);
-  text-align: center;
-  font-family: inherit;
-  color: inherit;
-}
-.modal::backdrop {
-  background: rgba(0, 0, 0, .55);
-  backdrop-filter: blur(2px);
-}
-.modal-inner { display: grid; gap: .75rem; }
-.modal-icon { font-size: 3rem; line-height: 1; }
-.modal h3 {
-  font-family: var(--font-serif, Georgia, serif);
-  font-size: 1.4rem;
-  margin: 0;
-}
-.modal-hint { font-size: .9rem; color: #666; margin: 0 0 .5rem; }
-.modal #confirmacionIdPedido { color: var(--primary, #b91c1c); }
 
+/* ——— Reset ——— */
 *, *::before, *::after { box-sizing: border-box; }
 html { scroll-behavior: smooth; scroll-padding-top: calc(var(--topbar) + 60px); }
 body {
@@ -58,10 +39,22 @@ p { margin: 0; }
 a { color: inherit; }
 [hidden] { display: none !important; }
 
+/* ——— Textura de grano ——— */
 .grain {
   position: fixed; inset: 0; pointer-events: none; z-index: 1; opacity: .07; mix-blend-mode: multiply;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
+
+/* ——— Accesibilidad ——— */
+:focus-visible { outline: 2.5px solid var(--brass); outline-offset: 3px; }
+
+.skip-link {
+  position: fixed; left: 1rem; top: .5rem; z-index: 100;
+  transform: translateY(-180%); padding: .75rem 1rem;
+  background: var(--paper); color: var(--ink); border: 2px solid var(--brass);
+  border-radius: 10px; font-weight: 700; text-decoration: none;
+}
+.skip-link:focus { transform: translateY(0); }
 
 /* ——— Botones ——— */
 .btn {
@@ -79,9 +72,12 @@ a { color: inherit; }
 .btn-whatsapp { background: var(--wa); color: #fff; }
 .btn-whatsapp:hover { background: var(--wa-2); }
 .btn-block { width: 100%; padding: 1.1rem; font-size: 1rem; }
-.link-btn { background: none; border: 0; color: var(--muted); font: 500 .85rem var(--body); text-decoration: underline; cursor: pointer; margin: .8rem auto 0; display: block; }
+.link-btn {
+  background: none; border: 0; color: var(--muted);
+  font: 500 .85rem var(--body); text-decoration: underline; cursor: pointer;
+  margin: .8rem auto 0; display: block;
+}
 .link-btn:hover { color: var(--blood); }
-:focus-visible { outline: 2.5px solid var(--brass); outline-offset: 3px; }
 
 /* ——— Cabecera ——— */
 .topbar {
@@ -98,6 +94,7 @@ a { color: inherit; }
 .topnav { display: flex; gap: 1.6rem; margin-left: auto; font-size: .9rem; }
 .topnav a { text-decoration: none; opacity: .8; transition: opacity .2s; }
 .topnav a:hover { opacity: 1; }
+
 .cart-btn {
   display: inline-flex; align-items: center; gap: .5rem; cursor: pointer;
   background: var(--paper); color: var(--ink); border: 0; border-radius: 999px;
@@ -162,6 +159,7 @@ a { color: inherit; }
 .catalogo { position: relative; z-index: 2; max-width: 1180px; margin: 0 auto; padding: 2rem clamp(1rem, 4vw, 2.5rem) 5rem; }
 .catalogo-head { display: flex; align-items: end; justify-content: space-between; gap: 1.5rem; flex-wrap: wrap; margin-bottom: 1.4rem; }
 .catalogo-head h2 { font-size: clamp(2.1rem, 4.5vw, 3.4rem); font-weight: 900; letter-spacing: -.02em; }
+
 .search {
   display: flex; align-items: center; gap: .6rem; flex: 0 1 380px;
   background: #fffaf2; border: 1.5px solid var(--line); border-radius: 999px; padding: .7rem 1.1rem;
@@ -211,9 +209,23 @@ a { color: inherit; }
 .card-body { display: flex; flex-direction: column; gap: .7rem; padding: 1.1rem 1.1rem 1.2rem; flex: 1; }
 .card-body h4 { font-size: 1.32rem; font-weight: 700; }
 .card-desc { color: var(--muted); font-size: .9rem; }
+
+/* ✅ CORREGIDO: usa variables en vez de valores hardcodeados */
+.card-precio {
+  font: 700 1rem var(--display);
+  color: var(--blood);
+  margin: .25rem 0 .5rem;
+}
+.card-precio small {
+  font-weight: 400;
+  font-size: .7em;
+  opacity: .6;
+}
+
 .card-fields { display: grid; gap: .6rem; margin-top: auto; padding-top: .3rem; }
 .card-fields label { display: grid; gap: .25rem; }
 .card-fields span { font-size: .7rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-2); }
+
 select, input, textarea {
   font: 500 .92rem var(--body); color: var(--ink); width: 100%;
   background: #fff; border: 1.5px solid var(--line); border-radius: 10px; padding: .65rem .75rem;
@@ -225,6 +237,7 @@ select {
 }
 select:focus, input:focus, textarea:focus { outline: none; border-color: var(--blood); box-shadow: 0 0 0 3px rgba(125, 29, 24, .12); }
 textarea { resize: vertical; }
+
 .btn-add { background: var(--ink); color: var(--paper); border-radius: 10px; padding: .85rem; margin-top: .2rem; }
 .btn-add:hover { background: var(--blood); }
 .btn-add .plus { font-size: 1.2rem; line-height: 0; transition: transform .3s; }
@@ -306,6 +319,37 @@ textarea { resize: vertical; }
 }
 .toast.show { opacity: 1; transform: translate(-50%, 0); }
 
+/* ——— Modal de confirmación ——— */
+.modal {
+  border: none;
+  border-radius: 1rem;
+  padding: 2rem 1.5rem;
+  max-width: 420px;
+  width: calc(100% - 2rem);
+  max-height: calc(100vh - 2rem);
+  overflow-y: auto;
+  background: #fff;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, .25);
+  text-align: center;
+  font-family: inherit;
+  color: inherit;
+}
+.modal::backdrop {
+  background: rgba(0, 0, 0, .55);
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
+}
+.modal-inner { display: grid; gap: .75rem; }
+.modal-icon { font-size: 3rem; line-height: 1; display: block; }
+.modal h3 {
+  font-family: var(--display, Georgia, serif);
+  font-size: 1.4rem;
+  margin: 0;
+}
+.modal-hint { font-size: .9rem; color: var(--muted); margin: 0 0 .5rem; }
+.modal #confirmacionIdPedido { color: var(--blood, #b91c1c); }
+.modal .link-btn { margin-top: .4rem; }
+
 /* ——— Responsive ——— */
 @media (min-width: 901px) {
   .float-bar { display: none !important; }
@@ -328,18 +372,12 @@ textarea { resize: vertical; }
   .field-row { grid-template-columns: 1fr; }
 }
 
+/* ——— Reducción de movimiento ——— */
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
   .card, .cat-head, .reveal { opacity: 1; transform: none; }
 }
-.card-precio{font-family:Fraunces,serif;font-weight:700;color:#8b1a1a;margin:.25rem 0 .5rem}.card-precio small{font-weight:400;font-size:.7em;opacity:.6}
-
-
-/* Accesibilidad: enlace visible al navegar con teclado */
-.skip-link {
-  position: fixed; left: 1rem; top: .5rem; z-index: 100;
-  transform: translateY(-180%); padding: .75rem 1rem;
-  background: var(--paper); color: var(--ink); border: 2px solid var(--brass);
-  border-radius: 10px; font-weight: 700; text-decoration: none;
-}
-.skip-link:focus { transform: translateY(0); }
