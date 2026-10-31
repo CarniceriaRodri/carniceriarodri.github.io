@@ -115,7 +115,7 @@
   }
 
   // ——— Panel del encargo ———
-    function calcularLinea(l, p) {
+  function calcularLinea(l, p) {
     const matchNum = l.cantidad.replace(',', '.').match(/[\d.]+/);
     const cantidadNum = matchNum ? parseFloat(matchNum[0]) * l.uds : l.uds;
     let unidadStr = l.cantidad.replace(/[\d.,]/g, '').trim().toLowerCase();
@@ -131,6 +131,8 @@
     const factorPeso = unidadStr === 'gr' ? 0.001 : 1;
     return { cantidadNum, unidadStr, precioNum, factorPeso };
   }
+
+
 function renderCart() {
   const total = cart.reduce((n, l) => n + l.uds, 0);
   $$('[data-cart-count]').forEach((el) => (el.textContent = total));
