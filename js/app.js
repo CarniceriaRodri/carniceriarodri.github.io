@@ -115,6 +115,22 @@
   }
 
   // ——— Panel del encargo ———
+    function calcularLinea(l, p) {
+    const matchNum = l.cantidad.replace(',', '.').match(/[\d.]+/);
+    const cantidadNum = matchNum ? parseFloat(matchNum[0]) * l.uds : l.uds;
+    let unidadStr = l.cantidad.replace(/[\d.,]/g, '').trim().toLowerCase();
+    if (/pieza|unidad|medall|tira|lata|botella|pack|garrafa|caja|cu[ñn]a/.test(unidadStr)) unidadStr = 'ud';
+    else if (/^g|gr|grs|gramos/.test(unidadStr)) unidadStr = 'gr';
+    else if (/^kg|kilo/.test(unidadStr)) unidadStr = 'kg';
+    else unidadStr = 'ud';
+    let precioNum = 0;
+    if (p && p.precio) {
+      const m = p.precio.replace(',', '.').match(/[\d.]+/);
+      if (m) precioNum = parseFloat(m[0]);
+    }
+    const factorPeso = unidadStr === 'gr' ? 0.001 : 1;
+    return { cantidadNum, unidadStr, precioNum, factorPeso };
+  }
 function renderCart() {
   const total = cart.reduce((n, l) => n + l.uds, 0);
   $$('[data-cart-count]').forEach((el) => (el.textContent = total));
