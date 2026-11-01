@@ -338,23 +338,25 @@
     enlaceWhatsAppPendiente = `https://wa.me/${TELEFONO}?text=${encodeURIComponent(textoWA)}`;
 
     // Timeout de 8s para el fetch
+       // Timeout de 8s para el fetch
     try {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 8000);
       await fetch(APPS_SCRIPT_URL, {
-  method: "POST",
-  headers: { "Content-Type": "application/json" }, // 👈 Sin mode: "no-cors"
-  body: JSON.stringify({
-    token: TOKEN_SEGURO,
-    codigoPedido: idMostrar,
-    cliente: nombre,
-    telefono: telefono,
-    total: Number(totalPedido.toFixed(2)),
-    estado: 'Pendiente',
-    productos: productosParaSheets
-  }),
-  signal: controller.signal
-});
+        method: "POST",
+        // 👇 QUITAMOS EL mode: "no-cors" Y CAMBIAMOS EL CONTENT-TYPE
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify({
+          token: TOKEN_SEGURO,
+          codigoPedido: idMostrar,
+          cliente: nombre,
+          telefono: telefono,
+          total: Number(totalPedido.toFixed(2)),
+          estado: 'Pendiente',
+          productos: productosParaSheets
+        }),
+        signal: controller.signal
+      });
       clearTimeout(timeoutId);
     } catch (error) {
       console.warn("Error background sheets:", error);
