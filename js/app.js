@@ -342,19 +342,19 @@
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 8000);
       await fetch(APPS_SCRIPT_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          token: TOKEN_SEGURO,
-          codigoPedido: idMostrar,
-          cliente: nombre,
-          telefono: telefono,
-          total: Number(totalPedido.toFixed(2)),
-          estado: 'Pendiente',
-          productos: productosParaSheets
-        }),
-        signal: controller.signal
-      });
+  method: "POST",
+  headers: { "Content-Type": "application/json" }, // 👈 Sin mode: "no-cors"
+  body: JSON.stringify({
+    token: TOKEN_SEGURO,
+    codigoPedido: idMostrar,
+    cliente: nombre,
+    telefono: telefono,
+    total: Number(totalPedido.toFixed(2)),
+    estado: 'Pendiente',
+    productos: productosParaSheets
+  }),
+  signal: controller.signal
+});
       clearTimeout(timeoutId);
     } catch (error) {
       console.warn("Error background sheets:", error);
