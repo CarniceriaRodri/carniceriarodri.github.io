@@ -57,36 +57,38 @@
     }).join('');
   }
 
-  function card(p) {
-    const keywords = [p.nombre, p.desc, ...p.opciones].join(' ').toLowerCase();
-    return `
-      <article class="card" data-id="${escapeHtml(p.id)}" data-search="${escapeHtml(normalize(keywords))}">
-        <div class="card-img">
-          <img src="${img(p.img, 600, 450)}" srcset="${img(p.img, 400, 300)} 400w, ${img(p.img, 800, 600)} 800w"
-               sizes="(max-width: 640px) 100vw, 360px" alt="${escapeHtml(p.nombre)}" loading="lazy" width="600" height="450" decoding="async"
-               onerror="this.onerror=null;this.removeAttribute('srcset');this.src='img/productos/${escapeHtml(p.img)}.jpg'">
-          ${p.etiqueta ? `<span class="tag">${escapeHtml(p.etiqueta)}</span>` : ''}
+ function card(p) {
+  const keywords = [p.nombre, p.desc, ...p.opciones].join(' ').toLowerCase();
+  return `
+    <article class="card" data-id="${escapeHtml(p.id)}" data-search="${escapeHtml(normalize(keywords))}">
+      <div class="card-img">
+        <img src="${img(p.img, 600, 450)}" srcset="${img(p.img, 400, 300)} 400w, ${img(p.img, 800, 600)} 800w"
+             sizes="(max-width: 640px) 100vw, 360px" alt="${escapeHtml(p.nombre)}" loading="lazy" width="600" height="450" decoding="async"
+             onerror="this.onerror=null;this.removeAttribute('srcset');this.src='img/productos/${escapeHtml(p.img)}.jpg'">
+        ${p.etiqueta ? `<span class="tag">${escapeHtml(p.etiqueta)}</span>` : ''}
+      </div>
+      <div class="card-body">
+        <h4>${escapeHtml(p.nombre)}</h4>
+        <p class="card-desc">${escapeHtml(p.desc)}</p>
+        <!-- ✅ NUEVO: Precio dinámico -->
+        <p class="card-precio" id="precio-${escapeHtml(p.id)}">${p.precio ? escapeHtml(p.precio) : ''}</p>
+        
+        <div class="card-fields">
+          <label>
+            <span>Cantidad</span>
+            <select data-field="cantidad">${p.cantidades.map((o) => `<option>${escapeHtml(o)}</option>`).join('')}</select>
+          </label>
+          <label>
+            <span>${escapeHtml(p.opcionLabel)}</span>
+            <select data-field="opcion">${p.opciones.map((o) => `<option>${escapeHtml(o)}</option>`).join('')}</select>
+          </label>
         </div>
-        <div class="card-body">
-          <h4>${escapeHtml(p.nombre)}</h4>
-          <p class="card-desc">${escapeHtml(p.desc)}</p>
-          ${p.precio ? `<p class="card-precio">${escapeHtml(p.precio)} <small>orientativo</small></p>` : ''}
-          <div class="card-fields">
-            <label>
-              <span>Cantidad</span>
-              <select data-field="cantidad">${p.cantidades.map((o) => `<option>${escapeHtml(o)}</option>`).join('')}</select>
-            </label>
-            <label>
-              <span>${escapeHtml(p.opcionLabel)}</span>
-              <select data-field="opcion">${p.opciones.map((o) => `<option>${escapeHtml(o)}</option>`).join('')}</select>
-            </label>
-          </div>
-          <button type="button" class="btn btn-add" data-add>
-            <span class="plus" aria-hidden="true">+</span> Añadir al encargo
-          </button>
-        </div>
-      </article>`;
-  }
+        <button type="button" class="btn btn-add" data-add>
+          <span class="plus" aria-hidden="true">+</span> Añadir a la cesta
+        </button>
+      </div>
+    </article>`;
+}
 
   function normalize(s) {
     return s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
