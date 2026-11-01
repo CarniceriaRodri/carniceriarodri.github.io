@@ -6,8 +6,8 @@
   const TOKEN_SEGURO = "xr1st1na_R0dr1-roldayan-xW590ÑoqR339";
 
   // ⚡ URL del Apps Script
-  const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyNmtxmtb8NqIwya_gExa-xTRs6ejs4B4QNVuhClaDPKDXpAKdzUpM22DubJ5wYQTW0/exec";
-                         
+  const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwvcM-Ta_XHbzRnAU_6FxS6h7gwafmGx0VbEKygUCdlS8EsrfjFaftCpUaE0flj4EZX/exec";
+
   const $ = (sel, root = document) => root.querySelector(sel);
   const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
 
@@ -82,7 +82,7 @@
             </label>
           </div>
           <button type="button" class="btn btn-add" data-add>
-            <span class="plus" aria-hidden="true">+</span> Añadir a la cesta
+            <span class="plus" aria-hidden="true">+</span> Añadir al encargo
           </button>
         </div>
       </article>`;
@@ -233,7 +233,7 @@
     const submitBtn = checkoutForm ? checkoutForm.querySelector('button[type="submit"]') : null;
     if (submitBtn) {
       submitBtn.disabled = false;
-      submitBtn.textContent = "Enviar pedido por WhatsApp";
+      submitBtn.textContent = "Enviar encargo por WhatsApp";
     }
     closeCart();
     const modal = document.getElementById('modalConfirmacion');
@@ -341,10 +341,10 @@
     try {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 8000);
-      
       await fetch(APPS_SCRIPT_URL, {
         method: "POST",
-        headers: { "Content-Type": "text/plain;charset=utf-8" }, // 👈 Evita el error CORS
+        mode: "no-cors",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           token: TOKEN_SEGURO,
           codigoPedido: idMostrar,
@@ -356,7 +356,6 @@
         }),
         signal: controller.signal
       });
-      
       clearTimeout(timeoutId);
     } catch (error) {
       console.warn("Error background sheets:", error);
