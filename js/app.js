@@ -337,11 +337,11 @@
     enlaceWhatsAppPendiente = `https://wa.me/${TELEFONO}?text=${encodeURIComponent(textoWA)}`;
 
     // Timeout de 8s para el fetch
-        try {
+           // Enviar a Google Sheets (SIN esperar la respuesta para evitar bloqueos de CORS)
+    try {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 8000);
       
-      // 👇 FÍJATE: Aquí NO está la palabra "await"
       fetch(APPS_SCRIPT_URL, {
         method: "POST",
         headers: { "Content-Type": "text/plain;charset=utf-8" },
@@ -356,6 +356,7 @@
         }),
         signal: controller.signal
       }).catch(function(err) {
+        // Si el navegador bloquea la redirección, no pasa nada, el pedido ya se envió
         console.log("Pedido enviado a Google (ignorando respuesta)");
       });
       
@@ -363,6 +364,9 @@
     } catch (error) {
       console.warn("Error background sheets:", error);
     }
+
+    // Mostrar el modal SIEMPRE
+    mostrarModal(idMostrar);
 
   // ——— Eventos ———
   document.addEventListener('click', (e) => {
