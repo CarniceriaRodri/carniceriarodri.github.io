@@ -6,7 +6,7 @@
   const TOKEN_SEGURO = "xr1st1na_R0dr1-roldayan-xW590ÑoqR339";
 
   // ⚡ URL del Apps Script
-  const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxHtNKjpvppoVLR6gI_CP_le0XWzuvcXGGb0isHyOF6PVy3Iz61B6sjrWPHQ1zSQ8rj/exec";
+  const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyNmtxmtb8NqIwya_gExa-xTRs6ejs4B4QNVuhClaDPKDXpAKdzUpM22DubJ5wYQTW0/exec";
                          
   const $ = (sel, root = document) => root.querySelector(sel);
   const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
