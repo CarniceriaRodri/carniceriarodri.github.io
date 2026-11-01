@@ -34,7 +34,18 @@
       : [];
   } catch { cart = []; }
   const save = () => localStorage.setItem(STORAGE_KEY, JSON.stringify(cart));
+// ✅ NUEVO: Escuchar cambios en los selectores para actualizar precios
+document.addEventListener('change', (e) => {
+  if (e.target.matches('[data-field="cantidad"]')) {
+    const card = e.target.closest('.card');
+    if (card) actualizarPrecioTarjeta(card);
+  }
+});
 
+// Al renderizar el catálogo por primera vez, calculamos el precio inicial
+setTimeout(() => {
+  document.querySelectorAll('.card').forEach(actualizarPrecioTarjeta);
+}, 100);
   // ——— Catálogo ———
   function renderCatalogo() {
     $('#chips').innerHTML =
