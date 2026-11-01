@@ -26,7 +26,7 @@
   <link rel="icon" href="img/logo.jpg">
 
   <meta property="og:title" content="Carnicería Rodri &amp; Charcutería">
-  <meta property="og:description" content="Cortado a tu gusto. Listo cuando llegues. Haz tu pedido por WhatsApp.">
+  <meta property="og:description" content="Cortado a tu gusto. Listo cuando llegues. Haz tu encargo por WhatsApp.">
   <meta property="og:image" content="img/hero.jpg">
   <meta property="og:type" content="website">
 
@@ -72,9 +72,9 @@
     <a href="#como-funciona">Cómo funciona</a>
     <a href="#contacto">Contacto</a>
   </nav>
-  <button class="cart-btn" type="button" data-open-cart aria-label="Ver cesta" aria-expanded="false">
+  <button class="cart-btn" type="button" data-open-cart aria-label="Ver mi encargo" aria-expanded="false">
     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2l2.4 10.2a2 2 0 0 0 2 1.6h7.7a2 2 0 0 0 1.9-1.4L21 8H6.2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="10" cy="20" r="1.4"/><circle cx="17" cy="20" r="1.4"/></svg>
-    <span>Mi pedido</span>
+    <span>Mi encargo</span>
     <b class="cart-count" data-cart-count>0</b>
   </button>
 </header>
@@ -90,7 +90,7 @@
       <h1 class="reveal" style="--d:.08s">Cortado a tu gusto.<br><em>Listo cuando llegues.</em></h1>
       <p class="hero-lead reveal" style="--d:.16s">Elige tus carnes, embutidos, refrescos y todo lo que necesites. Lo preparamos con mimo y lo recoges en tienda sin hacer cola.</p>
       <div class="hero-cta reveal" style="--d:.24s">
-        <a href="#catalogo" class="btn btn-primary">Hacer mi pedido</a>
+        <a href="#catalogo" class="btn btn-primary">Hacer mi encargo</a>
         <a href="https://wa.me/34677228251" class="btn btn-ghost" target="_blank" rel="noopener noreferrer">Escríbenos por WhatsApp</a>
       </div>
       <ul class="hero-facts reveal" style="--d:.32s">
@@ -140,7 +140,7 @@
 
     <div class="empty-search" id="sinResultados" hidden>
       <p class="empty-title">No encontramos "<span data-query></span>"</p>
-      <p>Prueba con otra palabra o pídelo en las notas del pedido: si lo tenemos en tienda, te lo preparamos.</p>
+      <p>Prueba con otra palabra o pídelo en las notas del encargo: si lo tenemos en tienda, te lo preparamos.</p>
     </div>
   </section>
 
@@ -166,14 +166,14 @@
 </footer>
 
 <button class="float-bar" type="button" data-open-cart hidden>
-  <span><b data-cart-count>0</b> productos en tu cesta</span>
+  <span><b data-cart-count>0</b> productos en tu encargo</span>
   <span class="float-cta">Ver y enviar →</span>
 </button>
 
 <div class="drawer-backdrop" data-close-cart hidden></div>
 <aside class="drawer" id="drawer" aria-label="Mi encargo" inert>
   <div class="drawer-head">
-    <h2>Mi pedido</h2>
+    <h2>Mi encargo</h2>
     <button type="button" class="icon-btn" data-close-cart aria-label="Cerrar panel del encargo">×</button>
   </div>
 
@@ -184,7 +184,7 @@
 
     <div class="cart-empty" id="cartEmpty">
       <div class="cart-empty-art" aria-hidden="true">🛒</div>
-      <p class="empty-title">Tu pedido está vacío</p>
+      <p class="empty-title">Tu encargo está vacío</p>
       <p>Añade cortes, embutidos o bebidas desde el mostrador y aparecerán aquí.</p>
       <button type="button" class="btn btn-primary" data-close-cart>Ver productos</button>
     </div>
@@ -213,7 +213,7 @@
       <label class="field">
         <span>Teléfono de contacto *</span>
         <input type="tel" id="telefono" placeholder="Ej: 677 22 82 51" autocomplete="tel" inputmode="tel" maxlength="20" required>
-        <small class="err" data-err="telefono">Indica un teléfono para informarte</small>
+        <small class="err" data-err="telefono">Indica un teléfono por si surge algún problema.</small>
       </label>
 
       <label class="field">
@@ -223,7 +223,7 @@
       </label>
       <button type="submit" class="btn btn-whatsapp btn-block">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12.05 0C5.5 0 .16 5.34.16 11.89c0 2.1.55 4.14 1.59 5.95L.06 24l6.3-1.65a11.9 11.9 0 0 0 5.69 1.45c6.56 0 11.9-5.34 11.9-11.9C23.94 5.34 18.6 0 12.05 0z"/></svg>
-        Enviar pedido por WhatsApp
+        Enviar encargo por WhatsApp
       </button>
       <button type="button" class="link-btn" id="vaciar">Vaciar encargo</button>
     </form>
@@ -237,7 +237,7 @@
 <div id="modalConfirmacion" class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitulo" hidden>
   <div class="modal-inner">
     <div class="modal-icon" aria-hidden="true">✅</div>
-    <h3 id="modalTitulo">¡Pedido registrado!</h3>
+    <h3 id="modalTitulo">¡Encargo registrado!</h3>
     <p>Tu código de referencia es: <strong id="confirmacionIdPedido"></strong></p>
     <p class="modal-hint">Para finalizar y enviar el detalle a nuestro WhatsApp, pulsa el botón de abajo.</p>
     <button type="button" class="btn btn-whatsapp btn-block" id="btnEnviarWhatsApp">
