@@ -7,7 +7,6 @@
 
   // ⚡ URL del Apps Script
   const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxwDra_gUpmquM0iD820Hq2B3VISwCC6AhVHgozmx4-YCZRnW1f8-9FyliN7Cx8JaHX/exec";
-
   const $ = (sel, root = document) => root.querySelector(sel);
   const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
 
@@ -338,13 +337,14 @@
     enlaceWhatsAppPendiente = `https://wa.me/${TELEFONO}?text=${encodeURIComponent(textoWA)}`;
 
     // Timeout de 8s para el fetch
-     try {
+        try {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 8000);
-      await fetch(APPS_SCRIPT_URL, {
+      
+      // 👇 FÍJATE: Aquí NO está la palabra "await"
+      fetch(APPS_SCRIPT_URL, {
         method: "POST",
-        mode: "no-cors",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
         body: JSON.stringify({
           token: TOKEN_SEGURO,
           codigoPedido: idMostrar,
@@ -355,7 +355,10 @@
           productos: productosParaSheets
         }),
         signal: controller.signal
+      }).catch(function(err) {
+        console.log("Pedido enviado a Google (ignorando respuesta)");
       });
+      
       clearTimeout(timeoutId);
     } catch (error) {
       console.warn("Error background sheets:", error);
