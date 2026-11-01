@@ -14,22 +14,8 @@ window.CATEGORIAS = [
   { id: 'despensa', nombre: 'Despensa y Barbacoa', lema: 'Lo que no puede faltar para cocinar o encender la brasa.' },
 ]
 
-// Cantidades predefinidas por peso y unidad
-const PESO = [
-  { texto: '250 gr', valor: 0.25, unidad: 'kg' },
-  { texto: '500 gr', valor: 0.5, unidad: 'kg' },
-  { texto: '750 gr', valor: 0.75, unidad: 'kg' },
-  { texto: '1 kg', valor: 1, unidad: 'kg' },
-  { texto: '1.5 kg', valor: 1.5, unidad: 'kg' },
-  { texto: '2 kg', valor: 2, unidad: 'kg' }
-];
-
-const UNIDADES = [
-  { texto: '1 unidad', valor: 1, unidad: 'ud' },
-  { texto: '2 unidades', valor: 2, unidad: 'ud' },
-  { texto: '3 unidades', valor: 3, unidad: 'ud' },
-  { texto: '4 unidades', valor: 4, unidad: 'ud' }
-];
+const PESO = ['500 gr', '1 kg', '1.5 kg', '2 kg']
+const UNIDADES = ['1 unidad', '2 unidades', '3 unidades', '4 unidades']
 
 window.PRODUCTOS = [
   // ——— Vacuno ———
@@ -45,12 +31,7 @@ window.PRODUCTOS = [
     id: 'chuleton', cat: 'vacuno', img: 'chuleton', etiqueta: 'Para brasa',
     nombre: 'Entrecot o Chuletón',
     desc: 'Vaca con buena infiltración de grasa, ideal a la parrilla.',
-    cantidades: [
-      { texto: '1 pieza (aprox. 400 g)', valor: 1, unidad: 'ud' },
-      { texto: '2 piezas', valor: 2, unidad: 'ud' },
-      { texto: '4 piezas', valor: 4, unidad: 'ud' },
-      { texto: 'Corte mayor (1 kg)', valor: 1, unidad: 'kg' }
-    ],
+    cantidades: ['1 pieza (aprox. 400 g)', '2 piezas', '4 piezas', 'Al corte grueso (1 kg)'],
     opcionLabel: 'Tipo de corte',
     opciones: ['Entrecot jugoso', 'Chuletón madurado con hueso', 'Corte grueso para brasa', 'Chuleta de lomo alto'],
   },
@@ -58,12 +39,7 @@ window.PRODUCTOS = [
     id: 'solomillo', cat: 'vacuno', img: 'solomillo',
     nombre: 'Solomillo de Ternera',
     desc: 'La pieza más tierna, en medallones o entera para asar.',
-    cantidades: [
-      { texto: '2 medallones', valor: 2, unidad: 'ud' },
-      { texto: '4 medallones', valor: 4, unidad: 'ud' },
-      { texto: '500 gr', valor: 0.5, unidad: 'kg' },
-      { texto: 'Pieza entera', valor: 1, unidad: 'ud' }
-    ],
+    cantidades: ['2 medallones', '4 medallones', '500 gr', 'Pieza entera'],
     opcionLabel: 'Preparación',
     opciones: ['Medallones gruesos', 'Turnedós finos', 'Pieza entera para asar', 'Cortado para carpaccio'],
   },
@@ -97,12 +73,7 @@ window.PRODUCTOS = [
     id: 'costillas', cat: 'cerdo', img: 'costillas',
     nombre: 'Costillas de Cerdo',
     desc: 'Costilla carnosa, en tiras para el horno o troceada.',
-    cantidades: [
-      { texto: '1 tira (aprox. 600 g)', valor: 1, unidad: 'ud' },
-      { texto: '1 kg', valor: 1, unidad: 'kg' },
-      { texto: '1.5 kg', valor: 1.5, unidad: 'kg' },
-      { texto: '2 kg', valor: 2, unidad: 'kg' }
-    ],
+    cantidades: ['1 tira (aprox. 600 g)', '1 kg', '1.5 kg', '2 kg'],
     opcionLabel: 'Preparación',
     opciones: ['Enteras en tiras', 'Troceadas para guiso / horno', 'Adobadas caseras', 'Marinadas barbacoa'],
   },
@@ -110,11 +81,7 @@ window.PRODUCTOS = [
     id: 'iberico', cat: 'cerdo', img: 'iberico', etiqueta: 'Ibérico',
     nombre: 'Ibérico Selecto',
     desc: 'Secreto, presa y pluma: las joyas del cerdo ibérico.',
-    cantidades: [
-      { texto: '500 gr', valor: 0.5, unidad: 'kg' },
-      { texto: '1 kg', valor: 1, unidad: 'kg' },
-      { texto: '1.5 kg', valor: 1.5, unidad: 'kg' }
-    ],
+    cantidades: ['500 gr', '1 kg', '1.5 kg'],
     opcionLabel: 'Pieza',
     opciones: ['Secreto ibérico', 'Presa ibérica', 'Pluma ibérica', 'Abanico ibérico', 'Lagarto ibérico', 'Carrillada ibérica'],
   },
@@ -132,14 +99,7 @@ window.PRODUCTOS = [
     id: 'pollo', cat: 'aves', img: 'pollo', etiqueta: 'Más pedido',
     nombre: 'Pollo Fresco',
     desc: 'Pollo entero o en piezas, limpio y preparado a tu gusto.',
-    cantidades: [
-      { texto: '500 gr', valor: 0.5, unidad: 'kg' },
-      { texto: '1 kg', valor: 1, unidad: 'kg' },
-      { texto: '1.5 kg', valor: 1.5, unidad: 'kg' },
-      { texto: '2 kg', valor: 2, unidad: 'kg' },
-      { texto: '1 pollo entero', valor: 1, unidad: 'ud' },
-      { texto: '1 pollo de corral', valor: 1, unidad: 'ud' }
-    ],
+    cantidades: ['500 gr', '1 kg', '1.5 kg', '2 kg', '1 pollo entero', '1 pollo de corral'],
     opcionLabel: 'Preparación',
     opciones: ['Pechugas en filetes', 'Pechugas enteras', 'Muslos y contramuslos', 'Contramuslo deshuesado', 'Troceado para guisar', 'Abierto para asar'],
   },
@@ -155,12 +115,7 @@ window.PRODUCTOS = [
     id: 'conejo', cat: 'aves', img: 'conejo',
     nombre: 'Conejo y Codorniz',
     desc: 'Imprescindibles para la paella, el arroz o el ajillo.',
-    cantidades: [
-      { texto: 'Medio conejo', valor: 1, unidad: 'ud' },
-      { texto: '1 conejo entero', valor: 1, unidad: 'ud' },
-      { texto: '4 codornices', valor: 4, unidad: 'ud' },
-      { texto: '6 codornices', valor: 6, unidad: 'ud' }
-    ],
+    cantidades: ['Medio conejo', '1 conejo entero', '4 codornices', '6 codornices'],
     opcionLabel: 'Preparación',
     opciones: ['Troceado para paella', 'Troceado para guisar', 'Entero sin trocear', 'Abierto para la plancha'],
   },
@@ -170,13 +125,7 @@ window.PRODUCTOS = [
     id: 'cordero', cat: 'cordero', img: 'cordero',
     nombre: 'Cordero Lechal',
     desc: 'Chuletas, pierna o paletilla de cordero tierno.',
-    cantidades: [
-      { texto: '500 gr de chuletas', valor: 0.5, unidad: 'kg' },
-      { texto: '1 kg de chuletas', valor: 1, unidad: 'kg' },
-      { texto: '1 pierna entera', valor: 1, unidad: 'ud' },
-      { texto: '1 paletilla entera', valor: 1, unidad: 'ud' },
-      { texto: 'Medio cordero', valor: 1, unidad: 'ud' }
-    ],
+    cantidades: ['500 gr de chuletas', '1 kg de chuletas', '1 pierna entera', '1 paletilla entera', 'Medio cordero'],
     opcionLabel: 'Preparación',
     opciones: ['Chuletas para plancha', 'Chuletas gruesas para brasa', 'Costillar entero', 'Pierna para asar', 'Paletilla para asar', 'Troceado para guisar'],
   },
@@ -186,13 +135,7 @@ window.PRODUCTOS = [
     id: 'hamburguesas', cat: 'elaborados', img: 'hamburguesas', etiqueta: 'De la casa',
     nombre: 'Hamburguesas Artesanas',
     desc: 'Formadas a mano cada mañana con carne recién picada.',
-    cantidades: [
-      { texto: '2 unidades', valor: 2, unidad: 'ud' },
-      { texto: '4 unidades', valor: 4, unidad: 'ud' },
-      { texto: '6 unidades', valor: 6, unidad: 'ud' },
-      { texto: '8 unidades', valor: 8, unidad: 'ud' },
-      { texto: '12 unidades', valor: 12, unidad: 'ud' }
-    ],
+    cantidades: ['2 unidades', '4 unidades', '6 unidades', '8 unidades', '12 unidades'],
     opcionLabel: 'Tipo / sabor',
     opciones: ['Vacuno 100%', 'Buey madurado', 'Ibérica', 'Pollo y espinacas', 'Mixta con especias', 'Rellena de queso de cabra', 'Con bacon y cheddar'],
   },
@@ -200,13 +143,7 @@ window.PRODUCTOS = [
     id: 'embutido-fresco', cat: 'elaborados', img: 'embutido-fresco', etiqueta: 'De la casa',
     nombre: 'Chorizo, Salchichas y Morcilla',
     desc: 'Embutido fresco de elaboración propia, perfecto a la brasa.',
-    cantidades: [
-      { texto: '250 gr', valor: 0.25, unidad: 'kg' },
-      { texto: '500 gr', valor: 0.5, unidad: 'kg' },
-      { texto: '1 kg', valor: 1, unidad: 'kg' },
-      { texto: '6 unidades', valor: 6, unidad: 'ud' },
-      { texto: '12 unidades', valor: 12, unidad: 'ud' }
-    ],
+    cantidades: ['250 gr', '500 gr', '1 kg', '6 unidades', '12 unidades'],
     opcionLabel: 'Variedad',
     opciones: ['Chorizo fresco dulce', 'Chorizo fresco picante', 'Chorizo criollo', 'Salchichas frescas de cerdo', 'Salchichas de pollo', 'Longaniza fresca', 'Butifarra', 'Morcilla de cebolla', 'Morcilla de arroz'],
   },
@@ -214,12 +151,7 @@ window.PRODUCTOS = [
     id: 'pinchos', cat: 'elaborados', img: 'pinchos',
     nombre: 'Pinchos Morunos y Brochetas',
     desc: 'Marinados con nuestras especias, listos para la plancha.',
-    cantidades: [
-      { texto: '4 unidades', valor: 4, unidad: 'ud' },
-      { texto: '8 unidades', valor: 8, unidad: 'ud' },
-      { texto: '12 unidades', valor: 12, unidad: 'ud' },
-      { texto: '1 kg', valor: 1, unidad: 'kg' }
-    ],
+    cantidades: ['4 unidades', '8 unidades', '12 unidades', '1 kg'],
     opcionLabel: 'Variedad',
     opciones: ['Pincho moruno de cerdo', 'Pincho moruno de pollo', 'Pincho de cordero', 'Brocheta de ternera con verduras', 'Brocheta mixta', 'Brocheta de pollo al limón'],
   },
@@ -227,12 +159,7 @@ window.PRODUCTOS = [
     id: 'albondigas', cat: 'elaborados', img: 'albondigas',
     nombre: 'Albóndigas, Flamenquines y Empanados',
     desc: 'Preparados caseros listos para freír u hornear.',
-    cantidades: [
-      { texto: '6 unidades', valor: 6, unidad: 'ud' },
-      { texto: '12 unidades', valor: 12, unidad: 'ud' },
-      { texto: '500 gr', valor: 0.5, unidad: 'kg' },
-      { texto: '1 kg', valor: 1, unidad: 'kg' }
-    ],
+    cantidades: ['6 unidades', '12 unidades', '500 gr', '1 kg'],
     opcionLabel: 'Producto',
     opciones: ['Albóndigas de ternera', 'Albóndigas mixtas', 'Flamenquines de jamón y queso', 'San Jacobos', 'Filetes rusos', 'Cordon bleu de pollo', 'Pechugas de pollo empanadas', 'Nuggets caseros'],
   },
@@ -242,13 +169,7 @@ window.PRODUCTOS = [
     id: 'jamon', cat: 'charcuteria', img: 'jamon', etiqueta: 'Ibérico',
     nombre: 'Jamón Serrano e Ibérico',
     desc: 'Cortado a cuchillo o a máquina, en lonchas finísimas.',
-    cantidades: [
-      { texto: '100 gr', valor: 0.1, unidad: 'kg' },
-      { texto: '250 gr', valor: 0.25, unidad: 'kg' },
-      { texto: '500 gr', valor: 0.5, unidad: 'kg' },
-      { texto: '1 kg', valor: 1, unidad: 'kg' },
-      { texto: 'Pieza entera', valor: 1, unidad: 'ud' }
-    ],
+    cantidades: ['100 gr', '250 gr', '500 gr', '1 kg', 'Pieza entera'],
     opcionLabel: 'Producto',
     opciones: ['Jamón serrano en lonchas', 'Jamón ibérico de cebo', 'Jamón ibérico de bellota', 'Paleta ibérica', 'Taquitos de jamón', 'Huesos de jamón para caldo'],
   },
@@ -256,12 +177,7 @@ window.PRODUCTOS = [
     id: 'embutidos', cat: 'charcuteria', img: 'embutidos',
     nombre: 'Embutidos Curados',
     desc: 'Chorizo, salchichón y lomo ibérico de curación lenta.',
-    cantidades: [
-      { texto: '150 gr', valor: 0.15, unidad: 'kg' },
-      { texto: '250 gr', valor: 0.25, unidad: 'kg' },
-      { texto: '500 gr', valor: 0.5, unidad: 'kg' },
-      { texto: 'Pieza entera', valor: 1, unidad: 'ud' }
-    ],
+    cantidades: ['150 gr', '250 gr', '500 gr', 'Pieza entera'],
     opcionLabel: 'Producto',
     opciones: ['Chorizo ibérico', 'Salchichón ibérico', 'Lomo embuchado ibérico', 'Fuet', 'Sobrasada', 'Morcón', 'Cecina de León'],
   },
@@ -269,13 +185,7 @@ window.PRODUCTOS = [
     id: 'quesos', cat: 'charcuteria', img: 'quesos',
     nombre: 'Quesos',
     desc: 'Una selección de quesos nacionales para cortar a tu gusto.',
-    cantidades: [
-      { texto: '250 gr', valor: 0.25, unidad: 'kg' },
-      { texto: '500 gr', valor: 0.5, unidad: 'kg' },
-      { texto: '1 kg', valor: 1, unidad: 'kg' },
-      { texto: '1 cuña', valor: 1, unidad: 'ud' },
-      { texto: 'Pieza entera', valor: 1, unidad: 'ud' }
-    ],
+    cantidades: ['250 gr', '500 gr', '1 kg', '1 cuña', 'Pieza entera'],
     opcionLabel: 'Variedad',
     opciones: ['Manchego curado', 'Manchego semicurado', 'Queso de cabra', 'Queso viejo en aceite', 'Queso tierno', 'Queso azul / Cabrales', 'Torta del Casar'],
   },
@@ -283,12 +193,7 @@ window.PRODUCTOS = [
     id: 'fiambres', cat: 'charcuteria', img: 'fiambres',
     nombre: 'Fiambres y Loncheados',
     desc: 'Para bocadillos, desayunos y meriendas.',
-    cantidades: [
-      { texto: '150 gr', valor: 0.15, unidad: 'kg' },
-      { texto: '250 gr', valor: 0.25, unidad: 'kg' },
-      { texto: '500 gr', valor: 0.5, unidad: 'kg' },
-      { texto: '1 kg', valor: 1, unidad: 'kg' }
-    ],
+    cantidades: ['150 gr', '250 gr', '500 gr', '1 kg'],
     opcionLabel: 'Producto',
     opciones: ['Jamón cocido extra', 'Pechuga de pavo', 'Mortadela', 'Chopped', 'Queso en lonchas', 'Bacon ahumado', 'Salami'],
   },
@@ -298,13 +203,7 @@ window.PRODUCTOS = [
     id: 'refrescos', cat: 'bebidas', img: 'refrescos', etiqueta: 'Bien frío',
     nombre: 'Refrescos',
     desc: 'Latas y botellas de tus refrescos de siempre.',
-    cantidades: [
-      { texto: '1 lata', valor: 1, unidad: 'ud' },
-      { texto: 'Pack 6 latas', valor: 6, unidad: 'ud' },
-      { texto: 'Pack 12 latas', valor: 12, unidad: 'ud' },
-      { texto: '1 botella 2 L', valor: 1, unidad: 'ud' },
-      { texto: '2 botellas 2 L', valor: 2, unidad: 'ud' }
-    ],
+    cantidades: ['1 lata', 'Pack 6 latas', 'Pack 12 latas', '1 botella 2 L', '2 botellas 2 L'],
     opcionLabel: 'Sabor',
     opciones: ['Coca-Cola', 'Coca-Cola Zero', 'Fanta Naranja', 'Fanta Limón', 'Sprite', 'Kas Naranja', 'Pepsi', 'Aquarius Limón', 'Aquarius Naranja', 'Nestea', 'Schweppes Tónica', 'Bebida energética'],
   },
@@ -312,12 +211,7 @@ window.PRODUCTOS = [
     id: 'cervezas-vinos', cat: 'bebidas', img: 'cervezas-vinos',
     nombre: 'Cervezas y Vinos',
     desc: 'Para la barbacoa, la comida del domingo o una celebración.',
-    cantidades: [
-      { texto: '1 unidad', valor: 1, unidad: 'ud' },
-      { texto: 'Pack 6', valor: 6, unidad: 'ud' },
-      { texto: 'Pack 12', valor: 12, unidad: 'ud' },
-      { texto: 'Caja 24', valor: 24, unidad: 'ud' }
-    ],
+    cantidades: ['1 unidad', 'Pack 6', 'Pack 12', 'Caja 24'],
     opcionLabel: 'Bebida',
     opciones: ['Cerveza Mahou 5 Estrellas', 'Cerveza Estrella Galicia', 'Cerveza Cruzcampo', 'Cerveza sin alcohol', 'Cerveza 0,0 tostada', 'Vino tinto Rioja crianza', 'Vino tinto Ribera del Duero', 'Vino blanco Rueda', 'Vino rosado', 'Tinto de verano', 'Sangría'],
   },
@@ -325,12 +219,7 @@ window.PRODUCTOS = [
     id: 'agua-zumos', cat: 'bebidas', img: 'agua-zumos',
     nombre: 'Agua y Zumos',
     desc: 'Agua mineral, con gas y zumos para toda la familia.',
-    cantidades: [
-      { texto: '1 unidad', valor: 1, unidad: 'ud' },
-      { texto: 'Pack 6', valor: 6, unidad: 'ud' },
-      { texto: 'Pack 6 x 1,5 L', valor: 6, unidad: 'ud' },
-      { texto: 'Garrafa 5 L', valor: 1, unidad: 'ud' }
-    ],
+    cantidades: ['1 unidad', 'Pack 6', 'Pack 6 x 1,5 L', 'Garrafa 5 L'],
     opcionLabel: 'Bebida',
     opciones: ['Agua mineral 0,5 L', 'Agua mineral 1,5 L', 'Agua con gas', 'Zumo de naranja', 'Zumo de melocotón', 'Zumo de piña', 'Mosto'],
   },
@@ -362,34 +251,14 @@ window.PRODUCTOS = [
   },
 ]
 
-// Precios realistas (€ por kg o por unidad)
+// Precios orientativos (prueba): € por kg o por unidad
 const PRECIOS = {
-  'filetes-ternera': '16,90 €/kg', 
-  chuleton: '28,90 €/kg', 
-  solomillo: '34,90 €/kg', 
-  picada: '10,50 €/kg',
-  'guiso-ternera': '13,90 €/kg', 
-  'lomo-cerdo': '9,90 €/kg', 
-  costillas: '7,50 €/kg', 
-  iberico: '24,90 €/kg',
-  'chuletas-cerdo': '8,90 €/kg', 
-  pollo: '6,50 €/kg', 
-  alitas: '5,90 €/kg', 
-  conejo: '11,50 €/kg',
-  cordero: '22,00 €/kg', 
-  hamburguesas: '2,10 €/ud', 
-  'embutido-fresco': '9,50 €/kg', 
-  pinchos: '1,60 €/ud',
-  albondigas: '12,50 €/kg', 
-  jamon: '55,00 €/kg', 
-  embutidos: '32,00 €/kg', 
-  quesos: '21,00 €/kg',
-  fiambres: '14,00 €/kg', 
-  refrescos: '1,20 €/ud', 
-  'cervezas-vinos': '1,50 €/ud', 
-  'agua-zumos': '1,00 €/ud', 
-  despensa: '4,50 €/ud', 
-  barbacoa: '7,50 €/ud', 
-  salsas: '3,20 €/ud',
+  'filetes-ternera': '14,90 €/kg', chuleton: '24,90 €/kg', solomillo: '32,00 €/kg', picada: '9,90 €/kg',
+  'guiso-ternera': '12,50 €/kg', 'lomo-cerdo': '8,90 €/kg', costillas: '6,90 €/kg', iberico: '19,90 €/kg',
+  'chuletas-cerdo': '7,50 €/kg', pollo: '5,90 €/kg', alitas: '4,90 €/kg', conejo: '9,50 €/kg',
+  cordero: '18,90 €/kg', hamburguesas: '1,50 €/ud', 'embutido-fresco': '8,50 €/kg', pinchos: '1,20 €/ud',
+  albondigas: '10,90 €/kg', jamon: '45,00 €/kg', embutidos: '28,00 €/kg', quesos: '18,00 €/kg',
+  fiambres: '12,00 €/kg', refrescos: '1,00 €/ud', 'cervezas-vinos': '1,20 €/ud', 'agua-zumos': '0,80 €/ud',
+  despensa: '3,00 €/ud', barbacoa: '6,00 €/ud', salsas: '2,50 €/ud',
 }
 window.PRODUCTOS.forEach((p) => { p.precio = PRECIOS[p.id] })
