@@ -2,11 +2,11 @@
   const TELEFONO = '34677228251';
   const STORAGE_KEY = 'rodri-encargo';
 
-  // 🔒 Token compartido con Apps Script
+  // 🔒 Token compartido con Apps Script (debe coincidir con TOKEN_VALIDO en code.gs)
   const TOKEN_SEGURO = "xr1st1na_R0dr1-roldayan-xW590ÑoqR339";
 
-  // ⚡ URL del Apps Script (ASEGÚRATE DE QUE ESTA ES LA URL NUEVA)
-  const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwZOQlehFtuMtboC4m_RjqFSch5IYeWcne2va08o_IAxhsFm79gSx6GzlHet02dbkap/exec";
+  // ⚡ URL del Apps Script
+  const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwsLf0nJ48Es2kCyYfopRC2OIcTFGXF4BS24M_15h7ucSGkFyTFhIq6u-yS8sCIyTY_/exec";
 
   const $ = (sel, root = document) => root.querySelector(sel);
   const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
@@ -21,13 +21,18 @@
   try {
     const raw = JSON.parse(localStorage.getItem(STORAGE_KEY));
     cart = Array.isArray(raw)
-      ? raw.filter((l) =>
-          l && typeof l.id === 'string' && typeof l.cantidad === 'string' &&
-          typeof l.opcion === 'string' && Number.isInteger(l.uds) && l.uds > 0
-        ).slice(0, 50)
+      ? raw
+          .filter((l) =>
+            l &&
+            typeof l.id === 'string' &&
+            typeof l.cantidad === 'string' &&
+            typeof l.opcion === 'string' &&
+            Number.isInteger(l.uds) &&
+            l.uds > 0
+          )
+          .slice(0, 50)
       : [];
   } catch { cart = []; }
-  
   const save = () => localStorage.setItem(STORAGE_KEY, JSON.stringify(cart));
 
   // ——— Catálogo ———
@@ -77,7 +82,7 @@
             </label>
           </div>
           <button type="button" class="btn btn-add" data-add>
-            <span class="plus" aria-hidden="true">+</span> Añadir a la cesta
+            <span class="plus" aria-hidden="true">+</span> Añadir al encargo
           </button>
         </div>
       </article>`;
@@ -109,7 +114,7 @@
     $('[data-query]', sin).textContent = $('#buscar').value.trim();
   }
 
-  // ——— Cálculo de precio ———
+  // ——— Cálculo de precio de una línea ———
   function calcularLinea(l, p) {
     const matchNum = l.cantidad.replace(',', '.').match(/[\d.]+/);
     const cantidadNum = matchNum ? parseFloat(matchNum[0]) * l.uds : l.uds;
@@ -127,7 +132,7 @@
     return { cantidadNum, unidadStr, precioNum, factorPeso };
   }
 
-  // ——— Carrito ———
+  // ——— Panel del encargo ———
   function renderCart() {
     const total = cart.reduce((n, l) => n + l.uds, 0);
     $$('[data-cart-count]').forEach((el) => (el.textContent = total));
@@ -143,7 +148,9 @@
       const { cantidadNum, unidadStr, precioNum, factorPeso } = calcularLinea(l, p);
       const subtotal = Number((precioNum * cantidadNum * factorPeso).toFixed(2));
       totalEuros += subtotal;
-      const precioTexto = precioNum > 0 ? `<span class="line-precio">${subtotal.toFixed(2).replace('.', ',')} €</span>` : '';
+      const precioTexto = precioNum > 0
+        ? `<span class="line-precio">${subtotal.toFixed(2).replace('.', ',')} €</span>`
+        : '';
       return `
         <li class="line">
           <img src="${img(p.img, 120, 120)}" alt="" width="60" height="60" loading="lazy" decoding="async">
@@ -221,11 +228,12 @@
 
   let enlaceWhatsAppPendiente = "";
 
+  // ——— Función para mostrar el modal ———
   function mostrarModal(idMostrar) {
     const submitBtn = checkoutForm ? checkoutForm.querySelector('button[type="submit"]') : null;
     if (submitBtn) {
       submitBtn.disabled = false;
-      submitBtn.textContent = "Enviar pedido por WhatsApp";
+      submitBtn.textContent = "Enviar encargo por WhatsApp";
     }
     closeCart();
     const modal = document.getElementById('modalConfirmacion');
@@ -255,7 +263,7 @@
     document.body.classList.add('no-scroll');
   }
 
-  // ——— Envío ———
+  // ——— Envío por Google Sheets y WhatsApp ———
   async function enviar(e) {
     e.preventDefault();
 
@@ -290,7 +298,13 @@
       const { cantidadNum, unidadStr, precioNum, factorPeso } = calcularLinea(l, p);
       const subtotalNum = Number((precioNum * cantidadNum * factorPeso).toFixed(2));
       totalPedido += subtotalNum;
-      return { nombre: nombreProd, cantidad: cantidadNum, unidad: unidadStr, precioUnitario: precioNum, subtotal: subtotalNum };
+      return {
+        nombre: nombreProd,
+        cantidad: cantidadNum,
+        unidad: unidadStr,
+        precioUnitario: precioNum,
+        subtotal: subtotalNum
+      };
     });
 
     const lineas = cart.map((l) => {
@@ -323,14 +337,14 @@
 
     enlaceWhatsAppPendiente = `https://wa.me/${TELEFONO}?text=${encodeURIComponent(textoWA)}`;
 
-    // Enviar a Google (SIN await para evitar bloqueos de CORS)
+    // Timeout de 8s para el fetch
     try {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 8000);
-      
-      fetch(APPS_SCRIPT_URL, {
+      await fetch(APPS_SCRIPT_URL, {
         method: "POST",
-        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        mode: "no-cors",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           token: TOKEN_SEGURO,
           codigoPedido: idMostrar,
@@ -341,14 +355,13 @@
           productos: productosParaSheets
         }),
         signal: controller.signal
-      }).catch(err => console.log("Enviado a Google (ignorando respuesta):", err));
-      
+      });
       clearTimeout(timeoutId);
     } catch (error) {
       console.warn("Error background sheets:", error);
     }
 
-    // Mostrar el modal SIEMPRE
+    // Mostrar el modal SIEMPRE, pase lo que pase
     mostrarModal(idMostrar);
   }
 
@@ -387,6 +400,7 @@
     if (e.target.closest('[data-close-cart]')) return closeCart();
   });
 
+  // Botón WhatsApp del modal
   const btnWhatsAppModal = document.getElementById('btnEnviarWhatsApp');
   if (btnWhatsAppModal) {
     btnWhatsAppModal.onclick = () => {
@@ -402,6 +416,7 @@
     };
   }
 
+  // Botón "Cerrar" del modal
   const btnCerrarModal = document.getElementById('btnCerrarModal');
   if (btnCerrarModal) {
     btnCerrarModal.onclick = () => {
