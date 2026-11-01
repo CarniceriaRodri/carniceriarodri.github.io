@@ -6,8 +6,8 @@
   const TOKEN_SEGURO = "xr1st1na_R0dr1-roldayan-xW590ÑoqR339";
 
   // ⚡ URL del Apps Script
-  const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzHgLV1d-4tevLDOGQJfA3PFUqA3HpWM3VMPtADFsDFdM6iDdwI7xCy5q5w50Si5k64/exec";
-                          
+  const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxHtNKjpvppoVLR6gI_CP_le0XWzuvcXGGb0isHyOF6PVy3Iz61B6sjrWPHQ1zSQ8rj/exec";
+                         
   const $ = (sel, root = document) => root.querySelector(sel);
   const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
 
@@ -342,10 +342,9 @@
     try {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 8000);
-      await fetch(APPS_SCRIPT_URL, {
+           await fetch(APPS_SCRIPT_URL, {
         method: "POST",
-        // 👇 QUITAMOS EL mode: "no-cors" Y CAMBIAMOS EL CONTENT-TYPE
-        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        headers: { "Content-Type": "text/plain;charset=utf-8" }, // 👈 ESTO ES CLAVE
         body: JSON.stringify({
           token: TOKEN_SEGURO,
           codigoPedido: idMostrar,
@@ -357,10 +356,6 @@
         }),
         signal: controller.signal
       });
-      clearTimeout(timeoutId);
-    } catch (error) {
-      console.warn("Error background sheets:", error);
-    }
 
     // Mostrar el modal SIEMPRE, pase lo que pase
     mostrarModal(idMostrar);
