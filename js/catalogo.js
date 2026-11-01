@@ -14,8 +14,9 @@ window.CATEGORIAS = [
   { id: 'despensa', nombre: 'Despensa y Barbacoa', lema: 'Lo que no puede faltar para cocinar o encender la brasa.' },
 ]
 
-const PESO = ['500 gr', '1 kg', '1.5 kg', '2 kg']
-const UNIDADES = ['1 unidad', '2 unidades', '3 unidades', '4 unidades']
+// Cantidades predefinidas
+const PESO = ['250 gr', '500 gr', '750 gr', '1 kg', '1.5 kg', '2 kg']
+const UNIDADES = ['1 unidad', '2 unidades', '3 unidades', '4 unidades', '6 unidades']
 
 window.PRODUCTOS = [
   // ——— Vacuno ———
