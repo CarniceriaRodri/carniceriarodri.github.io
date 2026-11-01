@@ -89,6 +89,37 @@
       </div>
     </article>`;
 }
+  function actualizarPrecioTarjeta(cardElement) {
+  const selectCantidad = cardElement.querySelector('[data-field="cantidad"]');
+  if (!selectCantidad) return;
+  
+  const p = PRODUCTOS.find(x => x.id === cardElement.dataset.id);
+  if (!p || !p.precio) return;
+  
+  const textoCantidad = selectCantidad.value;
+  const matchNum = textoCantidad.replace(',', '.').match(/[\d.]+/);
+  let cantidadNum = matchNum ? parseFloat(matchNum[0]) : 1;
+  
+  let unidadStr = textoCantidad.replace(/[\d.,]/g, '').trim().toLowerCase();
+  if (/pieza|unidad|medall|tira|lata|botella|pack|garrafa|caja|cu[ñn]a/.test(unidadStr)) unidadStr = 'ud';
+  else if (/^g|gr|grs|gramos/.test(unidadStr)) unidadStr = 'gr';
+  else if (/^kg|kilo/.test(unidadStr)) unidadStr = 'kg';
+  
+  // Si es gramos, dividimos entre 1000 para el cálculo
+  let cantidadCalculo = cantidadNum;
+  if (unidadStr === 'gr') cantidadCalculo = cantidadNum / 1000;
+  
+  const matchPrecio = p.precio.replace(',', '.').match(/[\d.]+/);
+  const precioNum = matchPrecio ? parseFloat(matchPrecio[0]) : 0;
+  
+  const precioTotal = Number((precioNum * cantidadCalculo).toFixed(2));
+  const precioSpan = document.getElementById(`precio-${p.id}`);
+  
+  if (precioSpan) {
+    // Mostramos el precio calculado sin la palabra "orientativo"
+    precioSpan.textContent = `${precioTotal.toFixed(2).replace('.', ',')} €`; 
+  }
+}
 
   function normalize(s) {
     return s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
