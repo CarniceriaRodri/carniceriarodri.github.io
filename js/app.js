@@ -91,7 +91,9 @@ setTimeout(() => {
           </label>
           <label>
             <span>${escapeHtml(p.opcionLabel)}</span>
-            <select data-field="opcion">${p.opciones.map((o) => `<option>${escapeHtml(o)}</option>`).join('')}</select>
+            <select data-field="cantidad">
+  ${p.cantidades.map((o) => `<option value="${o}">${escapeHtml(String(o).split('|')[0])}</option>`).join('')}
+</select>
           </label>
         </div>
         <button type="button" class="btn btn-add" data-add>
@@ -205,7 +207,7 @@ setTimeout(() => {
           <img src="${img(p.img, 120, 120)}" alt="" width="60" height="60" loading="lazy" decoding="async">
           <div class="line-info">
             <strong>${escapeHtml(p.nombre)}</strong>
-            <span>${escapeHtml(l.cantidad.split('|')[0])} · ${escapeHtml(l.opcion)}</span>
+           <span>${escapeHtml(String(l.cantidad).split('|')[0])} · ${escapeHtml(l.opcion)}</span>
             ${precioTexto}
           </div>
           <div class="stepper" aria-label="Unidades">
