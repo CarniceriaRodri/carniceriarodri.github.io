@@ -11,7 +11,7 @@ window.CATEGORIAS = [
   { id: 'despensa', nombre: 'Despensa y Barbacoa', lema: 'Lo que no puede faltar para cocinar o encender la brasa.' },
 ]
 
-// 👇 EL TRUCO: Añadimos el valor numérico oculto después de un "|"
+// 👇 EL TRUCO MAESTRO: El texto visible termina en un espacio y el número oculto
 const PESO = ['250 gr|0.25', '500 gr|0.5', '750 gr|0.75', '1 kg|1', '1.5 kg|1.5', '2 kg|2'];
 const UNIDADES = ['1 unidad|1', '2 unidades|2', '3 unidades|3', '4 unidades|4', '6 unidades|6'];
 
@@ -24,7 +24,7 @@ window.PRODUCTOS = [
   {
     id: 'chuleton', cat: 'vacuno', img: 'chuleton', etiqueta: 'Para brasa',
     nombre: 'Entrecot o Chuletón', desc: 'Vaca con buena infiltración de grasa, ideal a la parrilla.',
-    // El cliente ve "Corte mayor (1 kg)", el código lee el "|1" y sabe que es 1 kilo
+    // 👇 Aquí está la magia para el Chuletón
     cantidades: ['1 pieza (aprox. 400 g)|1', '2 piezas|2', '4 piezas|4', 'Corte mayor (1 kg)|1'], 
     opcionLabel: 'Tipo de corte', opciones: ['Entrecot jugoso', 'Chuletón madurado con hueso', 'Corte grueso para brasa', 'Chuleta de lomo alto'],
   },
