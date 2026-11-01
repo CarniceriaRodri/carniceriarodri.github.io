@@ -191,6 +191,41 @@ window.PRODUCTOS = [
     cantidades: ['1 unidad - 3,20 €', '2 unidades - 6,40 €', '3 unidades - 9,60 €', '4 unidades - 12,80 €', '6 unidades - 19,20 €'], 
     opcionLabel: 'Producto', opciones: ['Alioli casero', 'Mojo picón', 'Chimichurri', 'Salsa barbacoa', 'Adobo para pinchos', 'Sazonador para carne', 'Mostaza antigua'],
   },
+  {
+  id: 'entrecot-prueba',
+  cat: 'vacuno',
+  img: 'chuleton',
+  etiqueta: 'PRUEBA',
+  nombre: 'Entrecot de prueba',
+  desc: 'Producto experimental para probar precios por variedad.',
+
+  opcionLabel: 'Elige tu corte',
+
+  opciones: [
+    {
+      nombre: 'Entrecot normal',
+      precio: 28.90,
+      unidad: 'kg'
+    },
+    {
+      nombre: 'Entrecot especial',
+      precio: 31.90,
+      unidad: 'kg'
+    },
+    {
+      nombre: 'Entrecot premium',
+      precio: 35.90,
+      unidad: 'kg'
+    }
+  ],
+
+  cantidades: [
+    '250 gr',
+    '500 gr',
+    '750 gr',
+    '1 kg'
+  ]
+},
 ]
 
 // Precios base para la cesta (€ por kg o por unidad)
@@ -202,5 +237,6 @@ const PRECIOS = {
   albondigas: '12,50 €/kg', jamon: '55,00 €/kg', embutidos: '32,00 €/kg', quesos: '21,00 €/kg',
   fiambres: '14,00 €/kg', refrescos: '1,20 €/ud', 'cervezas-vinos': '1,50 €/ud', 'agua-zumos': '1,00 €/ud',
   despensa: '4,50 €/ud', barbacoa: '7,50 €/ud', salsas: '3,20 €/ud',
+'entrecot-prueba': '28,90 €/kg',
 }
 window.PRODUCTOS.forEach((p) => { p.precio = PRECIOS[p.id] })
