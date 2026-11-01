@@ -161,34 +161,25 @@ setTimeout(() => {
     $('[data-query]', sin).textContent = $('#buscar').value.trim();
   }
 
- function calcularLinea(l, p) {
- // Leemos el número que está después del símbolo "|"
-const matchNum = l.cantidad.split('|')[1] || l.cantidad.match(/[\d.]+/);
-  const cantidadNum = matchNum ? parseFloat(matchNum[0]) * l.uds : l.uds;
-  
-  let unidadStr = l.cantidad.toLowerCase();
-  let factorPeso = 1; // Por defecto asumimos que es kg o unidad
+   function calcularLinea(l, p) {
+    // 1. Buscamos el primer número en el texto (ej: "500 gr" -> 500, "1 kg" -> 1)
+    const matchNum = l.cantidad.replace(',', '.').match(/[\d.]+/);
+    const cantidadNum = matchNum ? parseFloat(matchNum[0]) * l.uds : l.uds;
+    
+    // 2. Miramos si el texto contiene "g" o "gr" para saber si es gramos
+    const esGramos = l.cantidad.includes('gr') || l.cantidad.includes(' g');
+    
+    // 3. Si es gramos, dividimos entre 1000. Si no, se queda igual (kg o unidades)
+    const factorPeso = esGramos ? 0.001 : 1;
 
-  // 🧠 Lógica mejorada para saber qué es cada cosa
-  if (unidadStr.includes('gr') || unidadStr.includes('g ') || unidadStr.includes('g)')) {
-    // Si pone "500 gr", "250g", etc.
-    factorPeso = 0.001;
-  } else if (unidadStr.includes('ud') || unidadStr.includes('unidad') || unidadStr.includes('pieza') || unidadStr.includes('medallon') || unidadStr.includes('lata')) {
-    // Si es por unidades
-    factorPeso = 1; 
-  } else {
-    // Si pone "1 kg", "1.5 kg" o "Al corte grueso (1 kg)" lo dejamos como kg (factor 1)
-    factorPeso = 1;
+    let precioNum = 0;
+    if (p && p.precio) {
+      const m = p.precio.replace(',', '.').match(/[\d.]+/);
+      if (m) precioNum = parseFloat(m[0]);
+    }
+    
+    return { cantidadNum, unidadStr: esGramos ? 'gr' : 'ud', precioNum, factorPeso };
   }
-
-  let precioNum = 0;
-  if (p && p.precio) {
-    const m = p.precio.replace(',', '.').match(/[\d.]+/);
-    if (m) precioNum = parseFloat(m[0]);
-  }
-  
-  return { cantidadNum, unidadStr, precioNum, factorPeso };
-}
 
   // ——— Panel del encargo ———
   function renderCart() {
