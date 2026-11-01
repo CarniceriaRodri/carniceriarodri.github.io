@@ -1,12 +1,8 @@
 (function () {
   const TELEFONO = '34677228251';
   const STORAGE_KEY = 'rodri-encargo';
-
-  // 🔒 Token compartido con Apps Script (debe coincidir con TOKEN_VALIDO en code.gs)
-  const TOKEN_SEGURO = "xr1st1na_R0dr1-roldayan-xW590ÑoqR339";
-
-  // ⚡ URL del Apps Script
-  const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx_MzSwLYoToSMo5uw3XiRjTy7OjxfJiNFv1y5xfloTP8v3r57CWrhr1v17vzQxJi4/exec";
+  // ⚡ URL NUEVA ACTUALIZADA
+  const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxEdMdBsmVPB2eIb2IVkzxhdkckcU6SZdK1qAtBlUEEJ7crK2U0264TJc6Si1RyHwdz/exec";
 
   const $ = (sel, root = document) => root.querySelector(sel);
   const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
@@ -18,49 +14,24 @@
 
   // ——— Estado del encargo ———
   let cart = [];
-  try {
-    const raw = JSON.parse(localStorage.getItem(STORAGE_KEY));
-    cart = Array.isArray(raw)
-      ? raw
-          .filter((l) =>
-            l &&
-            typeof l.id === 'string' &&
-            typeof l.cantidad === 'string' &&
-            typeof l.opcion === 'string' &&
-            Number.isInteger(l.uds) &&
-            l.uds > 0
-          )
-          .slice(0, 50)
-      : [];
-  } catch { cart = []; }
+  try { cart = JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch { cart = []; }
   const save = () => localStorage.setItem(STORAGE_KEY, JSON.stringify(cart));
-// ✅ NUEVO: Escuchar cambios en los selectores para actualizar precios
-document.addEventListener('change', (e) => {
-  if (e.target.matches('[data-field="cantidad"]')) {
-    const card = e.target.closest('.card');
-    if (card) actualizarPrecioTarjeta(card);
-  }
-});
 
-// Al renderizar el catálogo por primera vez, calculamos el precio inicial
-setTimeout(() => {
-  document.querySelectorAll('.card').forEach(actualizarPrecioTarjeta);
-}, 100);
   // ——— Catálogo ———
   function renderCatalogo() {
     $('#chips').innerHTML =
       `<button type="button" class="chip is-active" data-chip="todo">Todo</button>` +
-      CATEGORIAS.map((c) => `<button type="button" class="chip" data-chip="${escapeHtml(c.id)}">${escapeHtml(c.nombre)}</button>`).join('');
+      CATEGORIAS.map((c) => `<button type="button" class="chip" data-chip="${c.id}">${c.nombre}</button>`).join('');
 
     $('#secciones').innerHTML = CATEGORIAS.map((c, i) => {
       const productos = PRODUCTOS.filter((p) => p.cat === c.id);
       return `
-        <section class="cat" id="cat-${escapeHtml(c.id)}" data-cat="${escapeHtml(c.id)}">
+        <section class="cat" id="cat-${c.id}" data-cat="${c.id}">
           <header class="cat-head">
             <span class="cat-n">${String(i + 1).padStart(2, '0')}</span>
             <div>
-              <h3>${escapeHtml(c.nombre)}</h3>
-              <p>${escapeHtml(c.lema)}</p>
+              <h3>${c.nombre}</h3>
+              <p>${c.lema}</p>
             </div>
           </header>
           <div class="grid">${productos.map(card).join('')}</div>
@@ -68,84 +39,45 @@ setTimeout(() => {
     }).join('');
   }
 
- function card(p) {
-  const keywords = [p.nombre, p.desc, ...p.opciones].join(' ').toLowerCase();
-  return `
-    <article class="card" data-id="${escapeHtml(p.id)}" data-search="${escapeHtml(normalize(keywords))}">
-      <div class="card-img">
-        <img src="${img(p.img, 600, 450)}" srcset="${img(p.img, 400, 300)} 400w, ${img(p.img, 800, 600)} 800w"
-             sizes="(max-width: 640px) 100vw, 360px" alt="${escapeHtml(p.nombre)}" loading="lazy" width="600" height="450" decoding="async"
-             onerror="this.onerror=null;this.removeAttribute('srcset');this.src='img/productos/${escapeHtml(p.img)}.jpg'">
-        ${p.etiqueta ? `<span class="tag">${escapeHtml(p.etiqueta)}</span>` : ''}
-      </div>
-      <div class="card-body">
-        <h4>${escapeHtml(p.nombre)}</h4>
-        <p class="card-desc">${escapeHtml(p.desc)}</p>
-        <!-- ✅ NUEVO: Precio dinámico -->
-        <p class="card-precio" id="precio-${escapeHtml(p.id)}">${p.precio ? escapeHtml(p.precio) : ''}</p>
-        
-        <div class="card-fields">
-          <label>
-            <span>Cantidad</span>
-            <select data-field="cantidad">${p.cantidades.map((o) => `<option>${escapeHtml(o)}</option>`).join('')}</select>
-          </label>
-          <label>
-            <span>${escapeHtml(p.opcionLabel)}</span>
-            <select data-field="cantidad">
-  ${p.cantidades.map((o) => `<option value="${o}">${escapeHtml(String(o).split('|')[0])}</option>`).join('')}
-</select>
-          </label>
+  function card(p) {
+    const keywords = [p.nombre, p.desc, ...p.opciones].join(' ').toLowerCase();
+    return `
+      <article class="card" data-id="${p.id}" data-search="${escapeHtml(normalize(keywords))}">
+        <div class="card-img">
+          <img src="${img(p.img, 600, 450)}" srcset="${img(p.img, 400, 300)} 400w, ${img(p.img, 800, 600)} 800w"
+               sizes="(max-width: 640px) 100vw, 360px" alt="${escapeHtml(p.nombre)}" loading="lazy" width="600" height="450"
+               onerror="this.onerror=null;this.removeAttribute('srcset');this.src='img/productos/${p.img}.jpg'">
+          ${p.etiqueta ? `<span class="tag">${p.etiqueta}</span>` : ''}
         </div>
-        <button type="button" class="btn btn-add" data-add>
-          <span class="plus" aria-hidden="true">+</span> Añadir a la cesta
-        </button>
-      </div>
-    </article>`;
-}
- function actualizarPrecioTarjeta(cardElement) {
-  const selectCantidad = cardElement.querySelector('[data-field="cantidad"]');
-  if (!selectCantidad) return;
-  
-  const p = PRODUCTOS.find(x => x.id === cardElement.dataset.id);
-  if (!p || !p.precio) return;
-  
-  const textoCantidad = selectCantidad.value;
-  const matchNum = textoCantidad.replace(',', '.').match(/[\d.]+/);
-  let cantidadNum = matchNum ? parseFloat(matchNum[0]) : 1;
-  
-  let unidadStr = textoCantidad.toLowerCase();
-  let factorPeso = 1;
-
-  // 🧠 La misma lógica mejorada
-  if (unidadStr.includes('gr') || unidadStr.includes('g ') || unidadStr.includes('g)')) {
-    factorPeso = 0.001;
-  } else if (unidadStr.includes('ud') || unidadStr.includes('unidad') || unidadStr.includes('pieza') || unidadStr.includes('medallon') || unidadStr.includes('lata')) {
-    factorPeso = 1;
-  } else {
-    factorPeso = 1; // kg o "corte"
+        <div class="card-body">
+          <h4>${p.nombre}</h4>
+          <p class="card-desc">${p.desc}</p>
+          ${p.precio ? `<p class="card-precio">${p.precio} <small>orientativo</small></p>` : ''}
+          <div class="card-fields">
+            <label>
+              <span>Cantidad</span>
+              <select data-field="cantidad">${p.cantidades.map((o) => `<option>${o}</option>`).join('')}</select>
+            </label>
+            <label>
+              <span>${p.opcionLabel}</span>
+              <select data-field="opcion">${p.opciones.map((o) => `<option>${o}</option>`).join('')}</select>
+            </label>
+          </div>
+          <button type="button" class="btn btn-add" data-add>
+            <span class="plus" aria-hidden="true">+</span> Añadir al encargo
+          </button>
+        </div>
+      </article>`;
   }
-  
-  const matchPrecio = p.precio.replace(',', '.').match(/[\d.]+/);
-  const precioNum = matchPrecio ? parseFloat(matchPrecio[0]) : 0;
-  
-  // Calculamos el precio final
-  const precioTotal = Number((precioNum * cantidadNum * factorPeso).toFixed(2));
-  const precioSpan = document.getElementById(`precio-${p.id}`);
-  
-  if (precioSpan) {
-    precioSpan.textContent = `${precioTotal.toFixed(2).replace('.', ',')} €`; 
-  }
-}
 
   function normalize(s) {
-    return s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+    return s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
   }
 
-  // ——— Filtros ———
+  // ——— Filtros: categorías y búsqueda ———
   function filtrar() {
     const q = normalize($('#buscar').value.trim());
-    const chipActivo = $('.chip.is-active');
-    const activa = (chipActivo && chipActivo.dataset.chip) || 'todo';
+    const activa = $('.chip.is-active')?.dataset.chip || 'todo';
     let visibles = 0;
     $$('.cat').forEach((sec) => {
       const catOk = activa === 'todo' || sec.dataset.cat === activa;
@@ -163,26 +95,6 @@ setTimeout(() => {
     $('[data-query]', sin).textContent = $('#buscar').value.trim();
   }
 
-   function calcularLinea(l, p) {
-    // 1. Buscamos el primer número en el texto (ej: "500 gr" -> 500, "1 kg" -> 1)
-    const matchNum = l.cantidad.replace(',', '.').match(/[\d.]+/);
-    const cantidadNum = matchNum ? parseFloat(matchNum[0]) * l.uds : l.uds;
-    
-    // 2. Miramos si el texto contiene "g" o "gr" para saber si es gramos
-    const esGramos = l.cantidad.includes('gr') || l.cantidad.includes(' g');
-    
-    // 3. Si es gramos, dividimos entre 1000. Si no, se queda igual (kg o unidades)
-    const factorPeso = esGramos ? 0.001 : 1;
-
-    let precioNum = 0;
-    if (p && p.precio) {
-      const m = p.precio.replace(',', '.').match(/[\d.]+/);
-      if (m) precioNum = parseFloat(m[0]);
-    }
-    
-    return { cantidadNum, unidadStr: esGramos ? 'gr' : 'ud', precioNum, factorPeso };
-  }
-
   // ——— Panel del encargo ———
   function renderCart() {
     const total = cart.reduce((n, l) => n + l.uds, 0);
@@ -191,24 +103,15 @@ setTimeout(() => {
     $('#cartEmpty').hidden = cart.length > 0;
     $('#checkout').hidden = cart.length === 0;
 
-    let totalEuros = 0;
-
     $('#cartList').innerHTML = cart.map((l, i) => {
       const p = PRODUCTOS.find((x) => x.id === l.id);
       if (!p) return '';
-      const { cantidadNum, unidadStr, precioNum, factorPeso } = calcularLinea(l, p);
-      const subtotal = Number((precioNum * cantidadNum * factorPeso).toFixed(2));
-      totalEuros += subtotal;
-      const precioTexto = precioNum > 0
-        ? `<span class="line-precio">${subtotal.toFixed(2).replace('.', ',')} €</span>`
-        : '';
       return `
         <li class="line">
-          <img src="${img(p.img, 120, 120)}" alt="" width="60" height="60" loading="lazy" decoding="async">
+          <img src="${img(p.img, 120, 120)}" alt="" width="60" height="60">
           <div class="line-info">
             <strong>${escapeHtml(p.nombre)}</strong>
-           <span>${escapeHtml(String(l.cantidad).split('|')[0])} · ${escapeHtml(l.opcion)}</span>
-            ${precioTexto}
+            <span>${escapeHtml(l.cantidad)} · ${escapeHtml(l.opcion)}</span>
           </div>
           <div class="stepper" aria-label="Unidades">
             <button type="button" data-dec="${i}" aria-label="Quitar uno">−</button>
@@ -217,16 +120,6 @@ setTimeout(() => {
           </div>
         </li>`;
     }).join('');
-
-    const totalEl = $('#cartTotal');
-    if (totalEl) {
-      if (totalEuros > 0) {
-        totalEl.hidden = false;
-        totalEl.innerHTML = `<span>Total orientativo</span><strong>${totalEuros.toFixed(2).replace('.', ',')} €</strong>`;
-      } else {
-        totalEl.hidden = true;
-      }
-    }
   }
 
   function addToCart(id, cantidad, opcion) {
@@ -241,26 +134,22 @@ setTimeout(() => {
 
   const drawer = $('#drawer');
   const backdrop = $('.drawer-backdrop');
-  const cartBtn = $('.cart-btn');
-  const checkoutForm = $('#checkout');
 
   function openCart() {
     backdrop.hidden = false;
     drawer.removeAttribute('inert');
-    requestAnimationFrame(() => {
-      drawer.classList.add('open');
+    requestAnimationFrame(() => { 
+      drawer.classList.add('open'); 
       backdrop.classList.add('open');
     });
     document.body.classList.add('no-scroll');
-    if (cartBtn) cartBtn.setAttribute('aria-expanded', 'true');
   }
 
   function closeCart() {
-    drawer.classList.remove('open');
+    drawer.classList.remove('open'); 
     backdrop.classList.remove('open');
     document.body.classList.remove('no-scroll');
-    if (cartBtn) cartBtn.setAttribute('aria-expanded', 'false');
-    setTimeout(() => {
+    setTimeout(() => { 
       if (!drawer.classList.contains('open')) {
         backdrop.hidden = true;
         drawer.setAttribute('inert', '');
@@ -279,63 +168,17 @@ setTimeout(() => {
 
   let enlaceWhatsAppPendiente = "";
 
-  // ——— Función para mostrar el modal ———
-  function mostrarModal(idMostrar) {
-    const submitBtn = checkoutForm ? checkoutForm.querySelector('button[type="submit"]') : null;
-    if (submitBtn) {
-      submitBtn.disabled = false;
-      submitBtn.textContent = "Enviar encargo por WhatsApp";
-    }
-    closeCart();
-    const modal = document.getElementById('modalConfirmacion');
-    const modalBackdrop = document.getElementById('modalBackdrop');
-    const modalId = document.getElementById('confirmacionIdPedido');
-    if (modalId) modalId.textContent = idMostrar;
-    if (modal) {
-      modal.removeAttribute('hidden');
-      modal.style.display = 'block';
-      modal.style.position = 'fixed';
-      modal.style.top = '50%';
-      modal.style.left = '50%';
-      modal.style.transform = 'translate(-50%, -50%)';
-      modal.style.zIndex = '9999';
-      modal.style.background = '#fff';
-      modal.style.padding = '2rem';
-      modal.style.borderRadius = '1rem';
-    }
-    if (modalBackdrop) {
-      modalBackdrop.removeAttribute('hidden');
-      modalBackdrop.style.display = 'block';
-      modalBackdrop.style.position = 'fixed';
-      modalBackdrop.style.inset = '0';
-      modalBackdrop.style.background = 'rgba(0,0,0,0.5)';
-      modalBackdrop.style.zIndex = '9998';
-    }
-    document.body.classList.add('no-scroll');
-  }
-
   // ——— Envío por Google Sheets y WhatsApp ———
   async function enviar(e) {
     e.preventDefault();
-
     const nombre = $('#nombre').value.trim();
-    const telefono = $('#telefono').value.trim();
     const hora = $('#hora').value;
     const dia = $('#dia').value;
     const notas = $('#observaciones').value.trim();
 
     $('[data-err="nombre"]').classList.toggle('show', !nombre);
-    $('[data-err="telefono"]').classList.toggle('show', !telefono);
     $('[data-err="hora"]').classList.toggle('show', !hora);
-    if (!nombre || !telefono || !hora) return;
-
-    const soloDigitos = telefono.replace(/\D/g, '');
-    if (soloDigitos.length < 9) {
-      const err = $('[data-err="telefono"]');
-      err.textContent = "El teléfono debe tener al menos 9 dígitos.";
-      err.classList.add('show');
-      return;
-    }
+    if (!nombre || !hora) return;
 
     const hoy = new Date();
     const dd = String(hoy.getDate()).padStart(2, '0');
@@ -346,9 +189,21 @@ setTimeout(() => {
     const productosParaSheets = cart.map((l) => {
       const p = PRODUCTOS.find((x) => x.id === l.id);
       const nombreProd = p ? p.nombre : l.id;
-      const { cantidadNum, unidadStr, precioNum, factorPeso } = calcularLinea(l, p);
-      const subtotalNum = Number((precioNum * cantidadNum * factorPeso).toFixed(2));
+      
+      const matchNum = l.cantidad.replace(',', '.').match(/[\d.]+/);
+      const cantidadNum = matchNum ? parseFloat(matchNum[0]) * l.uds : l.uds;
+      const unidadStr = l.cantidad.replace(/[\d.,]/g, '').trim() || 'ud';
+
+      let precioNum = 0;
+      if (p && p.precio) {
+        const matchPrecio = p.precio.replace(',', '.').match(/[\d.]+/);
+        if (matchPrecio) precioNum = parseFloat(matchPrecio[0]);
+      }
+
+      const subtotalNum = Number((precioNum * (matchNum ? parseFloat(matchNum[0]) : 1) * l.uds).toFixed(2));
       totalPedido += subtotalNum;
+
+      // ⚙️ Nombres ajustados exactamente a lo que espera Apps Script
       return {
         nombre: nombreProd,
         cantidad: cantidadNum,
@@ -361,9 +216,7 @@ setTimeout(() => {
     const lineas = cart.map((l) => {
       const p = PRODUCTOS.find((x) => x.id === l.id);
       const uds = l.uds > 1 ? `${l.uds} × ` : '';
-      const { cantidadNum, unidadStr, precioNum, factorPeso } = calcularLinea(l, p);
-      const sub = Number((precioNum * cantidadNum * factorPeso).toFixed(2));
-      return `• ${uds}*${p ? p.nombre : l.id}* — ${l.cantidad} (${l.opcion}) → ${sub.toFixed(2).replace('.', ',')} €`;
+      return `• ${uds}*${p ? p.nombre : l.id}* — ${l.cantidad} (${l.opcion})`;
     });
 
     const submitBtn = checkoutForm.querySelector('button[type="submit"]');
@@ -374,46 +227,47 @@ setTimeout(() => {
       '*🥩 NUEVO ENCARGO - CARNICERÍA RODRI*',
       `*ID Referencia:* ${idMostrar}`,
       `*Cliente:* ${nombre}`,
-      `*Teléfono:* ${telefono}`,
       `*Recogida:* ${dia} a las ${hora}`,
       notas ? `*Notas:* ${notas}` : null,
       '',
       '*Productos:*',
       ...lineas,
       '',
-      `*Total orientativo:* ${totalPedido.toFixed(2).replace('.', ',')} €`,
-      '',
       '¡Gracias por confiar en Carnicería Rodri! 🍖',
     ].filter((x) => x !== null).join('\n');
 
     enlaceWhatsAppPendiente = `https://wa.me/${TELEFONO}?text=${encodeURIComponent(textoWA)}`;
 
-    // Timeout de 8s para el fetch
     try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 8000);
+      // 🚀 Envío del Payload adaptado a las columnas de tu hoja de cálculo
       await fetch(APPS_SCRIPT_URL, {
         method: "POST",
         mode: "no-cors",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          token: TOKEN_SEGURO,
           codigoPedido: idMostrar,
           cliente: nombre,
-          telefono: telefono,
+          telefono: '', // Puedes mapear un input de teléfono si lo añades al HTML
           total: Number(totalPedido.toFixed(2)),
           estado: 'Pendiente',
           productos: productosParaSheets
-        }),
-        signal: controller.signal
+        })
       });
-      clearTimeout(timeoutId);
     } catch (error) {
       console.warn("Error background sheets:", error);
-    }
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Enviar encargo por WhatsApp";
 
-    // Mostrar el modal SIEMPRE, pase lo que pase
-    mostrarModal(idMostrar);
+      closeCart();
+      const modal = document.getElementById('modalConfirmacion');
+      if (modal) {
+        const modalId = document.getElementById('confirmacionIdPedido');
+        if (modalId) modalId.textContent = idMostrar;
+        modal.removeAttribute('hidden');
+        backdrop.hidden = false;
+      }
+    }
   }
 
   // ——— Eventos ———
@@ -440,8 +294,7 @@ setTimeout(() => {
     const inc = e.target.closest('[data-inc]');
     const dec = e.target.closest('[data-dec]');
     if (inc || dec) {
-      const el = inc || dec;
-      const i = Number(el.dataset.inc != null ? el.dataset.inc : el.dataset.dec);
+      const i = Number((inc || dec).dataset.inc ?? (inc || dec).dataset.dec);
       cart[i].uds += inc ? 1 : -1;
       if (cart[i].uds <= 0) cart.splice(i, 1);
       save(); renderCart();
@@ -451,44 +304,26 @@ setTimeout(() => {
     if (e.target.closest('[data-close-cart]')) return closeCart();
   });
 
-  // Botón WhatsApp del modal
   const btnWhatsAppModal = document.getElementById('btnEnviarWhatsApp');
   if (btnWhatsAppModal) {
-    btnWhatsAppModal.onclick = () => {
+    btnWhatsAppModal.addEventListener('click', () => {
       if (enlaceWhatsAppPendiente) {
-        window.open(enlaceWhatsAppPendiente, '_blank', 'noopener,noreferrer');
+        window.open(enlaceWhatsAppPendiente, '_blank');
       }
       const modal = document.getElementById('modalConfirmacion');
-      const modalBackdrop = document.getElementById('modalBackdrop');
-      if (modal) modal.setAttribute('hidden', '');
-      if (modalBackdrop) modalBackdrop.setAttribute('hidden', '');
-      document.body.classList.remove('no-scroll');
+      if (modal) modal.setAttribute('hidden', 'true');
+      backdrop.hidden = true;
       cart = []; save(); renderCart();
-    };
-  }
-
-  // Botón "Cerrar" del modal
-  const btnCerrarModal = document.getElementById('btnCerrarModal');
-  if (btnCerrarModal) {
-    btnCerrarModal.onclick = () => {
-      const modal = document.getElementById('modalConfirmacion');
-      const modalBackdrop = document.getElementById('modalBackdrop');
-      if (modal) modal.setAttribute('hidden', '');
-      if (modalBackdrop) modalBackdrop.setAttribute('hidden', '');
-      document.body.classList.remove('no-scroll');
-    };
+    });
   }
 
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeCart(); });
   $('#buscar').addEventListener('input', filtrar);
+  const checkoutForm = $('#checkout');
   if (checkoutForm) checkoutForm.addEventListener('submit', enviar);
   $('#vaciar').addEventListener('click', () => { cart = []; save(); renderCart(); });
-
-  $$('#nombre, #telefono, #hora').forEach((el) =>
-    el.addEventListener('input', () => {
-      const err = $(`[data-err="${el.id}"]`);
-      if (err) err.classList.remove('show');
-    }));
+  $$('#nombre, #hora').forEach((el) =>
+    el.addEventListener('input', () => $(`[data-err="${el.id}"]`).classList.remove('show')));
 
   renderCatalogo();
   renderCart();
