@@ -338,7 +338,7 @@
     enlaceWhatsAppPendiente = `https://wa.me/${TELEFONO}?text=${encodeURIComponent(textoWA)}`;
 
     // Timeout de 8s para el fetch
-    try {
+     try {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 8000);
       await fetch(APPS_SCRIPT_URL, {
@@ -360,10 +360,6 @@
     } catch (error) {
       console.warn("Error background sheets:", error);
     }
-
-    // Mostrar el modal SIEMPRE, pase lo que pase
-    mostrarModal(idMostrar);
-  }
 
   // ——— Eventos ———
   document.addEventListener('click', (e) => {
