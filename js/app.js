@@ -343,7 +343,6 @@
       const timeoutId = setTimeout(() => controller.abort(), 8000);
       await fetch(APPS_SCRIPT_URL, {
         method: "POST",
-        mode: "no-cors",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           token: TOKEN_SEGURO,
