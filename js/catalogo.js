@@ -32,7 +32,7 @@ window.PRODUCTOS = [
     id: 'chuleton', cat: 'vacuno', img: 'chuleton', etiqueta: 'Para brasa',
     nombre: 'Entrecot o Chuletón',
     desc: 'Vaca con buena infiltración de grasa, ideal a la parrilla.',
-    cantidades: ['1 pieza (aprox. 400 g)', '2 piezas', '4 piezas', 'Al corte grueso (1 kg)'],
+    cantidades: ['1 pieza (aprox. 400 g)', '2 piezas', '4 piezas', 'Corte mayor (1 kg)'],
     opcionLabel: 'Tipo de corte',
     opciones: ['Entrecot jugoso', 'Chuletón madurado con hueso', 'Corte grueso para brasa', 'Chuleta de lomo alto'],
   },
