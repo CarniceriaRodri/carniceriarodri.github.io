@@ -162,7 +162,8 @@ setTimeout(() => {
   }
 
  function calcularLinea(l, p) {
-  const matchNum = l.cantidad.replace(',', '.').match(/[\d.]+/);
+ // Leemos el número que está después del símbolo "|"
+const matchNum = l.cantidad.split('|')[1] || l.cantidad.match(/[\d.]+/);
   const cantidadNum = matchNum ? parseFloat(matchNum[0]) * l.uds : l.uds;
   
   let unidadStr = l.cantidad.toLowerCase();
@@ -213,7 +214,7 @@ setTimeout(() => {
           <img src="${img(p.img, 120, 120)}" alt="" width="60" height="60" loading="lazy" decoding="async">
           <div class="line-info">
             <strong>${escapeHtml(p.nombre)}</strong>
-            <span>${escapeHtml(l.cantidad)} · ${escapeHtml(l.opcion)}</span>
+            <span>${escapeHtml(l.cantidad.split('|')[0])} · ${escapeHtml(l.opcion)}</span>
             ${precioTexto}
           </div>
           <div class="stepper" aria-label="Unidades">
