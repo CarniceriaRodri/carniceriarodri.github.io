@@ -223,9 +223,10 @@ a { color: inherit; }
 .card-desc { color: var(--muted); font-size: .9rem; }
 
 .card-precio {
-  font: 700 1rem var(--display);
+  font: 700 1.2rem var(--display);
   color: var(--blood);
-  margin: .25rem 0 .5rem;
+  margin: .5rem 0;
+  /* Opcional: Añadir un poco de margen */
 }
 .card-precio small {
   font-weight: 400;
