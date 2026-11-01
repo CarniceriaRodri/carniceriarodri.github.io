@@ -251,14 +251,49 @@ window.PRODUCTOS = [
   },
 ]
 
-// Precios orientativos (prueba): € por kg o por unidad
+// Precios realistas (€ por kg o por unidad)
 const PRECIOS = {
-  'filetes-ternera': '14,90 €/kg', chuleton: '24,90 €/kg', solomillo: '32,00 €/kg', picada: '9,90 €/kg',
-  'guiso-ternera': '12,50 €/kg', 'lomo-cerdo': '8,90 €/kg', costillas: '6,90 €/kg', iberico: '19,90 €/kg',
-  'chuletas-cerdo': '7,50 €/kg', pollo: '5,90 €/kg', alitas: '4,90 €/kg', conejo: '9,50 €/kg',
-  cordero: '18,90 €/kg', hamburguesas: '1,50 €/ud', 'embutido-fresco': '8,50 €/kg', pinchos: '1,20 €/ud',
-  albondigas: '10,90 €/kg', jamon: '45,00 €/kg', embutidos: '28,00 €/kg', quesos: '18,00 €/kg',
-  fiambres: '12,00 €/kg', refrescos: '1,00 €/ud', 'cervezas-vinos': '1,20 €/ud', 'agua-zumos': '0,80 €/ud',
-  despensa: '3,00 €/ud', barbacoa: '6,00 €/ud', salsas: '2,50 €/ud',
+  // --- Vacuno ---
+  'filetes-ternera': '16,90 €/kg', 
+  chuleton: '28,90 €/kg', 
+  solomillo: '34,90 €/kg', 
+  picada: '10,50 €/kg',
+  'guiso-ternera': '13,90 €/kg', 
+
+  // --- Cerdo ---
+  'lomo-cerdo': '9,90 €/kg', 
+  costillas: '7,50 €/kg', 
+  iberico: '24,90 €/kg',
+  'chuletas-cerdo': '8,90 €/kg', 
+
+  // --- Aves ---
+  pollo: '6,50 €/kg', 
+  alitas: '5,90 €/kg', 
+  conejo: '11,50 €/kg',
+
+  // --- Cordero ---
+  cordero: '22,00 €/kg', 
+
+  // --- Elaborados ---
+  hamburguesas: '2,10 €/ud', 
+  'embutido-fresco': '9,50 €/kg', 
+  pinchos: '1,60 €/ud',
+  albondigas: '12,50 €/kg', 
+
+  // --- Charcutería ---
+  jamon: '55,00 €/kg', 
+  embutidos: '32,00 €/kg', 
+  quesos: '21,00 €/kg',
+  fiambres: '14,00 €/kg', 
+
+  // --- Bebidas ---
+  refrescos: '1,20 €/ud', 
+  'cervezas-vinos': '1,50 €/ud', 
+  'agua-zumos': '1,00 €/ud', 
+
+  // --- Despensa ---
+  despensa: '4,50 €/ud', 
+  barbacoa: '7,50 €/ud', 
+  salsas: '3,20 €/ud',
 }
 window.PRODUCTOS.forEach((p) => { p.precio = PRECIOS[p.id] })
