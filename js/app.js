@@ -233,7 +233,7 @@
     const submitBtn = checkoutForm ? checkoutForm.querySelector('button[type="submit"]') : null;
     if (submitBtn) {
       submitBtn.disabled = false;
-      submitBtn.textContent = "Enviar encargo por WhatsApp";
+      submitBtn.textContent = "Enviar pedido por WhatsApp";
     }
     closeCart();
     const modal = document.getElementById('modalConfirmacion');
@@ -338,13 +338,13 @@
     enlaceWhatsAppPendiente = `https://wa.me/${TELEFONO}?text=${encodeURIComponent(textoWA)}`;
 
     // Timeout de 8s para el fetch
-       // Timeout de 8s para el fetch
     try {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 8000);
-           await fetch(APPS_SCRIPT_URL, {
+      
+      await fetch(APPS_SCRIPT_URL, {
         method: "POST",
-        headers: { "Content-Type": "text/plain;charset=utf-8" }, // 👈 ESTO ES CLAVE
+        headers: { "Content-Type": "text/plain;charset=utf-8" }, // 👈 Evita el error CORS
         body: JSON.stringify({
           token: TOKEN_SEGURO,
           codigoPedido: idMostrar,
@@ -356,6 +356,11 @@
         }),
         signal: controller.signal
       });
+      
+      clearTimeout(timeoutId);
+    } catch (error) {
+      console.warn("Error background sheets:", error);
+    }
 
     // Mostrar el modal SIEMPRE, pase lo que pase
     mostrarModal(idMostrar);
