@@ -100,7 +100,7 @@ setTimeout(() => {
       </div>
     </article>`;
 }
-  function actualizarPrecioTarjeta(cardElement) {
+ function actualizarPrecioTarjeta(cardElement) {
   const selectCantidad = cardElement.querySelector('[data-field="cantidad"]');
   if (!selectCantidad) return;
   
@@ -111,23 +111,26 @@ setTimeout(() => {
   const matchNum = textoCantidad.replace(',', '.').match(/[\d.]+/);
   let cantidadNum = matchNum ? parseFloat(matchNum[0]) : 1;
   
-  let unidadStr = textoCantidad.replace(/[\d.,]/g, '').trim().toLowerCase();
-  if (/pieza|unidad|medall|tira|lata|botella|pack|garrafa|caja|cu[ñn]a/.test(unidadStr)) unidadStr = 'ud';
-  else if (/^g|gr|grs|gramos/.test(unidadStr)) unidadStr = 'gr';
-  else if (/^kg|kilo/.test(unidadStr)) unidadStr = 'kg';
-  
-  // Si es gramos, dividimos entre 1000 para el cálculo
-  let cantidadCalculo = cantidadNum;
-  if (unidadStr === 'gr') cantidadCalculo = cantidadNum / 1000;
+  let unidadStr = textoCantidad.toLowerCase();
+  let factorPeso = 1;
+
+  // 🧠 La misma lógica mejorada
+  if (unidadStr.includes('gr') || unidadStr.includes('g ') || unidadStr.includes('g)')) {
+    factorPeso = 0.001;
+  } else if (unidadStr.includes('ud') || unidadStr.includes('unidad') || unidadStr.includes('pieza') || unidadStr.includes('medallon') || unidadStr.includes('lata')) {
+    factorPeso = 1;
+  } else {
+    factorPeso = 1; // kg o "corte"
+  }
   
   const matchPrecio = p.precio.replace(',', '.').match(/[\d.]+/);
   const precioNum = matchPrecio ? parseFloat(matchPrecio[0]) : 0;
   
-  const precioTotal = Number((precioNum * cantidadCalculo).toFixed(2));
+  // Calculamos el precio final
+  const precioTotal = Number((precioNum * cantidadNum * factorPeso).toFixed(2));
   const precioSpan = document.getElementById(`precio-${p.id}`);
   
   if (precioSpan) {
-    // Mostramos el precio calculado sin la palabra "orientativo"
     precioSpan.textContent = `${precioTotal.toFixed(2).replace('.', ',')} €`; 
   }
 }
@@ -158,23 +161,33 @@ setTimeout(() => {
     $('[data-query]', sin).textContent = $('#buscar').value.trim();
   }
 
-  // ——— Cálculo de precio de una línea ———
-  function calcularLinea(l, p) {
-    const matchNum = l.cantidad.replace(',', '.').match(/[\d.]+/);
-    const cantidadNum = matchNum ? parseFloat(matchNum[0]) * l.uds : l.uds;
-    let unidadStr = l.cantidad.replace(/[\d.,]/g, '').trim().toLowerCase();
-    if (/pieza|unidad|medall|tira|lata|botella|pack|garrafa|caja|cu[ñn]a/.test(unidadStr)) unidadStr = 'ud';
-    else if (/^g|gr|grs|gramos/.test(unidadStr)) unidadStr = 'gr';
-    else if (/^kg|kilo/.test(unidadStr)) unidadStr = 'kg';
-    else unidadStr = 'ud';
-    let precioNum = 0;
-    if (p && p.precio) {
-      const m = p.precio.replace(',', '.').match(/[\d.]+/);
-      if (m) precioNum = parseFloat(m[0]);
-    }
-    const factorPeso = unidadStr === 'gr' ? 0.001 : 1;
-    return { cantidadNum, unidadStr, precioNum, factorPeso };
+ function calcularLinea(l, p) {
+  const matchNum = l.cantidad.replace(',', '.').match(/[\d.]+/);
+  const cantidadNum = matchNum ? parseFloat(matchNum[0]) * l.uds : l.uds;
+  
+  let unidadStr = l.cantidad.toLowerCase();
+  let factorPeso = 1; // Por defecto asumimos que es kg o unidad
+
+  // 🧠 Lógica mejorada para saber qué es cada cosa
+  if (unidadStr.includes('gr') || unidadStr.includes('g ') || unidadStr.includes('g)')) {
+    // Si pone "500 gr", "250g", etc.
+    factorPeso = 0.001;
+  } else if (unidadStr.includes('ud') || unidadStr.includes('unidad') || unidadStr.includes('pieza') || unidadStr.includes('medallon') || unidadStr.includes('lata')) {
+    // Si es por unidades
+    factorPeso = 1; 
+  } else {
+    // Si pone "1 kg", "1.5 kg" o "Al corte grueso (1 kg)" lo dejamos como kg (factor 1)
+    factorPeso = 1;
   }
+
+  let precioNum = 0;
+  if (p && p.precio) {
+    const m = p.precio.replace(',', '.').match(/[\d.]+/);
+    if (m) precioNum = parseFloat(m[0]);
+  }
+  
+  return { cantidadNum, unidadStr, precioNum, factorPeso };
+}
 
   // ——— Panel del encargo ———
   function renderCart() {
