@@ -453,7 +453,7 @@
       rows.forEach(row => {
         const product = PRODUCTOS.find(p => p.id === row.id);
         if (!product || !Number.isFinite(Number(row.base_price_cents))) return;
-        const unit = (product.precio && product.precio.match(/\\/(kg|ud)/i) || [,'ud'])[1].toLowerCase();
+        const unit = (product.precio && product.precio.match(/\/(kg|ud)/i) || [,'ud'])[1].toLowerCase();
         const basePrice = Number(row.base_price_cents) / 100;
         product.precio = basePrice.toFixed(2).replace('.', ',') + ' €/' + unit;
         if (Array.isArray(product.cantidades)) {
