@@ -441,7 +441,7 @@
 
   async function sincronizarPrecios() {
     try {
-      const response = await fetch('https://ugqiomoywgpkmogcdjqn.supabase.co/rest/v1/products?select=id,base_price_cents,active&apikey=sb_publishable_FU3fmq19uyZ4jUmF_uhFgg_ywVmFPrL', {
+      const response = await fetch('https://ugqiomoywgpkmogcdjqn.supabase.co/rest/v1/products?select=id,name,base_price_cents,active&apikey=sb_publishable_FU3fmq19uyZ4jUmF_uhFgg_ywVmFPrL', {
         method: 'GET',
         mode: 'cors',
         cache: 'no-store'
