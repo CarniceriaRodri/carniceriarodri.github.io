@@ -441,10 +441,14 @@
 
   async function sincronizarPrecios() {
     try {
-      const response = await fetch('https://ugqiomoywgpkmogcdjqn.supabase.co/rest/v1/products?select=id,name,base_price_cents,active&apikey=sb_publishable_FU3fmq19uyZ4jUmF_uhFgg_ywVmFPrL', {
+      const response = await fetch('https://ugqiomoywgpkmogcdjqn.supabase.co/rest/v1/products?select=id,name,base_price_cents,active', {
         method: 'GET',
         mode: 'cors',
-        cache: 'no-store'
+        cache: 'no-store',
+        headers: {
+          'apikey': 'sb_publishable_FU3fmq19uyZ4jUmF_uhFgg_ywVmFPrL',
+          'Authorization': 'Bearer sb_publishable_FU3fmq19uyZ4jUmF_uhFgg_ywVmFPrL'
+        }
       });
       if (!response.ok) throw new Error('Supabase respondió ' + response.status);
       const rows = await response.json();
