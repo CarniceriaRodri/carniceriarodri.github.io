@@ -473,8 +473,14 @@
     }
   }
 
-  sincronizarPrecios().finally(() => {
+  // Mostrar el catálogo local inmediatamente, sin esperar a Supabase.
+  renderCatalogo();
+  renderCart();
+
+  // Actualizar precios en segundo plano; si falla la conexión,
+  // el catálogo seguirá visible con los precios locales.
+  sincronizarPrecios().then(() => {
     renderCatalogo();
     renderCart();
-  });
+  }); 
 })();
