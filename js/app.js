@@ -454,7 +454,21 @@
         const product = PRODUCTOS.find(p => p.id === row.id);
         if (!product || !Number.isFinite(Number(row.base_price_cents))) return;
         const unit = (product.precio && product.precio.match(/\\/(kg|ud)/i) || [,'ud'])[1].toLowerCase();
-        product.precio = (Number(row.base_price_cents) / 100).toFixed(2).replace('.', ',') + ' €/' + unit;
+        const basePrice = Number(row.base_price_cents) / 100;
+        product.precio = basePrice.toFixed(2).replace('.', ',') + ' €/' + unit;
+        if (Array.isArray(product.cantidades)) {
+          product.cantidades = product.cantidades.map(label => {
+            const amountMatch = label.match(/[0-9]+(?:[.,][0-9]+)?/);
+            if (!amountMatch) return label;
+            const amount = Number(amountMatch[0].replace(',', '.'));
+            const lower = label.toLowerCase();
+            let factor = amount;
+            if (/gr|gram/.test(lower)) factor = amount / 1000;
+            else if (/kg|kilo/.test(lower)) factor = amount;
+            const value = (basePrice * factor).toFixed(2).replace('.', ',');
+            return label.replace(/-\\s*[0-9]+(?:[.,][0-9]+)?\\s*€/, '- ' + value + ' €');
+          });
+        }
       });
     } catch (error) {
       console.warn('No se pudieron sincronizar los precios; se muestran los precios locales.', error);
