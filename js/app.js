@@ -439,60 +439,42 @@
       if (err) err.classList.remove('show');
     }));
 
-  
-async function sincronizarPrecios() {
-  try {
-    const response = await fetch(
-      'https://ugqiomoywgpkmogcdjqn.supabase.co/rest/v1/products?select=id,base_price_cents,active',
-      {
+  async function sincronizarPrecios() {
+    try {
+      const response = await fetch('https://ugqiomoywgpkmogcdjqn.supabase.co/rest/v1/products?select=id,base_price_cents,active&apikey=sb_publishable_FU3fmq19uyZ4jUmF_uhFgg_ywVmFPrL', {
         method: 'GET',
-        headers: {
-          'apikey': 'sb_publishable_FU3fmq19uyZ4jUmF_uhFgg_ywVmFPrL',
-          'Accept': 'application/json'
-        },
+        mode: 'cors',
         cache: 'no-store'
-      }
-    );
-
-    if (!response.ok) throw new Error('Supabase respondió ' + response.status);
-
-    const rows = await response.json();
-
-    rows.forEach(row => {
-      const product = PRODUCTOS.find(p => p.id === row.id);
-      if (!product || row.base_price_cents == null || !Number.isFinite(Number(row.base_price_cents))) return;
-
-      const basePrice = Number(row.base_price_cents) / 100;
-      const usaPeso = Array.isArray(product.cantidades) &&
-        product.cantidades.some(label => /gr|gram|kg|kilo/i.test(label));
-      const unit = usaPeso ? 'kg' : 'ud';
-
-      product.precio = basePrice.toFixed(2).replace('.', ',') + ' €/' + unit;
-
-      if (Array.isArray(product.cantidades)) {
-        product.cantidades = product.cantidades.map(label => {
-          const amountMatch = label.match(/[0-9]+(?:[.,][0-9]+)?/);
-          if (!amountMatch) return label;
-
-          const amount = Number(amountMatch[0].replace(',', '.'));
-          const lower = label.toLowerCase();
-          let factor = amount;
-
-          if (/gr|gram/.test(lower)) factor = amount / 1000;
-          else if (/kg|kilo/.test(lower)) factor = amount;
-
-          const value = (basePrice * factor).toFixed(2).replace('.', ',');
-          return label.replace(/-\s*[0-9]+(?:[.,][0-9]+)?\s*€/i, '- ' + value + ' €');
-        });
-      }
-    });
-  } catch (error) {
-    console.warn('No se pudieron sincronizar los precios; se muestran los precios locales.', error);
+      });
+      if (!response.ok) throw new Error('Supabase respondió ' + response.status);
+      const rows = await response.json();
+      rows.forEach(row => {
+        const product = PRODUCTOS.find(p => p.id === row.id);
+        if (!product || !Number.isFinite(Number(row.base_price_cents))) return;
+        const unit = (product.precio && product.precio.match(/\/(kg|ud)/i) || [,'ud'])[1].toLowerCase();
+        const basePrice = Number(row.base_price_cents) / 100;
+        product.precio = basePrice.toFixed(2).replace('.', ',') + ' €/' + unit;
+        if (Array.isArray(product.cantidades)) {
+          product.cantidades = product.cantidades.map(label => {
+            const amountMatch = label.match(/[0-9]+(?:[.,][0-9]+)?/);
+            if (!amountMatch) return label;
+            const amount = Number(amountMatch[0].replace(',', '.'));
+            const lower = label.toLowerCase();
+            let factor = amount;
+            if (/gr|gram/.test(lower)) factor = amount / 1000;
+            else if (/kg|kilo/.test(lower)) factor = amount;
+            const value = (basePrice * factor).toFixed(2).replace('.', ',');
+            return label.replace(/-\s*[0-9]+(?:[.,][0-9]+)?\s*€/i, '- ' + value + ' €');
+          });
+        }
+      });
+    } catch (error) {
+      console.warn('No se pudieron sincronizar los precios; se muestran los precios locales.', error);
+    }
   }
-}
 
-sincronizarPrecios().finally(() => {
-  renderCatalogo();
-  renderCart();
-});
+  sincronizarPrecios().finally(() => {
+    renderCatalogo();
+    renderCart();
+  });
 })();
