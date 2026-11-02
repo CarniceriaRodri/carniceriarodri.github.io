@@ -1,7 +1,7 @@
 // Sincroniza precios públicos desde Supabase.
 (async function () {
-  const URL = 'https://ugqiomoywgpkmogcdjqn.supabase.co/rest/v1/products?select=id,base_price_cents,active';
   const KEY = 'sb_publishable_FU3fmq19uyZ4jUmF_uhFgg_ywVmFPrL';
+  const URL = 'https://ugqiomoywgpkmogcdjqn.supabase.co/rest/v1/products?select=id,base_price_cents,active&apikey=' + encodeURIComponent(KEY);
 
   function mostrarAviso(texto, ok) {
     let aviso = document.getElementById('aviso-precios');
@@ -18,10 +18,7 @@
 
   try {
     mostrarAviso('Comprobando precios...', false);
-    const respuesta = await fetch(URL, {
-      headers: { apikey: KEY, Authorization: 'Bearer ' + KEY },
-      cache: 'no-store'
-    });
+    const respuesta = await fetch(URL, { method: 'GET', mode: 'cors', cache: 'no-store' });
     if (!respuesta.ok) throw new Error('Error HTTP ' + respuesta.status);
     const filas = await respuesta.json();
     let cuenta = 0;
