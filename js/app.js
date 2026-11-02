@@ -464,7 +464,7 @@
             if (/gr|gram/.test(lower)) factor = amount / 1000;
             else if (/kg|kilo/.test(lower)) factor = amount;
             const value = (basePrice * factor).toFixed(2).replace('.', ',');
-            return label.replace(/-\\s*[0-9]+(?:[.,][0-9]+)?\\s*€/, '- ' + value + ' €');
+            return label.replace(/-\s*[0-9]+(?:[.,][0-9]+)?\s*€/i, '- ' + value + ' €');
           });
         }
       });
