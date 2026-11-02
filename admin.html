@@ -47,8 +47,7 @@ button.secondary{background:#eee8e1;color:var(--ink)}button:disabled{opacity:.55
 <script>
 (() => {
  const SUPABASE_URL = 'https://ugqiomoywgpkmogcdjqn.supabase.co';
- const SUPABASE_KEY = 'const SUPABASE_KEY = 'sb_publishable_FU3fmq19uyZ4jUmF_uhFgg_ywVmFPrL';';
- const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  const SUPABASE_KEY = 'sb_publishable_FU3fmq19uyZ4jUmF_uhFgg_ywVmFPrL'; const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
  const $ = id => document.getElementById(id);
  const euro = cents => (Number(cents || 0)/100).toFixed(2).replace('.', ',') + ' €';
  const centsFromInput = value => Math.round(Number(String(value).replace(',', '.')) * 100);
