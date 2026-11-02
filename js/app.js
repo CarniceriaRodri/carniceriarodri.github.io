@@ -449,7 +449,14 @@
       if (!response.ok) throw new Error('Supabase respondió ' + response.status);
       const rows = await response.json();
       rows.forEach(row => {
-        const product = PRODUCTOS.find(p => p.id === row.id);
+        const normalizar = texto => String(texto || '')
+  .normalize('NFD')
+  .replace(/[\u0300-\u036f]/g, '')
+  .toLowerCase()
+  .replace(/[^a-z0-9]/g, '');
+
+const product = PRODUCTOS.find(p => String(p.id) === String(row.id))
+  || PRODUCTOS.find(p => normalizar(p.nombre) === normalizar(row.name));
         if (!product || !Number.isFinite(Number(row.base_price_cents))) return;
         const unit = (product.precio && product.precio.match(/\/(kg|ud)/i) || [,'ud'])[1].toLowerCase();
         const basePrice = Number(row.base_price_cents) / 100;
