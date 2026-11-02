@@ -1,4 +1,4 @@
-// Sincroniza precios públicos desde Supabase sin depender del panel de administración.
+// Sincroniza precios públicos desde Supabase.
 (async function () {
   const URL = 'https://ugqiomoywgpkmogcdjqn.supabase.co/rest/v1/products?select=id,base_price_cents,active';
   const KEY = 'sb_publishable_FU3fmq19uyZ4jUmF_uhFgg_ywVmFPrL';
@@ -8,17 +8,16 @@
     if (!aviso) {
       aviso = document.createElement('p');
       aviso.id = 'aviso-precios';
-      aviso.style.cssText = 'margin:10px 0;padding:10px;border-radius:8px;font-size:14px;background:#f3f3f3;color:#333';
-      const chips = document.getElementById('chips');
-      if (chips && chips.parentNode) chips.parentNode.insertBefore(aviso, chips);
+      aviso.style.cssText = 'margin:10px auto;padding:12px;max-width:1100px;border-radius:8px;font-size:14px;background:#fff3e0;color:#333;position:relative;z-index:10';
+      const destino = document.getElementById('chips') || document.querySelector('.catalogo-head') || document.querySelector('main') || document.body;
+      destino.parentNode.insertBefore(aviso, destino);
     }
-    if (aviso) {
-      aviso.textContent = texto;
-      aviso.style.background = ok ? '#e8f5e9' : '#fff3e0';
-    }
+    aviso.textContent = texto;
+    aviso.style.background = ok ? '#e8f5e9' : '#fff3e0';
   }
 
   try {
+    mostrarAviso('Comprobando precios...', false);
     const respuesta = await fetch(URL, {
       headers: { apikey: KEY, Authorization: 'Bearer ' + KEY },
       cache: 'no-store'
@@ -30,7 +29,6 @@
     filas.forEach(fila => {
       const p = window.PRODUCTOS && window.PRODUCTOS.find(item => item.id === fila.id);
       if (!p || fila.base_price_cents == null) return;
-
       const precio = Number(fila.base_price_cents) / 100;
       if (!Number.isFinite(precio)) return;
       const unidad = (p.precio && p.precio.match(/\/(kg|ud)/i) || [null, 'ud'])[1].toLowerCase();
@@ -55,7 +53,9 @@
         const precioEl = tarjeta.querySelector('.card-precio');
         if (precioEl) precioEl.innerHTML = p.precio + ' <small>orientativo</small>';
         const selector = tarjeta.querySelector('[data-field="cantidad"]');
-        if (selector) selector.innerHTML = p.cantidades.map(x => '<option>' + String(x).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])) + '</option>').join('');
+        if (selector && Array.isArray(p.cantidades)) {
+          selector.innerHTML = p.cantidades.map(x => '<option>' + String(x).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])) + '</option>').join('');
+        }
       }
       cuenta++;
     });
@@ -63,7 +63,7 @@
     if (cuenta) mostrarAviso('Precios actualizados desde el panel (' + cuenta + ' productos).', true);
     else mostrarAviso('Conexión correcta, pero no se encontraron productos coincidentes.', false);
   } catch (error) {
-    mostrarAviso('No se pudieron actualizar los precios. Se mantienen los precios de la web. ' + error.message, false);
+    mostrarAviso('No se pudieron actualizar los precios. ' + error.message, false);
     console.error('Sincronización de precios:', error);
   }
 })();
