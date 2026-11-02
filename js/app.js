@@ -495,4 +495,4 @@ sincronizarPrecios().finally(() => {
   renderCatalogo();
   renderCart();
 });
-  
+})();
