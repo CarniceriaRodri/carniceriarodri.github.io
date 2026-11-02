@@ -446,8 +446,8 @@
         mode: 'cors',
         cache: 'no-store',
         headers: {
-          'apikey': 'sb_publishable_FU3fmq19uyZ4jUmF_uhFgg_ywVmFPrL',
-          'Authorization': 'Bearer sb_publishable_FU3fmq19uyZ4jUmF_uhFgg_ywVmFPrL'
+          'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVncWlvbW95d2dwa21vZ2NkanFuIiwicm9sZSI6ImFub24iLCJpYXQiMTc5MzYwNzQ5NCwiZXhwIjoyMTA5MTgzNDk0fQ.k--iBQrSD_raY-TQn01ZHPIkZJ5Xm_KrxEmwY08po3Q',
+'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVncWlvbW95d2dwa21vZ2NkanFuIiwicm9sZSI6ImFub24iLCJpYXQiMTc5MzYwNzQ5NCwiZXhwIjoyMTA5MTgzNDk0fQ.k--iBQrSD_raY-TQn01ZHPIkZJ5Xm_KrxEmwY08po3Q'
         }
       });
       if (!response.ok) throw new Error('Supabase respondió ' + response.status);
