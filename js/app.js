@@ -439,6 +439,30 @@
       if (err) err.classList.remove('show');
     }));
 
-  renderCatalogo();
-  renderCart();
+  async function sincronizarPrecios() {
+    try {
+      const response = await fetch('https://ugqiomoywgpkmogcdjqn.supabase.co/rest/v1/products?select=id,base_price_cents,active', {
+        headers: {
+          apikey: 'sb_publishable_FU3fmq19uyZ4jUmF_uhFgg_ywVmFPrL',
+          Authorization: 'Bearer sb_publishable_FU3fmq19uyZ4jUmF_uhFgg_ywVmFPrL'
+        },
+        cache: 'no-store'
+      });
+      if (!response.ok) throw new Error('Supabase respondió ' + response.status);
+      const rows = await response.json();
+      rows.forEach(row => {
+        const product = PRODUCTOS.find(p => p.id === row.id);
+        if (!product || !Number.isFinite(Number(row.base_price_cents))) return;
+        const unit = (product.precio && product.precio.match(/\\/(kg|ud)/i) || [,'ud'])[1].toLowerCase();
+        product.precio = (Number(row.base_price_cents) / 100).toFixed(2).replace('.', ',') + ' €/' + unit;
+      });
+    } catch (error) {
+      console.warn('No se pudieron sincronizar los precios; se muestran los precios locales.', error);
+    }
+  }
+
+  sincronizarPrecios().finally(() => {
+    renderCatalogo();
+    renderCart();
+  });
 })();
