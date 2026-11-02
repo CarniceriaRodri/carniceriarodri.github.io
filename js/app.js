@@ -449,10 +449,6 @@
       });
       if (!response.ok) throw new Error('Supabase respondió ' + response.status);
       const rows = await response.json();
-      const pruebaPrecio = rows.find(row => String(row.id) === 'filetes-ternera');
-      alert(pruebaPrecio
-        ? 'Prueba Supabase: conexión correcta. Filetes de Ternera recibido: ' + (Number(pruebaPrecio.base_price_cents) / 100).toFixed(2) + ' €.'
-        : 'Prueba Supabase: conexión correcta, pero no llegó el producto filetes-ternera. Filas recibidas: ' + rows.length);
       rows.forEach(row => {
         const normalizar = texto => String(texto || '')
   .normalize('NFD')
@@ -481,7 +477,6 @@ const product = PRODUCTOS.find(p => String(p.id) === String(row.id))
         }
       });
     } catch (error) {
-      alert('Prueba Supabase: ERROR al conectar o leer los datos. ' + error.message);
       console.warn('No se pudieron sincronizar los precios; se muestran los precios locales.', error);
     }
   }
