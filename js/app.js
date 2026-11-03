@@ -77,7 +77,7 @@
               <span>${escapeHtml(p.opcionLabel)}</span>
               <select data-field="opcion">${p.opciones.map((o) => `<option>${escapeHtml(o)}</option>`).join('')}</select>
             </label>
-            ${p.precio ? `<p class="card-precio" data-price>${escapeHtml(p.precio)} </p>` : ''}
+            <p class="card-precio" data-price>${escapeHtml(p.precio || 'Precio a consultar')}</p>
             <label>
               <span>Cantidad</span>
               <select data-field="cantidad">${p.cantidades.map((o) => `<option>${escapeHtml(o)}</option>`).join('')}</select>
@@ -533,39 +533,38 @@ const product = PRODUCTOS.find(p => String(p.id) === String(row.id))
         );
         if (optionsResponse.ok) {
           const optionRows = await optionsResponse.json();
-          const picada = PRODUCTOS.find(p => p.id === 'picada');
-          if (picada) {
-            PRODUCTOS.forEach(product => {
-              product.cantidadesOriginales = product.cantidades.slice();
-              product.factoresOpciones = {};
-              const configured = window.FACTORES_OPCIONES && window.FACTORES_OPCIONES[product.id];
-              if (configured) Object.entries(configured).forEach(([label, factor]) => {
-                product.factoresOpciones[normalizarClave(label)] = factor;
-              });
-              product.preciosOpciones = {};
+          PRODUCTOS.forEach(product => {
+            product.cantidadesOriginales = Array.isArray(product.cantidades) ? product.cantidades.slice() : [];
+            product.factoresOpciones = {};
+            const configured = window.FACTORES_OPCIONES && window.FACTORES_OPCIONES[product.id];
+            if (configured) Object.entries(configured).forEach(([label, factor]) => {
+              product.factoresOpciones[normalizarClave(label)] = factor;
             });
-            optionRows.forEach(row => {
-              const product = PRODUCTOS.find(p => String(p.id) === String(row.product_id));
-              if (!product || !row.label) return;
+            product.preciosOpciones = {};
+          });
+          optionRows.forEach(row => {
+            const product = PRODUCTOS.find(p => String(p.id) === String(row.product_id));
+            if (!product || !row.label) return;
 
-              const label = String(row.label).trim();
-              const key = normalizarClave(label);
+            const label = String(row.label).trim();
+            const key = normalizarClave(label);
 
-              // Las opciones OFF se retiran de la tienda, aunque sigan guardadas en administración.
-              if (row.active === false) {
-                product.opciones = product.opciones.filter(option => normalizarClave(option) !== key);
-                return;
-              }
+            // Las opciones OFF se retiran de la tienda, aunque sigan guardadas en administración.
+            if (row.active === false) {
+              product.opciones = (Array.isArray(product.opciones) ? product.opciones : [])
+                .filter(option => normalizarClave(option) !== key);
+              return;
+            }
 
-              if (!product.opciones.some(option => normalizarClave(option) === key)) {
-                product.opciones.push(label);
-              }
+            if (!Array.isArray(product.opciones)) product.opciones = [];
+            if (!product.opciones.some(option => normalizarClave(option) === key)) {
+              product.opciones.push(label);
+            }
 
-              if (Number.isFinite(Number(row.price_cents))) {
-                product.preciosOpciones[key] = Number(row.price_cents) / 100;
-              }
-            });
-          }
+            if (Number.isFinite(Number(row.price_cents))) {
+              product.preciosOpciones[key] = Number(row.price_cents) / 100;
+            }
+          });
         }
       }
     } catch (error) {
