@@ -42,7 +42,9 @@
       CATEGORIAS.map((c) => `<button type="button" class="chip" data-chip="${escapeHtml(c.id)}">${escapeHtml(c.nombre)}</button>`).join('');
 
     $('#secciones').innerHTML = CATEGORIAS.map((c, i) => {
-      const productos = PRODUCTOS.filter((p) => p.cat === c.id);
+      // Solo se muestran productos que conservan al menos una opción activa.
+      const productos = PRODUCTOS.filter((p) => p.cat === c.id && Array.isArray(p.opciones) && p.opciones.length > 0);
+      if (!productos.length) return '';
       return `
         <section class="cat" id="cat-${escapeHtml(c.id)}" data-cat="${escapeHtml(c.id)}">
           <header class="cat-head">
