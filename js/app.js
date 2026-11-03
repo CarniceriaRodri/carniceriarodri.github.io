@@ -70,15 +70,15 @@
         <div class="card-body">
           <h4>${escapeHtml(p.nombre)}</h4>
           <p class="card-desc">${escapeHtml(p.desc)}</p>
-          ${p.precio ? `<p class="card-precio" data-price>${escapeHtml(p.precio)} <small>orientativo</small></p>` : ''}
           <div class="card-fields">
-            <label>
-              <span>Cantidad</span>
-              <select data-field="cantidad">${p.cantidades.map((o) => `<option>${escapeHtml(o)}</option>`).join('')}</select>
-            </label>
             <label>
               <span>${escapeHtml(p.opcionLabel)}</span>
               <select data-field="opcion">${p.opciones.map((o) => `<option>${escapeHtml(o)}</option>`).join('')}</select>
+            </label>
+            ${p.precio ? `<p class="card-precio" data-price>${escapeHtml(p.precio)} <small>orientativo</small></p>` : ''}
+            <label>
+              <span>Cantidad</span>
+              <select data-field="cantidad">${p.cantidades.map((o) => `<option>${escapeHtml(o)}</option>`).join('')}</select>
             </label>
           </div>
           <button type="button" class="btn btn-add" data-add>
