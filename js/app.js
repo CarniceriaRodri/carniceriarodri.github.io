@@ -380,14 +380,14 @@
     if (priceEl) priceEl.innerHTML = escapeHtml(price) + ' <small>orientativo</small>';
     const cantidad = cardEl.querySelector('[data-field="cantidad"]');
     const original = p.cantidadesOriginales || p.cantidades;
-    const priceNum = Number(price.replace(',', '.').match(/[\\d.]+/)[0]);
+    const priceNum = Number(price.replace(',', '.').match(/[\d.]+/)[0]);
     cantidad.innerHTML = original.map(label => {
       const m = label.match(/[0-9]+(?:[.,][0-9]+)?/);
       if (!m) return '<option>' + escapeHtml(label) + '</option>';
       const amount = Number(m[0].replace(',', '.'));
       const factor = /gr|gram/i.test(label) ? amount / 1000 : amount;
       const value = (priceNum * factor).toFixed(2).replace('.', ',');
-      const updated = label.replace(/-\\s*[0-9]+(?:[.,][0-9]+)?\\s*€/i, '- ' + value + ' €');
+      const updated = label.replace(/-\s*[0-9]+(?:[.,][0-9]+)?\s*€/i, '- ' + value + ' €');
       return '<option>' + escapeHtml(updated) + '</option>';
     }).join('');
   });
@@ -531,7 +531,7 @@ const product = PRODUCTOS.find(p => String(p.id) === String(row.id))
   }
 
   function normalizarClave(texto) {
-    return String(texto || '').normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]/g, '');
+    return String(texto || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]/g, '');
   }
 
   // Mostrar el catálogo local inmediatamente, sin esperar a Supabase.
