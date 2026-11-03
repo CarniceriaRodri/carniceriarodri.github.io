@@ -169,6 +169,35 @@ a { color: inherit; }
 .search svg { width: 18px; height: 18px; color: var(--muted); flex-shrink: 0; }
 .search input { border: 0; background: none; outline: none; font: 500 .95rem var(--body); width: 100%; color: var(--ink); }
 
+.category-index {
+  margin: 1.8rem 0 1.2rem;
+  padding: 1.4rem;
+  background: #fffaf2;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+.category-index h3 { font-size: clamp(1.5rem, 3vw, 2rem); }
+.index-intro { color: var(--muted); margin-top: .4rem; }
+.index-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: .55rem;
+  margin-top: 1rem;
+}
+.indice-item {
+  display: flex;
+  align-items: center;
+  min-height: 42px;
+  padding: .6rem .85rem;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--paper);
+  color: var(--ink-2);
+  font: 600 .88rem var(--body);
+  text-decoration: none;
+  transition: background .2s, border-color .2s, color .2s;
+}
+.indice-item:hover { background: var(--ink); border-color: var(--ink); color: var(--paper); }
 .category-empty {
   padding: 1rem 1.1rem;
   border: 1px dashed var(--line);
@@ -176,59 +205,32 @@ a { color: inherit; }
   color: var(--muted);
   background: rgba(255,250,242,.55);
 }
-.cat { margin-top: .7rem; }
-.cat-accordion {
-  overflow: hidden;
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  background: #fffaf2;
-  box-shadow: 0 5px 18px -16px rgba(27, 21, 19, .45);
-}
-.cat-summary {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  min-height: 86px;
-  padding: .9rem 1.2rem;
-  cursor: pointer;
-  list-style: none;
-  transition: background .2s;
-}
-.cat-summary::-webkit-details-marker { display: none; }
-.cat-summary:hover { background: var(--paper-2); }
-.cat-summary:focus-visible { outline: 3px solid var(--brass); outline-offset: -4px; }
-.cat-n {
-  flex: 0 0 2.6rem;
-  font: 900 2.2rem/.9 var(--display);
-  color: transparent;
-  -webkit-text-stroke: 1.2px var(--blood);
-}
-.cat-summary-text { display: grid; gap: .2rem; min-width: 0; }
-.cat-title { font: 700 clamp(1.15rem, 2.5vw, 1.55rem) var(--display); color: var(--ink); }
-.cat-subtitle { color: var(--muted); font-size: .86rem; }
-.cat-toggle {
-  width: 12px; height: 12px; flex: 0 0 12px;
-  margin-left: auto;
-  border-right: 2px solid var(--blood);
-  border-bottom: 2px solid var(--blood);
-  transform: rotate(45deg) translateY(-3px);
-  transition: transform .2s ease;
-}
-.cat-accordion[open] .cat-toggle { transform: rotate(225deg) translate(-2px, -1px); }
-.cat-content { padding: 0 1.2rem 1.2rem; }
 .back-to-index {
   display: inline-flex;
   margin-top: 1.2rem;
-  padding: .65rem 1rem;
-  border: 1px solid var(--blood);
+  padding: .55rem .85rem;
+  border: 1px solid var(--line);
   border-radius: 999px;
-  background: transparent;
   color: var(--blood);
-  font: 600 .84rem var(--body);
-  cursor: pointer;
-  transition: background .2s, color .2s;
+  font: 600 .82rem var(--body);
+  text-decoration: none;
 }
-.back-to-index:hover { background: var(--blood); color: #fff; }
+.back-to-index:hover { background: var(--blood); color: #fff; border-color: var(--blood); }
+
+.chips {
+  position: sticky; top: var(--topbar); z-index: 20; display: flex; gap: .5rem; overflow-x: auto;
+  padding: .8rem 0; margin: 0 0 1rem; background: var(--paper); scrollbar-width: none;
+  border-bottom: 1px solid var(--line);
+}
+.chips::-webkit-scrollbar { display: none; }
+.chip {
+  flex-shrink: 0; cursor: pointer; border: 1.5px solid var(--line); background: transparent;
+  border-radius: 999px; padding: .5rem 1rem; font: 600 .85rem var(--body); color: var(--ink-2); transition: all .2s;
+}
+.chip:hover { border-color: var(--ink); color: var(--ink); }
+.chip.is-active { background: var(--ink); border-color: var(--ink); color: var(--paper); }
+
+.cat { padding-top: 2.4rem; }
 
 /* ✅ CORREGIDO: sin opacity: 0, las cabeceras se ven siempre */
 .cat-head {
@@ -416,9 +418,6 @@ textarea { resize: vertical; }
   .cart-btn { margin-left: auto; }
 }
 @media (max-width: 700px) {
-  .cat-summary { min-height: 76px; padding: .8rem .9rem; gap: .75rem; }
-  .cat-n { flex-basis: 2rem; font-size: 1.9rem; }
-  .cat-content { padding: 0 .9rem 1rem; }
   .cart-btn span:not(.cart-count) { display: none; }
   .cart-btn { padding: .5rem .55rem .5rem .8rem; }
   .hero { min-height: 92vh; align-items: end; }
