@@ -70,7 +70,7 @@
         <div class="card-body">
           <h4>${escapeHtml(p.nombre)}</h4>
           <p class="card-desc">${escapeHtml(p.desc)}</p>
-          ${p.precio ? `<p class="card-precio">${escapeHtml(p.precio)} <small>orientativo</small></p>` : ''}
+          ${p.precio ? `<p class="card-precio" data-price>${escapeHtml(p.precio)} <small>orientativo</small></p>` : ''}
           <div class="card-fields">
             <label>
               <span>Cantidad</span>
@@ -125,7 +125,10 @@
     else unidadStr = 'ud';
     let precioNum = 0;
     if (p && p.precio) {
-      const m = p.precio.replace(',', '.').match(/[\d.]+/);
+      const elegido = p.id === 'picada' && p.preciosOpciones
+        ? (p.preciosOpciones[normalizarClave(l.opcion)] || p.precio)
+        : p.precio;
+      const m = elegido.replace(',', '.').match(/[\d.]+/);
       if (m) precioNum = parseFloat(m[0]);
     }
     const factorPeso = unidadStr === 'gr' ? 0.001 : 1;
@@ -365,6 +368,30 @@
     mostrarModal(idMostrar);
   }
 
+  // Actualiza el precio visible y las cantidades al cambiar la variedad de Carne Picada.
+  document.addEventListener('change', (e) => {
+    const select = e.target.closest('.card[data-id="picada"] [data-field="opcion"]');
+    if (!select) return;
+    const p = PRODUCTOS.find(x => x.id === 'picada');
+    const cardEl = select.closest('.card');
+    const price = p.preciosOpciones && p.preciosOpciones[normalizarClave(select.value)];
+    if (!price) return;
+    const priceEl = cardEl.querySelector('[data-price]');
+    if (priceEl) priceEl.innerHTML = escapeHtml(price) + ' <small>orientativo</small>';
+    const cantidad = cardEl.querySelector('[data-field="cantidad"]');
+    const original = p.cantidadesOriginales || p.cantidades;
+    const priceNum = Number(price.replace(',', '.').match(/[\\d.]+/)[0]);
+    cantidad.innerHTML = original.map(label => {
+      const m = label.match(/[0-9]+(?:[.,][0-9]+)?/);
+      if (!m) return '<option>' + escapeHtml(label) + '</option>';
+      const amount = Number(m[0].replace(',', '.'));
+      const factor = /gr|gram/i.test(label) ? amount / 1000 : amount;
+      const value = (priceNum * factor).toFixed(2).replace('.', ',');
+      const updated = label.replace(/-\\s*[0-9]+(?:[.,][0-9]+)?\\s*€/i, '- ' + value + ' €');
+      return '<option>' + escapeHtml(updated) + '</option>';
+    }).join('');
+  });
+
   // ——— Eventos ———
   document.addEventListener('click', (e) => {
     const add = e.target.closest('[data-add]');
@@ -476,9 +503,35 @@ const product = PRODUCTOS.find(p => String(p.id) === String(row.id))
           });
         }
       });
+
+      // Primera prueba: precios individuales únicamente para Carne Picada.
+      const publicKey = response.url.split('apikey=')[1];
+      if (publicKey) {
+        const optionsResponse = await fetch(
+          'https://ugqiomoywgpkmogcdjqn.supabase.co/rest/v1/product_options?select=product_id,label,price_cents,active&active=eq.true&apikey=' + publicKey,
+          { method: 'GET', mode: 'cors', cache: 'no-store' }
+        );
+        if (optionsResponse.ok) {
+          const optionRows = await optionsResponse.json();
+          const picada = PRODUCTOS.find(p => p.id === 'picada');
+          if (picada) {
+            picada.cantidadesOriginales = picada.cantidades.slice();
+            picada.preciosOpciones = {};
+            optionRows.filter(row => String(row.product_id) === 'picada' && Number.isFinite(Number(row.price_cents)))
+              .forEach(row => {
+                picada.preciosOpciones[normalizarClave(row.label)] =
+                  (Number(row.price_cents) / 100).toFixed(2).replace('.', ',') + ' €/kg';
+              });
+          }
+        }
+      }
     } catch (error) {
       console.warn('No se pudieron sincronizar los precios; se muestran los precios locales.', error);
     }
+  }
+
+  function normalizarClave(texto) {
+    return String(texto || '').normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]/g, '');
   }
 
   // Mostrar el catálogo local inmediatamente, sin esperar a Supabase.
