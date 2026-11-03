@@ -51,7 +51,7 @@ window.PRODUCTOS = [
     id: 'picada', cat: 'vacuno', img: 'picada',
     nombre: 'Carne Picada', desc: 'Picada al momento delante de ti, sin aditivos.',
     cantidades: ['250 gr - 2,63 €', '500 gr - 5,25 €', '750 gr - 7,88 €', '1 kg - 10,50 €', '1.5 kg - 15,75 €', '2 kg - 21,00 €'], 
-    opcionLabel: 'Mezcla', opciones: ['Ternera 100%', 'Mixta ternera y cerdo', 'Cerdo 100%', 'Especial para albóndigas', 'Especial para boloñesa'],
+    opcionLabel: 'Variedad', opciones: ['Ternera 100%', 'Mixta ternera y cerdo', 'Cerdo 100%', 'Especial para albóndigas', 'Especial para boloñesa'],
   },
   {
     id: 'guiso-ternera', cat: 'vacuno', img: 'guiso-ternera',
