@@ -428,9 +428,23 @@
     }
     const chip = e.target.closest('[data-chip]');
     if (chip) {
-      $('.chip').forEach((c) => c.classList.toggle('is-active', c === chip));
+      const menu = $('#chips');
+      $('#chips [data-chip]').forEach((item) => {
+        const active = item === chip;
+        item.classList.toggle('is-active', active);
+        item.setAttribute('aria-pressed', active ? 'true' : 'false');
+      });
       filtrar();
-      chip.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+
+      if (chip.dataset.chip === 'todo') {
+        menu.scrollTo({ left: 0, behavior: 'smooth' });
+      } else {
+        const menuRect = menu.getBoundingClientRect();
+        const chipRect = chip.getBoundingClientRect();
+        const targetLeft = menu.scrollLeft + chipRect.left - menuRect.left
+          - (menu.clientWidth - chip.clientWidth) / 2;
+        menu.scrollTo({ left: Math.max(0, targetLeft), behavior: 'smooth' });
+      }
       return;
     }
     const inc = e.target.closest('[data-inc]');
