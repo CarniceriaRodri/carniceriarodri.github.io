@@ -134,6 +134,22 @@ button.secondary{background:#eee8e1;color:var(--ink)}button:disabled{opacity:.55
      status('adminStatus','Escribe el precio de esa opción y pulsa Añadir.');
      return;
    }
+   const pendingButton=e.target.closest('[data-add-catalogue-option]');
+   if(pendingButton){
+     const productId=pendingButton.dataset.addCatalogueOption;
+     const label=pendingButton.dataset.optionLabel||'';
+     const priceInput=pendingButton.parentElement.querySelector('[data-pending-price]');
+     const cents=centsFromInput(priceInput?.value||'');
+     if(!Number.isFinite(cents)||cents<=0){status('adminStatus','Introduce un precio válido para '+label+'.');return}
+     pendingButton.disabled=true;status('adminStatus','Añadiendo '+label+'…');
+     const {data:existing,error:readError}=await client.from('product_options').select('sort_order').eq('product_id',productId).order('sort_order',{ascending:false}).limit(1);
+     if(readError){pendingButton.disabled=false;status('adminStatus','No se pudo preparar la opción: '+readError.message);return}
+     const nextOrder=(existing&&existing.length?Number(existing[0].sort_order||0)+1:0);
+     const {error}=await client.from('product_options').insert({product_id:productId,label,price_cents:cents,active:true,sort_order:nextOrder});
+     pendingButton.disabled=false;
+     if(error){status('adminStatus','No se pudo añadir: '+error.message);return}
+     status('adminStatus',label+' añadida y activada.');await loadProducts();return;
+   }
    if(deleteOptionId){
      if(!confirm('¿Eliminar definitivamente esta opción? Esta acción no se puede deshacer.'))return;
      e.target.disabled=true;status('adminStatus','Eliminando opción…');
