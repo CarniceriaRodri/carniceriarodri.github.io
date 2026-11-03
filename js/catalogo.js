@@ -33,31 +33,31 @@ window.PRODUCTOS = [
   {
     id: 'filetes-ternera', cat: 'vacuno', img: 'filetes-ternera', etiqueta: 'Más pedido',
     nombre: 'Filetes de Ternera', desc: 'Tiernos y magros, cortados al grosor que prefieras.',
-    cantidades: PESO, opcionLabel: 'Tipo de corte', opciones: ['Muy finos (plancha)', 'Grosor normal', 'Para empanar', 'Tacos para guiso'],
+    cantidades: PESO, opcionLabel: 'Tipo de corte', opciones: ['Muy finos (plancha)', 'Grosor normal', 'Para empanar', 'Tacos para guiso', 'Filetes de babilla', 'Filetes de cadera', 'Filetes de tapa', 'Filetes de contra', 'Escalopines', 'Carne para fondue'],
   },
   {
     id: 'chuleton', cat: 'vacuno', img: 'chuleton', etiqueta: 'Para brasa',
     nombre: 'Entrecot o Chuletón', desc: 'Vaca con buena infiltración de grasa, ideal a la parrilla.',
     cantidades: ['1 pieza - 28,90 €', '2 piezas - 57,80 €', '4 piezas - 115,60 €', 'Corte mayor (1 kg) - 28,90 €'], 
-    opcionLabel: 'Tipo de corte', opciones: ['Entrecot jugoso', 'Chuletón madurado con hueso', 'Corte grueso para brasa', 'Chuleta de lomo alto'],
+    opcionLabel: 'Tipo de corte', opciones: ['Entrecot jugoso', 'Chuletón madurado con hueso', 'Corte grueso para brasa', 'Chuleta de lomo alto', 'Chuleta de lomo bajo', 'T-bone', 'Tomahawk', 'Costilla de vaca', 'Corte para piedra'],
   },
   {
     id: 'solomillo', cat: 'vacuno', img: 'solomillo',
     nombre: 'Solomillo de Ternera', desc: 'La pieza más tierna, en medallones o entera para asar.',
     cantidades: ['2 medallones - 34,90 €', '4 medallones - 69,80 €', '500 gr - 17,45 €'], 
-    opcionLabel: 'Preparación', opciones: ['Medallones gruesos', 'Turnedós finos', 'Pieza entera para asar', 'Cortado para carpaccio'],
+    opcionLabel: 'Preparación', opciones: ['Medallones gruesos', 'Turnedós finos', 'Pieza entera para asar', 'Cortado para carpaccio', 'Solomillo en tacos', 'Filetes de solomillo', 'Chateaubriand'],
   },
   {
     id: 'picada', cat: 'vacuno', img: 'picada',
     nombre: 'Carne Picada', desc: 'Picada al momento delante de ti, sin aditivos.',
     cantidades: ['250 gr - 2,63 €', '500 gr - 5,25 €', '750 gr - 7,88 €', '1 kg - 10,50 €', '1.5 kg - 15,75 €', '2 kg - 21,00 €'], 
-    opcionLabel: 'Variedad', opciones: ['Ternera 100%', 'Mixta ternera y cerdo', 'Cerdo 100%', 'Especial para albóndigas', 'Especial para boloñesa'],
+    opcionLabel: 'Variedad', opciones: ['Ternera 100%', 'Mixta ternera y cerdo', 'Cerdo 100%', 'Especial para albóndigas', 'Especial para boloñesa', 'Vacuno magro', 'Vacuno con más grasa', 'Picada para hamburguesas', 'Picada gruesa para rellenos'],
   },
   {
     id: 'guiso-ternera', cat: 'vacuno', img: 'guiso-ternera',
     nombre: 'Ternera para Guisar', desc: 'Cortes melosos para guisos lentos, estofados y cocidos.',
     cantidades: ['250 gr - 3,48 €', '500 gr - 6,95 €', '750 gr - 10,43 €', '1 kg - 13,90 €', '1.5 kg - 20,85 €', '2 kg - 27,80 €'], 
-    opcionLabel: 'Pieza', opciones: ['Carrilleras de ternera', 'Rabo de toro troceado', 'Osobuco en rodajas', 'Morcillo en tacos', 'Aguja en tacos', 'Redondo de ternera', 'Huesos para caldo'],
+    opcionLabel: 'Pieza', opciones: ['Carrilleras de ternera', 'Rabo de toro troceado', 'Osobuco en rodajas', 'Morcillo en tacos', 'Aguja en tacos', 'Redondo de ternera', 'Huesos para caldo', 'Jarrete de ternera', 'Falda para guisar', 'Aleta para rellenar', 'Pecho de ternera', 'Espaldilla en tacos', 'Carne para cocido'],
   },
   {
     id: 'lomo-cerdo', cat: 'cerdo', img: 'lomo-cerdo', etiqueta: 'Más pedido',
