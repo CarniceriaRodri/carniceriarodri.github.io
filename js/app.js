@@ -37,10 +37,6 @@
 
   // ——— Catálogo ———
   function renderCatalogo() {
-    $('#indice-categorias').innerHTML = CATEGORIAS.map((c) =>
-      `<a class="indice-item" href="#cat-${escapeHtml(c.id)}">${escapeHtml(c.nombre)}</a>`
-    ).join('');
-
     $('#chips').innerHTML =
       `<button type="button" class="chip is-active" data-chip="todo">Todo</button>` +
       CATEGORIAS.map((c) => `<button type="button" class="chip" data-chip="${escapeHtml(c.id)}">${escapeHtml(c.nombre)}</button>`).join('');
@@ -59,7 +55,6 @@
           ${productos.length
             ? `<div class="grid">${productos.map(card).join('')}</div>`
             : `<p class="category-empty">Estamos preparando los productos de esta categoría. ¡Pronto estarán disponibles!</p>`}
-          <a class="back-to-index" href="#indice-categorias">↑ Volver al índice</a>
         </section>`;
     }).join('');
   }
