@@ -138,6 +138,9 @@ button.secondary{background:#eee8e1;color:var(--ink)}button:disabled{opacity:.55
      return '<details class="admin-category" data-admin-category="'+escapeHtml(categoryKey)+'" style="--cat-color:'+meta.color+';--cat-bg:'+meta.bg+'"'+(openCategoryPanels.has(String(categoryKey))?' open':'')+'><summary class="admin-category-summary"><span class="admin-category-title">'+meta.icon+' '+escapeHtml(meta.name)+'</span><span class="admin-category-subtitle">'+items.length+' productos</span><span class="admin-category-arrow" aria-hidden="true"></span></summary><div class="admin-category-content">'+productMarkup+'<button type="button" class="admin-category-close" data-close-admin-category>Cerrar categoría ↑</button></div></details>';
    }).join('');
    status('adminStatus',products.length+' productos cargados.');
+   } catch(err) {
+     status('adminStatus','Error al cargar el panel: '+(err?.message||String(err)));
+   }
  }
  function optionMarkup(o){return '<div class="option-item"><div class="option-heading"><div class="option-name">'+escapeHtml(o.label)+'</div><button class="option-toggle'+(o.active?'':' is-off')+'" data-toggle-option="'+o.id+'" data-next-active="'+(o.active?'false':'true')+'" title="'+(o.active?'Desactivar':'Activar')+'" aria-label="'+(o.active?'Desactivar':'Activar')+'">'+(o.active?'ON':'OFF')+'</button></div><div class="option-state">'+(o.active?'Activo':'Inactivo')+'</div><div class="price-row"><label class="sr-only" for="opt-'+o.id+'">Precio (€)</label><input id="opt-'+o.id+'" inputmode="decimal" value="'+(Number(o.price_cents||0)/100).toFixed(2)+'"><button class="save-icon" data-save-option="'+o.id+'" title="Guardar" aria-label="Guardar">💾</button><button class="secondary" data-delete-option="'+o.id+'" aria-label="Eliminar opción">×</button></div></div>'}
  function escapeHtml(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
