@@ -544,8 +544,18 @@ const product = PRODUCTOS.find(p => String(p.id) === String(row.id))
             });
             optionRows.forEach(row => {
               const product = PRODUCTOS.find(p => String(p.id) === String(row.product_id));
-              if (!product || !Number.isFinite(Number(row.price_cents))) return;
-              product.preciosOpciones[normalizarClave(row.label)] = Number(row.price_cents) / 100;
+              if (!product || row.active === false || !row.label) return;
+
+              // Incorporar al desplegable todas las opciones activas creadas desde el panel.
+              const label = String(row.label).trim();
+              if (!product.opciones.some(option => normalizarClave(option) === normalizarClave(label))) {
+                product.opciones.push(label);
+              }
+
+              // Aplicar el precio individual configurado en el panel de administración.
+              if (Number.isFinite(Number(row.price_cents))) {
+                product.preciosOpciones[normalizarClave(label)] = Number(row.price_cents) / 100;
+              }
             });
           }
         }
