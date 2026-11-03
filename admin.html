@@ -75,7 +75,7 @@ button.secondary{background:#eee8e1;color:var(--ink)}button:disabled{opacity:.55
      const opts=optionRows.filter(o=>o.product_id===p.id);
      return '<article class="product"><div class="product-head"><div><div class="product-name">'+escapeHtml(p.name)+'</div><div class="category">'+escapeHtml(p.category||'')+(p.active?'':' · Inactivo')+'</div></div><span class="muted">'+escapeHtml(String(p.id))+'</span></div>'+
        '<div class="price-row"><label for="base-'+p.id+'">Precio base (€)</label><input id="base-'+p.id+'" inputmode="decimal" value="'+(Number(p.base_price_cents||0)/100).toFixed(2)+'"><button data-save-product="'+p.id+'">Guardar</button></div>'+
-       opts.map(o=>'<div class="option">'+escapeHtml(o.label)+'</div><div class="price-row"><label for="opt-'+o.id+'">Precio opción (€)</label><input id="opt-'+o.id+'" inputmode="decimal" value="'+(Number(o.price_cents||0)/100).toFixed(2)+'"><button data-save-option="'+o.id+'">Guardar</button></div>').join('')+
+       opts.map(o=>'<div class="option">'+escapeHtml(o.label)+(o.active?' · Activa':' · Inactiva')+'</div><div class="price-row"><label for="opt-'+o.id+'">Precio opción (€)</label><input id="opt-'+o.id+'" inputmode="decimal" value="'+(Number(o.price_cents||0)/100).toFixed(2)+'"><button data-save-option="'+o.id+'">Guardar</button><button class="secondary" data-toggle-option="'+o.id+'" data-next-active="'+(o.active?'false':'true')+'">'+(o.active?'Desactivar':'Activar')+'</button></div>').join('')+
        '<div class="option" style="margin-top:14px;font-weight:700;color:var(--ink)">Añadir una opción</div><div class="price-row"><label for="new-label-'+p.id+'">Nombre de la opción</label><input id="new-label-'+p.id+'" placeholder="Ej. Ternera 100%"><button data-add-option="'+p.id+'">Añadir</button></div><div class="price-row"><label for="new-price-'+p.id+'">Precio (€)</label><input id="new-price-'+p.id+'" inputmode="decimal" placeholder="10,50"><span></span></div>'+
        '</article>';
    }).join('');
@@ -93,7 +93,16 @@ button.secondary{background:#eee8e1;color:var(--ink)}button:disabled{opacity:.55
  });
  $('logout').addEventListener('click',async()=>{await client.auth.signOut();location.reload()});
  $('products').addEventListener('click',async e=>{
-   const productId=e.target.dataset.saveProduct, optionId=e.target.dataset.saveOption, addOptionProductId=e.target.dataset.addOption;
+   const productId=e.target.dataset.saveProduct, optionId=e.target.dataset.saveOption, addOptionProductId=e.target.dataset.addOption, toggleOptionId=e.target.dataset.toggleOption;
+   if(toggleOptionId){
+     const nextActive=e.target.dataset.nextActive==='true';
+     if(!confirm(nextActive?'¿Quieres volver a activar esta opción?':'¿Quieres desactivar esta opción?'))return;
+     e.target.disabled=true;status('adminStatus',nextActive?'Activando opción…':'Desactivando opción…');
+     const {error}=await client.from('product_options').update({active:nextActive}).eq('id',toggleOptionId);
+     e.target.disabled=false;
+     if(error){status('adminStatus','No se pudo cambiar el estado: '+error.message);return}
+     status('adminStatus',nextActive?'Opción activada.':'Opción desactivada.');await loadProducts();return;
+   }
    if(addOptionProductId){
      const label=$('new-label-'+addOptionProductId).value.trim();
      const cents=centsFromInput($('new-price-'+addOptionProductId).value);
