@@ -37,29 +37,26 @@
 
   // ——— Catálogo ———
   function renderCatalogo() {
-    $('#indice-categorias').innerHTML = CATEGORIAS.map((c) =>
-      `<a class="indice-item" href="#cat-${escapeHtml(c.id)}">${escapeHtml(c.nombre)}</a>`
-    ).join('');
-
-    $('#chips').innerHTML =
-      `<button type="button" class="chip is-active" data-chip="todo">Todo</button>` +
-      CATEGORIAS.map((c) => `<button type="button" class="chip" data-chip="${escapeHtml(c.id)}">${escapeHtml(c.nombre)}</button>`).join('');
-
     $('#secciones').innerHTML = CATEGORIAS.map((c, i) => {
       const productos = PRODUCTOS.filter((p) => p.cat === c.id && Array.isArray(p.opciones) && p.opciones.length > 0);
       return `
         <section class="cat" id="cat-${escapeHtml(c.id)}" data-cat="${escapeHtml(c.id)}">
-          <header class="cat-head">
-            <span class="cat-n">${String(i + 1).padStart(2, '0')}</span>
-            <div>
-              <h3>${escapeHtml(c.nombre)}</h3>
-              <p>${escapeHtml(c.lema)}</p>
+          <details class="cat-accordion">
+            <summary class="cat-summary">
+              <span class="cat-n">${String(i + 1).padStart(2, '0')}</span>
+              <span class="cat-summary-text">
+                <span class="cat-title">${escapeHtml(c.nombre)}</span>
+                <span class="cat-subtitle">${escapeHtml(c.lema)}</span>
+              </span>
+              <span class="cat-toggle" aria-hidden="true"></span>
+            </summary>
+            <div class="cat-content">
+              ${productos.length
+                ? `<div class="grid">${productos.map(card).join('')}</div>`
+                : `<p class="category-empty">Estamos preparando los productos de esta categoría. ¡Pronto estarán disponibles!</p>`}
+              <button class="back-to-index" type="button" data-close-category>Cerrar categoría ↑</button>
             </div>
-          </header>
-          ${productos.length
-            ? `<div class="grid">${productos.map(card).join('')}</div>`
-            : `<p class="category-empty">Estamos preparando los productos de esta categoría. ¡Pronto estarán disponibles!</p>`}
-          <a class="back-to-index" href="#indice-categorias">↑ Volver al índice</a>
+          </details>
         </section>`;
     }).join('');
   }
@@ -102,18 +99,17 @@
   // ——— Filtros ———
   function filtrar() {
     const q = normalize($('#buscar').value.trim());
-    const chipActivo = $('.chip.is-active');
-    const activa = (chipActivo && chipActivo.dataset.chip) || 'todo';
     let visibles = 0;
-    $$('.cat').forEach((sec) => {
-      const catOk = activa === 'todo' || sec.dataset.cat === activa;
+    $('.cat').forEach((sec) => {
+      const details = $('.cat-accordion', sec);
       let enSeccion = 0;
-      $$('.card', sec).forEach((c) => {
-        const ok = catOk && (!q || c.dataset.search.includes(q));
+      $('.card', sec).forEach((c) => {
+        const ok = !q || c.dataset.search.includes(q);
         c.hidden = !ok;
         if (ok) enSeccion++;
       });
-      sec.hidden = enSeccion === 0;
+      sec.hidden = Boolean(q) && enSeccion === 0;
+      if (q && enSeccion > 0 && details) details.open = true;
       visibles += enSeccion;
     });
     const sin = $('#sinResultados');
@@ -431,11 +427,13 @@
       toast(`Añadido: ${p.nombre} · ${cantidad}`);
       return;
     }
-    const chip = e.target.closest('[data-chip]');
-    if (chip) {
-      $$('.chip').forEach((c) => c.classList.toggle('is-active', c === chip));
-      filtrar();
-      $('#catalogo').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    const closeCategory = e.target.closest('[data-close-category]');
+    if (closeCategory) {
+      const details = closeCategory.closest('details');
+      if (details) {
+        details.open = false;
+        details.querySelector('summary').focus();
+      }
       return;
     }
     const inc = e.target.closest('[data-inc]');
