@@ -44,7 +44,7 @@ window.PRODUCTOS = [
   {
     id: 'solomillo', cat: 'vacuno', img: 'solomillo',
     nombre: 'Solomillo de Ternera', desc: 'La pieza más tierna, en medallones o entera para asar.',
-    cantidades: ['2 medallones - 34,90 €', '4 medallones - 69,80 €', '500 gr - 17,45 €', 'Pieza entera - 34,90 €'], 
+    cantidades: ['2 medallones - 34,90 €', '4 medallones - 69,80 €', '500 gr - 17,45 €'], 
     opcionLabel: 'Preparación', opciones: ['Medallones gruesos', 'Turnedós finos', 'Pieza entera para asar', 'Cortado para carpaccio'],
   },
   {
@@ -98,13 +98,13 @@ window.PRODUCTOS = [
   {
     id: 'conejo', cat: 'aves', img: 'conejo',
     nombre: 'Conejo y Codorniz', desc: 'Imprescindibles para la paella, el arroz o el ajillo.',
-    cantidades: ['Medio conejo - 11,50 €', '1 conejo entero - 11,50 €', '4 codornices - 11,50 €', '6 codornices - 11,50 €'], 
+    cantidades: ['4 codornices - 11,50 €', '6 codornices - 11,50 €'], 
     opcionLabel: 'Preparación', opciones: ['Troceado para paella', 'Troceado para guisar', 'Entero sin trocear', 'Abierto para la plancha'],
   },
   {
     id: 'cordero', cat: 'cordero', img: 'cordero',
     nombre: 'Cordero Lechal', desc: 'Chuletas, pierna o paletilla de cordero tierno.',
-    cantidades: ['500 gr de chuletas - 11,00 €', '1 kg de chuletas - 22,00 €', '1 pierna entera - 22,00 €', '1 paletilla entera - 22,00 €', 'Medio cordero - 22,00 €'], 
+    cantidades: ['500 gr de chuletas - 11,00 €', '1 kg de chuletas - 22,00 €'], 
     opcionLabel: 'Preparación', opciones: ['Chuletas para plancha', 'Chuletas gruesas para brasa', 'Costillar entero', 'Pierna para asar', 'Paletilla para asar', 'Troceado para guisar'],
   },
   {
@@ -134,19 +134,19 @@ window.PRODUCTOS = [
   {
     id: 'jamon', cat: 'charcuteria', img: 'jamon', etiqueta: 'Ibérico',
     nombre: 'Jamón Serrano e Ibérico', desc: 'Cortado a cuchillo o a máquina, en lonchas finísimas.',
-    cantidades: ['100 gr - 5,50 €', '250 gr - 13,75 €', '500 gr - 27,50 €', '1 kg - 55,00 €', 'Pieza entera - 55,00 €'], 
+    cantidades: ['100 gr - 5,50 €', '250 gr - 13,75 €', '500 gr - 27,50 €', '1 kg - 55,00 €'], 
     opcionLabel: 'Producto', opciones: ['Jamón serrano en lonchas', 'Jamón ibérico de cebo', 'Jamón ibérico de bellota', 'Paleta ibérica', 'Taquitos de jamón', 'Huesos de jamón para caldo'],
   },
   {
     id: 'embutidos', cat: 'charcuteria', img: 'embutidos',
     nombre: 'Embutidos Curados', desc: 'Chorizo, salchichón y lomo ibérico de curación lenta.',
-    cantidades: ['150 gr - 4,80 €', '250 gr - 8,00 €', '500 gr - 16,00 €', 'Pieza entera - 32,00 €'], 
+    cantidades: ['150 gr - 4,80 €', '250 gr - 8,00 €', '500 gr - 16,00 €'], 
     opcionLabel: 'Producto', opciones: ['Chorizo ibérico', 'Salchichón ibérico', 'Lomo embuchado ibérico', 'Fuet', 'Sobrasada', 'Morcón', 'Cecina de León'],
   },
   {
     id: 'quesos', cat: 'charcuteria', img: 'quesos',
     nombre: 'Quesos', desc: 'Una selección de quesos nacionales para cortar a tu gusto.',
-    cantidades: ['250 gr - 5,25 €', '500 gr - 10,50 €', '1 kg - 21,00 €', '1 cuña - 21,00 €', 'Pieza entera - 21,00 €'], 
+    cantidades: ['250 gr - 5,25 €', '500 gr - 10,50 €', '1 kg - 21,00 €', '1 cuña - 21,00 €'], 
     opcionLabel: 'Variedad', opciones: ['Manchego curado', 'Manchego semicurado', 'Queso de cabra', 'Queso viejo en aceite', 'Queso tierno', 'Queso azul / Cabrales', 'Torta del Casar'],
   },
   {
