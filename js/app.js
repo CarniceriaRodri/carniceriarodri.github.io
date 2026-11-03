@@ -37,14 +37,16 @@
 
   // ——— Catálogo ———
   function renderCatalogo() {
+    $('#indice-categorias').innerHTML = CATEGORIAS.map((c) =>
+      `<a class="indice-item" href="#cat-${escapeHtml(c.id)}">${escapeHtml(c.nombre)}</a>`
+    ).join('');
+
     $('#chips').innerHTML =
       `<button type="button" class="chip is-active" data-chip="todo">Todo</button>` +
       CATEGORIAS.map((c) => `<button type="button" class="chip" data-chip="${escapeHtml(c.id)}">${escapeHtml(c.nombre)}</button>`).join('');
 
     $('#secciones').innerHTML = CATEGORIAS.map((c, i) => {
-      // Solo se muestran productos que conservan al menos una opción activa.
       const productos = PRODUCTOS.filter((p) => p.cat === c.id && Array.isArray(p.opciones) && p.opciones.length > 0);
-      if (!productos.length) return '';
       return `
         <section class="cat" id="cat-${escapeHtml(c.id)}" data-cat="${escapeHtml(c.id)}">
           <header class="cat-head">
@@ -54,7 +56,10 @@
               <p>${escapeHtml(c.lema)}</p>
             </div>
           </header>
-          <div class="grid">${productos.map(card).join('')}</div>
+          ${productos.length
+            ? `<div class="grid">${productos.map(card).join('')}</div>`
+            : `<p class="category-empty">Estamos preparando los productos de esta categoría. ¡Pronto estarán disponibles!</p>`}
+          <a class="back-to-index" href="#indice-categorias">↑ Volver al índice</a>
         </section>`;
     }).join('');
   }
