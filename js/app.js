@@ -542,6 +542,8 @@ const product = PRODUCTOS.find(p => String(p.id) === String(row.id))
   // el catálogo seguirá visible con los precios locales.
   sincronizarPrecios().then(() => {
     renderCatalogo();
+    const picadaOption = document.querySelector('.card[data-id="picada"] [data-field="opcion"]');
+    if (picadaOption) picadaOption.dispatchEvent(new Event('change', { bubbles: true }));
     renderCart();
   }); 
 })();
