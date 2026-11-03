@@ -71,20 +71,26 @@ button.secondary{background:#eee8e1;color:var(--ink)}button:disabled{opacity:.55
    $('emptyNotice').hidden=true;
    const catalogue=(window.PRODUCTOS||[]);
    const categoryMeta={
-     vacuno:{name:'Vacuno y Ternera',icon:'🥩',color:'#7b2e20',bg:'#f8f0e9'},
-     cerdo:{name:'Cerdo e Ibérico',icon:'🐖',color:'#8a4d36',bg:'#fbf1ed'},
-     aves:{name:'Pollo, Aves y Conejo',icon:'🐔',color:'#8a6b20',bg:'#fbf7e9'},
-     cordero:{name:'Cordero',icon:'🐑',color:'#766044',bg:'#f5f1e9'},
-     elaborados:{name:'Elaborados de la Casa',icon:'🍖',color:'#9a4b28',bg:'#fbf0e8'},
-     charcuteria:{name:'Charcutería',icon:'🧀',color:'#80612a',bg:'#f8f4e8'},
-     bebidas:{name:'Refrescos y Bebidas',icon:'🥤',color:'#356b83',bg:'#edf5f8'},
-     despensa:{name:'Despensa y Barbacoa',icon:'🫒',color:'#527044',bg:'#f0f5ec'}
+     barbacoa:{name:'Barbacoa y preparados',icon:'🔥',color:'#9a4b28',bg:'#fbf0e8'},
+     bebidas:{name:'Bebidas',icon:'🥤',color:'#356b83',bg:'#edf5f8'},
+     caza:{name:'Caza y carnes especiales',icon:'🦌',color:'#766044',bg:'#f5f1e9'},
+     casqueria:{name:'Casquería',icon:'🍲',color:'#80612a',bg:'#f8f4e8'},
+     cerdo:{name:'Cerdo',icon:'🐖',color:'#8a4d36',bg:'#fbf1ed'},
+     charcuteria:{name:'Charcutería y quesos',icon:'🧀',color:'#80612a',bg:'#f8f4e8'},
+     conejo:{name:'Conejo',icon:'🐇',color:'#8a6b20',bg:'#fbf7e9'},
+     cordero:{name:'Cordero y cabrito',icon:'🐑',color:'#766044',bg:'#f5f1e9'},
+     despensa:{name:'Despensa y complementos',icon:'🫒',color:'#527044',bg:'#f0f5ec'},
+     elaborados:{name:'Elaborados de la casa',icon:'🍖',color:'#9a4b28',bg:'#fbf0e8'},
+     ibericos:{name:'Ibéricos',icon:'🥓',color:'#8a4d36',bg:'#fbf1ed'},
+     aves:{name:'Pollo y aves',icon:'🐔',color:'#8a6b20',bg:'#fbf7e9'},
+     'vaca-buey':{name:'Vaca, buey y carnes especiales',icon:'🥩',color:'#7b2e20',bg:'#f8f0e9'},
+     vacuno:{name:'Vacuno y ternera',icon:'🥩',color:'#7b2e20',bg:'#f8f0e9'}
    };
    products.sort((a,b)=>{
      const pa=catalogue.find(x=>String(x.id)===String(a.id));
      const pb=catalogue.find(x=>String(x.id)===String(b.id));
      const ca=pa?.cat||a.category||'', cb=pb?.cat||b.category||'';
-     const order=Object.keys(categoryMeta);
+     const order=['barbacoa','bebidas','caza','casqueria','cerdo','charcuteria','conejo','cordero','despensa','elaborados','ibericos','aves','vaca-buey','vacuno'];
      const diff=order.indexOf(ca)-order.indexOf(cb);
      if(diff!==0)return diff;
      const ia=catalogue.findIndex(x=>String(x.id)===String(a.id));
