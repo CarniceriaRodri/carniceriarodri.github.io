@@ -241,7 +241,7 @@
     const submitBtn = checkoutForm ? checkoutForm.querySelector('button[type="submit"]') : null;
     if (submitBtn) {
       submitBtn.disabled = false;
-      submitBtn.textContent = "Enviar encargo por WhatsApp";
+      submitBtn.textContent = "Enviar pedido por WhatsApp";
     }
     closeCart();
     const modal = document.getElementById('modalConfirmacion');
@@ -328,7 +328,7 @@
     submitBtn.textContent = "Registrando pedido...";
 
     const textoWA = [
-      '*🥩 NUEVO ENCARGO - CARNICERÍA RODRI*',
+      '*🥩 NUEVO PEDIDO - CARNICERÍA RODRI*',
       `*ID Referencia:* ${idMostrar}`,
       `*Cliente:* ${nombre}`,
       `*Teléfono:* ${telefono}`,
