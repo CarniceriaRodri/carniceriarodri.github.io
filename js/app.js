@@ -125,11 +125,14 @@
     else unidadStr = 'ud';
     let precioNum = 0;
     if (p && p.precio) {
-      const elegido = p.preciosOpciones && p.preciosOpciones[normalizarClave(l.opcion)]
-        ? p.preciosOpciones[normalizarClave(l.opcion)]
-        : (p.precioNumOpciones && Number.isFinite(p.precioNumOpciones[normalizarClave(l.opcion)])
-          ? p.precioNumOpciones[normalizarClave(l.opcion)].toFixed(2).replace('.', ',') + (p.precio.match(/\/(kg|ud)/i) || [,'ud'])[0]
-          : p.precio);
+      const key = normalizarClave(l.opcion);
+      const unit = (p.precio.match(/\/(kg|ud)/i) || [,'ud'])[0];
+      const optionValue = p.preciosOpciones && Number.isFinite(Number(p.preciosOpciones[key]))
+        ? Number(p.preciosOpciones[key])
+        : (p.precioNumOpciones && Number.isFinite(p.precioNumOpciones[key]) ? p.precioNumOpciones[key] : null);
+      const elegido = optionValue !== null
+        ? optionValue.toFixed(2).replace('.', ',') + ' €' + unit
+        : p.precio;
       const m = elegido.replace(',', '.').match(/[\d.]+/);
       if (m) precioNum = parseFloat(m[0]);
     }
