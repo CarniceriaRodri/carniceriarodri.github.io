@@ -428,9 +428,9 @@
     }
     const chip = e.target.closest('[data-chip]');
     if (chip) {
-      $$('.chip').forEach((c) => c.classList.toggle('is-active', c === chip));
+      $('.chip').forEach((c) => c.classList.toggle('is-active', c === chip));
       filtrar();
-      $('#catalogo').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      chip.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
       return;
     }
     const inc = e.target.closest('[data-inc]');
