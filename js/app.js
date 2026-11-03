@@ -75,14 +75,14 @@
               <span>${escapeHtml(p.opcionLabel)}</span>
               <select data-field="opcion">${p.opciones.map((o) => `<option>${escapeHtml(o)}</option>`).join('')}</select>
             </label>
-            ${p.precio ? `<p class="card-precio" data-price>${escapeHtml(p.precio)} <small>orientativo</small></p>` : ''}
+            ${p.precio ? `<p class="card-precio" data-price>${escapeHtml(p.precio)} </p>` : ''}
             <label>
               <span>Cantidad</span>
               <select data-field="cantidad">${p.cantidades.map((o) => `<option>${escapeHtml(o)}</option>`).join('')}</select>
             </label>
           </div>
           <button type="button" class="btn btn-add" data-add>
-            <span class="plus" aria-hidden="true">+</span> Añadir al encargo
+            <span class="plus" aria-hidden="true">+</span> Añadir al pedido
           </button>
         </div>
       </article>`;
@@ -179,7 +179,7 @@
     if (totalEl) {
       if (totalEuros > 0) {
         totalEl.hidden = false;
-        totalEl.innerHTML = `<span>Total orientativo</span><strong>${totalEuros.toFixed(2).replace('.', ',')} €</strong>`;
+        totalEl.innerHTML = `<span>Total</span><strong>${totalEuros.toFixed(2).replace('.', ',')} €</strong>`;
       } else {
         totalEl.hidden = true;
       }
@@ -338,7 +338,7 @@
       '*Productos:*',
       ...lineas,
       '',
-      `*Total orientativo:* ${totalPedido.toFixed(2).replace('.', ',')} €`,
+      `*Total:* ${totalPedido.toFixed(2).replace('.', ',')} €`,
       '',
       '¡Gracias por confiar en Carnicería Rodri! 🍖',
     ].filter((x) => x !== null).join('\n');
@@ -395,7 +395,7 @@
     const unit = (String(p.precio || '').match(/\/(kg|ud)/i) || [,'kg'])[1].toLowerCase();
     const priceText = optionPrice.toFixed(2).replace('.', ',') + ' €/' + unit;
     const priceEl = cardEl.querySelector('[data-price]');
-    if (priceEl) priceEl.innerHTML = escapeHtml(priceText) + ' <small>orientativo</small>';
+    if (priceEl) priceEl.innerHTML = escapeHtml(priceText) + ' ';
     const cantidad = cardEl.querySelector('[data-field="cantidad"]');
     if (!cantidad) return;
     const original = p.cantidadesOriginales || p.cantidades;
