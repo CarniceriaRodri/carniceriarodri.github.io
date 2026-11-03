@@ -84,7 +84,7 @@ button.secondary{background:#eee8e1;color:var(--ink)}button:disabled{opacity:.55
    if(error){status('adminStatus','No se pudieron cargar los productos: '+error.message);return}
    if(!products || !products.length){$('emptyNotice').hidden=false;$('products').innerHTML='';status('adminStatus','');return}
    $('emptyNotice').hidden=true;
-   const catalogue=(window.PRODUCTOS||[]);
+   const catalogue=(window.PRODUCTOS||[]).filter(item=>item && typeof item==='object' && item.id!=null);
    const categoryMeta={
      barbacoa:{name:'Barbacoa y preparados',icon:'🔥',color:'#9a4b28',bg:'#fbf0e8'},
      bebidas:{name:'Bebidas',icon:'🥤',color:'#356b83',bg:'#edf5f8'},
@@ -114,9 +114,9 @@ button.secondary{background:#eee8e1;color:var(--ink)}button:disabled{opacity:.55
    });
    const {data:options,error:optionsError}=await client.from('product_options').select('id,product_id,label,price_cents,active,sort_order').order('sort_order');
    if(optionsError){status('adminStatus','No se pudieron cargar las opciones: '+optionsError.message);return}
-   const optionRows=options||[];
+   const optionRows=(options||[]).filter(o=>o && o.id!=null && o.product_id!=null);
    const groupedProducts=new Map();
-   products.forEach(p=>{
+   products.filter(p=>p && p.id!=null).forEach(p=>{
      const cp=catalogue.find(item=>String(item.id)===String(p.id));
      const key=cp?.cat||p.category||'otros';
      if(!groupedProducts.has(key))groupedProducts.set(key,[]);
