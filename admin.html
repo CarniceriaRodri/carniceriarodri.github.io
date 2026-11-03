@@ -76,6 +76,7 @@ button.secondary{background:#eee8e1;color:var(--ink)}button:disabled{opacity:.55
      return '<article class="product"><div class="product-head"><div><div class="product-name">'+escapeHtml(p.name)+'</div><div class="category">'+escapeHtml(p.category||'')+(p.active?'':' · Inactivo')+'</div></div><span class="muted">'+escapeHtml(String(p.id))+'</span></div>'+
        '<div class="price-row"><label for="base-'+p.id+'">Precio base (€)</label><input id="base-'+p.id+'" inputmode="decimal" value="'+(Number(p.base_price_cents||0)/100).toFixed(2)+'"><button data-save-product="'+p.id+'">Guardar</button></div>'+
        opts.map(o=>'<div class="option">'+escapeHtml(o.label)+'</div><div class="price-row"><label for="opt-'+o.id+'">Precio opción (€)</label><input id="opt-'+o.id+'" inputmode="decimal" value="'+(Number(o.price_cents||0)/100).toFixed(2)+'"><button data-save-option="'+o.id+'">Guardar</button></div>').join('')+
+       '<div class="option" style="margin-top:14px;font-weight:700;color:var(--ink)">Añadir una opción</div><div class="price-row"><label for="new-label-'+p.id+'">Nombre de la opción</label><input id="new-label-'+p.id+'" placeholder="Ej. Ternera 100%"><button data-add-option="'+p.id+'">Añadir</button></div><div class="price-row"><label for="new-price-'+p.id+'">Precio (€)</label><input id="new-price-'+p.id+'" inputmode="decimal" placeholder="10,50"><span></span></div>'+
        '</article>';
    }).join('');
    status('adminStatus',products.length+' productos cargados.');
@@ -92,7 +93,21 @@ button.secondary{background:#eee8e1;color:var(--ink)}button:disabled{opacity:.55
  });
  $('logout').addEventListener('click',async()=>{await client.auth.signOut();location.reload()});
  $('products').addEventListener('click',async e=>{
-   const productId=e.target.dataset.saveProduct, optionId=e.target.dataset.saveOption;
+   const productId=e.target.dataset.saveProduct, optionId=e.target.dataset.saveOption, addOptionProductId=e.target.dataset.addOption;
+   if(addOptionProductId){
+     const label=$('new-label-'+addOptionProductId).value.trim();
+     const cents=centsFromInput($('new-price-'+addOptionProductId).value);
+     if(!label){status('adminStatus','Escribe el nombre de la opción.');return}
+     if(!Number.isFinite(cents)||cents<0){status('adminStatus','Introduce un precio válido.');return}
+     e.target.disabled=true;status('adminStatus','Añadiendo opción…');
+     const {data:existing,error:readError}=await client.from('product_options').select('sort_order').eq('product_id',addOptionProductId).order('sort_order',{ascending:false}).limit(1);
+     if(readError){e.target.disabled=false;status('adminStatus','No se pudo preparar la opción: '+readError.message);return}
+     const nextOrder=(existing&&existing.length?Number(existing[0].sort_order||0)+1:0);
+     const {error:insertError}=await client.from('product_options').insert({product_id:addOptionProductId,label,price_cents:cents,active:true,sort_order:nextOrder});
+     e.target.disabled=false;
+     if(insertError){status('adminStatus','No se pudo añadir la opción: '+insertError.message);return}
+     status('adminStatus','Opción añadida correctamente.');await loadProducts();return;
+   }
    if(!productId&&!optionId)return;
    e.target.disabled=true;status('adminStatus','Guardando…');
    let result;
