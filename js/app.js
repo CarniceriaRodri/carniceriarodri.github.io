@@ -125,9 +125,11 @@
     else unidadStr = 'ud';
     let precioNum = 0;
     if (p && p.precio) {
-      const elegido = p.id === 'picada' && p.preciosOpciones
-        ? (p.preciosOpciones[normalizarClave(l.opcion)] || p.precio)
-        : p.precio;
+      const elegido = p.preciosOpciones && p.preciosOpciones[normalizarClave(l.opcion)]
+        ? p.preciosOpciones[normalizarClave(l.opcion)]
+        : (p.precioNumOpciones && Number.isFinite(p.precioNumOpciones[normalizarClave(l.opcion)])
+          ? p.precioNumOpciones[normalizarClave(l.opcion)].toFixed(2).replace('.', ',') + (p.precio.match(/\/(kg|ud)/i) || [,'ud'])[0]
+          : p.precio);
       const m = elegido.replace(',', '.').match(/[\d.]+/);
       if (m) precioNum = parseFloat(m[0]);
     }
@@ -368,25 +370,38 @@
     mostrarModal(idMostrar);
   }
 
-  // Actualiza el precio visible y las cantidades al cambiar la variedad de Carne Picada.
+  // Actualiza precio y cantidades al cambiar cualquier opción del catálogo.
   document.addEventListener('change', (e) => {
-    const select = e.target.closest('.card[data-id="picada"] [data-field="opcion"]');
+    const select = e.target.closest('.card [data-field="opcion"]');
     if (!select) return;
-    const p = PRODUCTOS.find(x => x.id === 'picada');
     const cardEl = select.closest('.card');
-    const price = p.preciosOpciones && p.preciosOpciones[normalizarClave(select.value)];
-    if (!price) return;
+    const p = PRODUCTOS.find(x => x.id === cardEl.dataset.id);
+    if (!p) return;
+    const key = normalizarClave(select.value);
+    const baseMatch = String(p.precio || '').replace(',', '.').match(/[0-9]+(?:\.[0-9]+)?/);
+    const basePrice = baseMatch ? Number(baseMatch[0]) : 0;
+    let optionPrice = basePrice;
+    if (p.preciosOpciones && Number.isFinite(Number(p.preciosOpciones[key]))) {
+      optionPrice = Number(p.preciosOpciones[key]);
+    } else if (p.factoresOpciones && Number.isFinite(Number(p.factoresOpciones[key]))) {
+      optionPrice = basePrice * Number(p.factoresOpciones[key]);
+    }
+    if (!(optionPrice > 0)) return;
+    p.precioNumOpciones = p.precioNumOpciones || {};
+    p.precioNumOpciones[key] = optionPrice;
+    const unit = (String(p.precio || '').match(/\/(kg|ud)/i) || [,'kg'])[1].toLowerCase();
+    const priceText = optionPrice.toFixed(2).replace('.', ',') + ' €/' + unit;
     const priceEl = cardEl.querySelector('[data-price]');
-    if (priceEl) priceEl.innerHTML = escapeHtml(price) + ' <small>orientativo</small>';
+    if (priceEl) priceEl.innerHTML = escapeHtml(priceText) + ' <small>orientativo</small>';
     const cantidad = cardEl.querySelector('[data-field="cantidad"]');
+    if (!cantidad) return;
     const original = p.cantidadesOriginales || p.cantidades;
-    const priceNum = Number(price.replace(',', '.').match(/[\d.]+/)[0]);
     cantidad.innerHTML = original.map(label => {
       const m = label.match(/[0-9]+(?:[.,][0-9]+)?/);
       if (!m) return '<option>' + escapeHtml(label) + '</option>';
       const amount = Number(m[0].replace(',', '.'));
       const factor = /gr|gram/i.test(label) ? amount / 1000 : amount;
-      const value = (priceNum * factor).toFixed(2).replace('.', ',');
+      const value = (optionPrice * factor).toFixed(2).replace('.', ',');
       const updated = label.replace(/-\s*[0-9]+(?:[.,][0-9]+)?\s*€/i, '- ' + value + ' €');
       return '<option>' + escapeHtml(updated) + '</option>';
     }).join('');
@@ -504,7 +519,7 @@ const product = PRODUCTOS.find(p => String(p.id) === String(row.id))
         }
       });
 
-      // Primera prueba: precios individuales únicamente para Carne Picada.
+      // Cargar precios específicos guardados para cualquier producto.
       const publicKey = response.url.split('apikey=')[1];
       if (publicKey) {
         const optionsResponse = await fetch(
@@ -515,13 +530,20 @@ const product = PRODUCTOS.find(p => String(p.id) === String(row.id))
           const optionRows = await optionsResponse.json();
           const picada = PRODUCTOS.find(p => p.id === 'picada');
           if (picada) {
-            picada.cantidadesOriginales = picada.cantidades.slice();
-            picada.preciosOpciones = {};
-            optionRows.filter(row => String(row.product_id) === 'picada' && Number.isFinite(Number(row.price_cents)))
-              .forEach(row => {
-                picada.preciosOpciones[normalizarClave(row.label)] =
-                  (Number(row.price_cents) / 100).toFixed(2).replace('.', ',') + ' €/kg';
+            PRODUCTOS.forEach(product => {
+              product.cantidadesOriginales = product.cantidades.slice();
+              product.factoresOpciones = {};
+              const configured = window.FACTORES_OPCIONES && window.FACTORES_OPCIONES[product.id];
+              if (configured) Object.entries(configured).forEach(([label, factor]) => {
+                product.factoresOpciones[normalizarClave(label)] = factor;
               });
+              product.preciosOpciones = {};
+            });
+            optionRows.forEach(row => {
+              const product = PRODUCTOS.find(p => String(p.id) === String(row.product_id));
+              if (!product || !Number.isFinite(Number(row.price_cents))) return;
+              product.preciosOpciones[normalizarClave(row.label)] = Number(row.price_cents) / 100;
+            });
           }
         }
       }
@@ -542,8 +564,7 @@ const product = PRODUCTOS.find(p => String(p.id) === String(row.id))
   // el catálogo seguirá visible con los precios locales.
   sincronizarPrecios().then(() => {
     renderCatalogo();
-    const picadaOption = document.querySelector('.card[data-id="picada"] [data-field="opcion"]');
-    if (picadaOption) picadaOption.dispatchEvent(new Event('change', { bubbles: true }));
+    document.querySelectorAll('.card [data-field="opcion"]').forEach(option => option.dispatchEvent(new Event('change', { bubbles: true })));
     renderCart();
   }); 
 })();
