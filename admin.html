@@ -151,6 +151,12 @@ button.secondary{background:#eee8e1;color:var(--ink)}button:disabled{opacity:.55
  });
  $('logout').addEventListener('click',async()=>{await client.auth.signOut();location.reload()});
  $('products').addEventListener('click',async e=>{
+   const closeCategory=e.target.closest('[data-close-admin-category]');
+   if(closeCategory){
+     const category=closeCategory.closest('details.admin-category');
+     if(category) category.open=false;
+     return;
+   }
    const productId=e.target.dataset.saveProduct, optionId=e.target.dataset.saveOption, addOptionProductId=e.target.dataset.addOption, toggleOptionId=e.target.dataset.toggleOption;
    const deleteOptionId=e.target.dataset.deleteOption;
    const catalogOptionProductId=e.target.dataset.useCatalogOption;
