@@ -193,6 +193,36 @@ window.PRODUCTOS = [
   },
 ]
 
+// Factores orientativos por opción para pruebas. 1 = precio base del producto.
+window.FACTORES_OPCIONES = {
+  'filetes-ternera': {'Tacos para guiso': 0.90},
+  chuleton: {'Entrecot jugoso': 1, 'Chuletón madurado con hueso': 1.18, 'Corte grueso para brasa': 1.08, 'Chuleta de lomo alto': 0.95},
+  solomillo: {'Medallones gruesos': 1, 'Turnedós finos': 1, 'Pieza entera para asar': 0.96, 'Cortado para carpaccio': 1.05},
+  'guiso-ternera': {'Carrilleras de ternera': 1.25, 'Rabo de toro troceado': 1.15, 'Osobuco en rodajas': 1.05, 'Morcillo en tacos': 0.95, 'Aguja en tacos': 0.90, 'Redondo de ternera': 1.05, 'Huesos para caldo': 0.35},
+  'lomo-cerdo': {'Fresco en filetes': 1, 'Adobado casero': 1.08, 'Cinta de lomo entera': 1.02, 'Lomo para asar': 1.05},
+  costillas: {'Enteras en tiras': 1, 'Troceadas para guiso / horno': 1, 'Adobadas caseras': 1.08, 'Marinadas barbacoa': 1.12},
+  iberico: {'Secreto ibérico': 1.15, 'Presa ibérica': 1.30, 'Pluma ibérica': 1.25, 'Abanico ibérico': 1.05, 'Lagarto ibérico': 0.95, 'Carrillada ibérica': 0.90},
+  'chuletas-cerdo': {'Chuletas de aguja': 0.95, 'Chuletas de lomo': 1.05, 'Panceta en tiras': 0.90, 'Panceta para torreznos': 0.95, 'Solomillo de cerdo': 1.45, 'Codillo': 0.85, 'Manitas de cerdo': 0.65},
+  pollo: {'Pechugas en filetes': 1.20, 'Pechugas enteras': 1.15, 'Muslos y contramuslos': 0.90, 'Contramuslo deshuesado': 1.10, 'Troceado para guisar': 0.95, 'Abierto para asar': 1},
+  alitas: {'Alitas enteras': 1, 'Alitas partidas': 1, 'Alitas adobadas picantes': 1.10, 'Jamoncitos de pollo': 1.05, 'Filetes de pechuga de pavo': 1.30, 'Contramuslo de pavo': 1.15},
+  conejo: {'Troceado para paella': 1, 'Troceado para guisar': 1, 'Entero sin trocear': 1, 'Abierto para la plancha': 1.05},
+  cordero: {'Chuletas para plancha': 1, 'Chuletas gruesas para brasa': 1.10, 'Costillar entero': 0.95, 'Pierna para asar': 0.95, 'Paletilla para asar': 1.05, 'Troceado para guisar': 0.90},
+  hamburguesas: {'Vacuno 100%': 1, 'Buey madurado': 1.35, 'Ibérica': 1.25, 'Pollo y espinacas': 0.90, 'Mixta con especias': 0.95, 'Rellena de queso de cabra': 1.15, 'Con bacon y cheddar': 1.15},
+  'embutido-fresco': {'Chorizo fresco dulce': 1, 'Chorizo fresco picante': 1, 'Chorizo criollo': 1.05, 'Salchichas frescas de cerdo': 0.95, 'Salchichas de pollo': 0.95, 'Longaniza fresca': 1, 'Butifarra': 1.05, 'Morcilla de cebolla': 0.90, 'Morcilla de arroz': 0.90},
+  pinchos: {'Pincho moruno de cerdo': 1, 'Pincho moruno de pollo': 0.90, 'Pincho de cordero': 1.25, 'Brocheta de ternera con verduras': 1.20, 'Brocheta mixta': 1.05, 'Brocheta de pollo al limón': 0.95},
+  albondigas: {'Albóndigas de ternera': 1.10, 'Albóndigas mixtas': 1, 'Flamenquines de jamón y queso': 1.15, 'San Jacobos': 1.05, 'Filetes rusos': 1, 'Cordon bleu de pollo': 1.15, 'Pechugas de pollo empanadas': 1.05, 'Nuggets caseros': 0.95},
+  jamon: {'Jamón serrano en lonchas': 1, 'Jamón ibérico de cebo': 1.65, 'Jamón ibérico de bellota': 2.70, 'Paleta ibérica': 1.35, 'Taquitos de jamón': 0.95, 'Huesos de jamón para caldo': 0.25},
+  embutidos: {'Chorizo ibérico': 1, 'Salchichón ibérico': 1, 'Lomo embuchado ibérico': 1.35, 'Fuet': 0.80, 'Sobrasada': 0.85, 'Morcón': 1.20, 'Cecina de León': 1.50},
+  quesos: {'Manchego curado': 1.15, 'Manchego semicurado': 1, 'Queso de cabra': 1.05, 'Queso viejo en aceite': 1.20, 'Queso tierno': 0.85, 'Queso azul / Cabrales': 1.10, 'Torta del Casar': 1.35},
+  fiambres: {'Jamón cocido extra': 1, 'Pechuga de pavo': 1.05, 'Mortadela': 0.80, 'Chopped': 0.75, 'Queso en lonchas': 1.10, 'Bacon ahumado': 1.15, 'Salami': 0.95},
+  refrescos: {'Coca-Cola': 1, 'Coca-Cola Zero': 1, 'Fanta Naranja': 0.95, 'Fanta Limón': 0.95, 'Sprite': 0.95, 'Kas Naranja': 0.90, 'Pepsi': 0.90, 'Aquarius Limón': 1.10, 'Aquarius Naranja': 1.10, 'Nestea': 1.10, 'Schweppes Tónica': 1.15, 'Bebida energética': 1.40},
+  'cervezas-vinos': {'Cerveza Mahou 5 Estrellas': 1, 'Cerveza Estrella Galicia': 1.10, 'Cerveza Cruzcampo': 0.90, 'Cerveza sin alcohol': 0.95, 'Cerveza 0,0 tostada': 1.05, 'Vino tinto Rioja crianza': 2.20, 'Vino tinto Ribera del Duero': 2.60, 'Vino blanco Rueda': 2, 'Vino rosado': 1.80, 'Tinto de verano': 1.10, 'Sangría': 1.20},
+  'agua-zumos': {'Agua mineral 0,5 L': 0.65, 'Agua mineral 1,5 L': 1, 'Agua con gas': 1.10, 'Zumo de naranja': 1.35, 'Zumo de melocotón': 1.15, 'Zumo de piña': 1.15, 'Mosto': 1.20},
+  despensa: {'Huevos camperos (docena)': 1.35, 'Huevos camperos (media docena)': 0.70, 'Pan de pueblo': 1.25, 'Barra de pan': 0.30, 'Aceite de oliva virgen extra 1 L': 2.20, 'Aceite de oliva virgen extra 5 L': 8.50, 'Pimentón de la Vera': 0.90, 'Sal gorda': 0.35},
+  barbacoa: {'Saco de carbón vegetal 3 kg': 0.85, 'Saco de carbón vegetal 5 kg': 1.35, 'Pastillas de encendido': 0.25, 'Leña de encina': 0.75, 'Bandejas de aluminio': 0.20, 'Palillos para brochetas': 0.10},
+  salsas: {'Alioli casero': 1, 'Mojo picón': 1, 'Chimichurri': 1.05, 'Salsa barbacoa': 0.90, 'Adobo para pinchos': 0.85, 'Sazonador para carne': 0.75, 'Mostaza antigua': 1.10}
+};
+
 // Precios base para la cesta (€ por kg o por unidad)
 const PRECIOS = {
   'filetes-ternera': '16,90 €/kg', chuleton: '28,90 €/kg', solomillo: '34,90 €/kg', picada: '10,50 €/kg',
