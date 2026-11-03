@@ -526,7 +526,7 @@ const product = PRODUCTOS.find(p => String(p.id) === String(row.id))
       const publicKey = response.url.split('apikey=')[1];
       if (publicKey) {
         const optionsResponse = await fetch(
-          'https://ugqiomoywgpkmogcdjqn.supabase.co/rest/v1/product_options?select=product_id,label,price_cents,active&active=eq.true&apikey=' + publicKey,
+          'https://ugqiomoywgpkmogcdjqn.supabase.co/rest/v1/product_options?select=product_id,label,price_cents,active&apikey=' + publicKey,
           { method: 'GET', mode: 'cors', cache: 'no-store' }
         );
         if (optionsResponse.ok) {
@@ -544,17 +544,23 @@ const product = PRODUCTOS.find(p => String(p.id) === String(row.id))
             });
             optionRows.forEach(row => {
               const product = PRODUCTOS.find(p => String(p.id) === String(row.product_id));
-              if (!product || row.active === false || !row.label) return;
+              if (!product || !row.label) return;
 
-              // Incorporar al desplegable todas las opciones activas creadas desde el panel.
               const label = String(row.label).trim();
-              if (!product.opciones.some(option => normalizarClave(option) === normalizarClave(label))) {
+              const key = normalizarClave(label);
+
+              // Las opciones OFF se retiran de la tienda, aunque sigan guardadas en administración.
+              if (row.active === false) {
+                product.opciones = product.opciones.filter(option => normalizarClave(option) !== key);
+                return;
+              }
+
+              if (!product.opciones.some(option => normalizarClave(option) === key)) {
                 product.opciones.push(label);
               }
 
-              // Aplicar el precio individual configurado en el panel de administración.
               if (Number.isFinite(Number(row.price_cents))) {
-                product.preciosOpciones[normalizarClave(label)] = Number(row.price_cents) / 100;
+                product.preciosOpciones[key] = Number(row.price_cents) / 100;
               }
             });
           }
