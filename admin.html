@@ -76,6 +76,7 @@ button.secondary{background:#eee8e1;color:var(--ink)}button:disabled{opacity:.55
    $('adminPanel').hidden=false; await loadProducts();
  }
  async function loadProducts(){
+   try {
    const openOptionPanels=new Set(Array.from(document.querySelectorAll('.options-details[open]')).map(el=>el.dataset.productOptions));
    const openCategoryPanels=new Set(Array.from(document.querySelectorAll('.admin-category[open]')).map(el=>el.dataset.adminCategory));
    status('adminStatus','Cargando productos…');
@@ -111,8 +112,8 @@ button.secondary{background:#eee8e1;color:var(--ink)}button:disabled{opacity:.55
      const ib=catalogue.findIndex(x=>String(x.id)===String(b.id));
      return ia<0||ib<0?String(a.name).localeCompare(String(b.name),'es'):ia-ib;
    });
-   const {data:options,optError}=await client.from('product_options').select('id,product_id,label,price_cents,active,sort_order').order('sort_order');
-   if(optError){status('adminStatus','No se pudieron cargar las opciones: '+optError.message);return}
+   const {data:options,error:optionsError}=await client.from('product_options').select('id,product_id,label,price_cents,active,sort_order').order('sort_order');
+   if(optionsError){status('adminStatus','No se pudieron cargar las opciones: '+optionsError.message);return}
    const optionRows=options||[];
    const groupedProducts=new Map();
    products.forEach(p=>{
