@@ -85,7 +85,8 @@ button.secondary{background:#eee8e1;color:var(--ink)}button:disabled{opacity:.55
  const centsFromInput = value => Math.round(Number(String(value).replace(',', '.')) * 100);
  function status(id,msg){$(id).textContent=msg}
  if(!window.supabase){status('loginStatus','No se ha cargado la conexión de Supabase. Comprueba Internet y vuelve a abrir el panel.');return}
- const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);\n let managerProducts=[]; let managerCategories=[]; let editingProductId=null;
+ const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+ let managerProducts=[]; let managerCategories=[]; let editingProductId=null;
  async function showSession(session){
    if(!session){$('loginPanel').hidden=false;$('adminPanel').hidden=true;$('logout').hidden=true;return}
    $('loginPanel').hidden=true;$('logout').hidden=false;
@@ -201,7 +202,8 @@ button.secondary{background:#eee8e1;color:var(--ink)}button:disabled{opacity:.55
    $('newCategoryId').value='';$('newCategoryName').value='';status('managerStatus','Categoría añadida.');await loadManager();
  });
  $('managerCategories').addEventListener('click',async e=>{const b=e.target.closest('[data-toggle-category]');if(!b)return;const active=b.dataset.active==='true';const {error}=await client.from('categories').update({active}).eq('id',b.dataset.toggleCategory);if(error){status('managerStatus','No se pudo cambiar la categoría: '+error.message);return}status('managerStatus',active?'Categoría activada.':'Categoría desactivada.');await loadManager();});
-\n function optionMarkup(o){return '<div class="option-item"><div class="option-heading"><div class="option-name">'+escapeHtml(o.label)+'</div><button class="option-toggle'+(o.active?'':' is-off')+'" data-toggle-option="'+o.id+'" data-next-active="'+(o.active?'false':'true')+'" title="'+(o.active?'Desactivar':'Activar')+'" aria-label="'+(o.active?'Desactivar':'Activar')+'">'+(o.active?'ON':'OFF')+'</button></div><div class="option-state">'+(o.active?'Activo':'Inactivo')+'</div><div class="price-row"><label class="sr-only" for="opt-'+o.id+'">Precio (€)</label><input id="opt-'+o.id+'" inputmode="decimal" value="'+(Number(o.price_cents||0)/100).toFixed(2)+'"><button class="save-icon" data-save-option="'+o.id+'" title="Guardar" aria-label="Guardar">💾</button><button class="secondary" data-delete-option="'+o.id+'" aria-label="Eliminar opción">×</button></div></div>'}
+
+ function optionMarkup(o){return '<div class="option-item"><div class="option-heading"><div class="option-name">'+escapeHtml(o.label)+'</div><button class="option-toggle'+(o.active?'':' is-off')+'" data-toggle-option="'+o.id+'" data-next-active="'+(o.active?'false':'true')+'" title="'+(o.active?'Desactivar':'Activar')+'" aria-label="'+(o.active?'Desactivar':'Activar')+'">'+(o.active?'ON':'OFF')+'</button></div><div class="option-state">'+(o.active?'Activo':'Inactivo')+'</div><div class="price-row"><label class="sr-only" for="opt-'+o.id+'">Precio (€)</label><input id="opt-'+o.id+'" inputmode="decimal" value="'+(Number(o.price_cents||0)/100).toFixed(2)+'"><button class="save-icon" data-save-option="'+o.id+'" title="Guardar" aria-label="Guardar">💾</button><button class="secondary" data-delete-option="'+o.id+'" aria-label="Eliminar opción">×</button></div></div>'}
  function escapeHtml(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
  $('login').addEventListener('click',async()=>{
    const button=$('login');button.disabled=true;status('loginStatus','Conectando con Supabase…');
