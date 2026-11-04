@@ -20,6 +20,19 @@ button.secondary{background:#eee8e1;color:var(--ink)}button:disabled{opacity:.55
 .notice{padding:12px 14px;border-radius:10px;background:#f7eee8;color:#63301f;font-size:14px}
 .status{margin-top:12px;font-size:14px;min-height:20px}.product{border-top:1px solid var(--line);padding:16px 0}.product:first-child{border-top:0}.category-test{margin:22px 0 10px;padding:15px 16px;background:var(--cat-bg,#f8f3ee);border:1px solid #e8d9cc;border-left:5px solid var(--cat-color,var(--accent));border-bottom:3px solid var(--cat-color,var(--accent));border-radius:12px}.category-test h2{margin:0 0 4px;color:var(--cat-color,var(--accent))}.category-test p{margin:0;color:var(--muted);font-size:13px}.product-unified{padding:18px 14px;margin:8px 0;border:0;border-bottom:2px solid #d8c4b5;border-radius:0;background:#fff}.product-unified .product-name{font-size:17px}.category-test{border-left:5px solid #7b2e20;border-bottom:3px solid #7b2e20}.product-unified .category{margin-top:4px}.options-details{margin-top:14px;border-top:1px solid var(--line);padding-top:12px}.options-details summary{cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px;border-radius:10px;background:#f1f4f5;color:#35434a;font-weight:750}.options-details summary::-webkit-details-marker{display:none}.options-details summary:after{content:"＋";font-size:19px}.options-details[open] summary:after{content:"−"}.options-content{margin-top:12px;padding:12px;background:#f8f6f2;border:1px solid #e9e2d9;border-radius:11px}.option-item{padding:10px 0;border-bottom:1px solid #e5ddd4}.option-item:last-of-type{border-bottom:0}.option-name{font-weight:700;color:#514238;font-size:14px}.option-state{font-size:12px;color:var(--muted);margin-top:2px}.options-empty{font-size:13px;color:var(--muted);padding:8px 0}.add-option-row{display:grid;grid-template-columns:minmax(0,1fr) 100px 44px;gap:7px;align-items:center;margin-top:10px}.add-option-row input{min-width:0;padding:10px 8px}.icon-button{min-width:42px;padding:9px 6px;font-size:19px;line-height:1}.save-icon{min-width:44px;padding:9px 5px;font-size:18px;line-height:1;background:#fff;color:#263238;border:1px solid #d8d8d8}.icon-button{background:#fff;color:#16834a;border:1px solid #d8d8d8;border-radius:9px;font-weight:800}.option-heading{display:flex;align-items:center;justify-content:space-between;gap:10px}.option-heading .option-name{flex:1}.option-toggle{background:#198754;color:#fff;border:1px solid #157347;min-width:48px;padding:7px 10px;font-size:13px;font-weight:800;line-height:1;border-radius:8px}.option-toggle.is-off{background:#f4c542;color:#503b00;border-color:#d5a91b}.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 .product-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.product-name{font-weight:750}.category{font-size:12px;color:var(--muted)}
+.admin-category{margin:14px 0;border:1px solid #e4ddd5;border-radius:13px;background:#fff;overflow:hidden;box-shadow:0 5px 18px #211a170a}
+.admin-category-summary{list-style:none;display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:15px 16px;cursor:pointer;background:var(--cat-bg,#f8f3ee);border-left:5px solid var(--cat-color,var(--accent))}
+.admin-category-summary::-webkit-details-marker{display:none}
+.admin-category-summary:focus-visible{outline:3px solid #b78b4b;outline-offset:-3px}
+.admin-category-title{font-size:17px;font-weight:800;color:var(--cat-color,var(--accent))}
+.admin-category-subtitle{font-size:12px;color:var(--muted);margin-left:auto}
+.admin-category-arrow{width:10px;height:10px;border-right:2px solid var(--cat-color,var(--accent));border-bottom:2px solid var(--cat-color,var(--accent));transform:rotate(45deg) translateY(-3px);transition:transform .2s}
+.admin-category[open] .admin-category-arrow{transform:rotate(225deg) translate(-2px,-1px)}
+.admin-category-content{padding:0 14px 14px}
+.admin-category-content .category-test{display:none}
+.admin-category-close{display:block;margin:12px auto 2px;background:#fff;color:var(--accent);border:1px solid var(--accent);font-size:13px;padding:9px 14px}
+.admin-category-close:hover{background:var(--accent);color:#fff}
+
 .price-row{display:grid;grid-template-columns:minmax(0,1fr) 105px 86px;gap:8px;align-items:center;margin-top:10px}.price-row label{margin:0}.price-row input{min-width:0}.price-row button{white-space:nowrap}
 .price-row input{padding:10px}.price-row button{padding:10px 12px;font-size:14px}
 .option{font-size:14px;color:var(--muted);margin-top:7px}
@@ -63,54 +76,71 @@ button.secondary{background:#eee8e1;color:var(--ink)}button:disabled{opacity:.55
    $('adminPanel').hidden=false; await loadProducts();
  }
  async function loadProducts(){
+   try {
    const openOptionPanels=new Set(Array.from(document.querySelectorAll('.options-details[open]')).map(el=>el.dataset.productOptions));
+   const openCategoryPanels=new Set(Array.from(document.querySelectorAll('.admin-category[open]')).map(el=>el.dataset.adminCategory));
    status('adminStatus','Cargando productos…');
    const {data:products,error}=await client.from('products').select('id,name,category,base_price_cents,active,sort_order').order('sort_order');
    if(error){status('adminStatus','No se pudieron cargar los productos: '+error.message);return}
    if(!products || !products.length){$('emptyNotice').hidden=false;$('products').innerHTML='';status('adminStatus','');return}
    $('emptyNotice').hidden=true;
-   const catalogue=(window.PRODUCTOS||[]);
+   const catalogue=(window.PRODUCTOS||[]).filter(item=>item && typeof item==='object' && item.id!=null);
    const categoryMeta={
-     vacuno:{name:'Vacuno y Ternera',icon:'🥩',color:'#7b2e20',bg:'#f8f0e9'},
-     cerdo:{name:'Cerdo e Ibérico',icon:'🐖',color:'#8a4d36',bg:'#fbf1ed'},
-     aves:{name:'Pollo, Aves y Conejo',icon:'🐔',color:'#8a6b20',bg:'#fbf7e9'},
-     cordero:{name:'Cordero',icon:'🐑',color:'#766044',bg:'#f5f1e9'},
-     elaborados:{name:'Elaborados de la Casa',icon:'🍖',color:'#9a4b28',bg:'#fbf0e8'},
-     charcuteria:{name:'Charcutería',icon:'🧀',color:'#80612a',bg:'#f8f4e8'},
-     bebidas:{name:'Refrescos y Bebidas',icon:'🥤',color:'#356b83',bg:'#edf5f8'},
-     despensa:{name:'Despensa y Barbacoa',icon:'🫒',color:'#527044',bg:'#f0f5ec'}
+     barbacoa:{name:'Barbacoa y preparados',icon:'🔥',color:'#9a4b28',bg:'#fbf0e8'},
+     bebidas:{name:'Bebidas',icon:'🥤',color:'#356b83',bg:'#edf5f8'},
+     caza:{name:'Caza y carnes especiales',icon:'🦌',color:'#766044',bg:'#f5f1e9'},
+     casqueria:{name:'Casquería',icon:'🍲',color:'#80612a',bg:'#f8f4e8'},
+     cerdo:{name:'Cerdo',icon:'🐖',color:'#8a4d36',bg:'#fbf1ed'},
+     charcuteria:{name:'Charcutería y quesos',icon:'🧀',color:'#80612a',bg:'#f8f4e8'},
+     conejo:{name:'Conejo',icon:'🐇',color:'#8a6b20',bg:'#fbf7e9'},
+     cordero:{name:'Cordero y cabrito',icon:'🐑',color:'#766044',bg:'#f5f1e9'},
+     despensa:{name:'Despensa y complementos',icon:'🫒',color:'#527044',bg:'#f0f5ec'},
+     elaborados:{name:'Elaborados de la casa',icon:'🍖',color:'#9a4b28',bg:'#fbf0e8'},
+     ibericos:{name:'Ibéricos',icon:'🥓',color:'#8a4d36',bg:'#fbf1ed'},
+     aves:{name:'Pollo y aves',icon:'🐔',color:'#8a6b20',bg:'#fbf7e9'},
+     'vaca-buey':{name:'Vaca, buey y carnes especiales',icon:'🥩',color:'#7b2e20',bg:'#f8f0e9'},
+     vacuno:{name:'Vacuno y ternera',icon:'🥩',color:'#7b2e20',bg:'#f8f0e9'}
    };
    products.sort((a,b)=>{
      const pa=catalogue.find(x=>String(x.id)===String(a.id));
      const pb=catalogue.find(x=>String(x.id)===String(b.id));
      const ca=pa?.cat||a.category||'', cb=pb?.cat||b.category||'';
-     const order=Object.keys(categoryMeta);
+     const order=['barbacoa','bebidas','caza','casqueria','cerdo','charcuteria','conejo','cordero','despensa','elaborados','ibericos','aves','vaca-buey','vacuno'];
      const diff=order.indexOf(ca)-order.indexOf(cb);
      if(diff!==0)return diff;
      const ia=catalogue.findIndex(x=>String(x.id)===String(a.id));
      const ib=catalogue.findIndex(x=>String(x.id)===String(b.id));
      return ia<0||ib<0?String(a.name).localeCompare(String(b.name),'es'):ia-ib;
    });
-   const {data:options,optError}=await client.from('product_options').select('id,product_id,label,price_cents,active,sort_order').order('sort_order');
-   if(optError){status('adminStatus','No se pudieron cargar las opciones: '+optError.message);return}
-   const optionRows=options||[];
-   let lastCategory='';
-   $('products').innerHTML=products.map(p=>{
+   const {data:options,error:optionsError}=await client.from('product_options').select('id,product_id,label,price_cents,active,sort_order').order('sort_order');
+   if(optionsError){status('adminStatus','No se pudieron cargar las opciones: '+optionsError.message);return}
+   const optionRows=(options||[]).filter(o=>o && o.id!=null && o.product_id!=null);
+   const groupedProducts=new Map();
+   products.filter(p=>p && p.id!=null).forEach(p=>{
      const cp=catalogue.find(item=>String(item.id)===String(p.id));
-     const categoryKey=cp?.cat||p.category||'';
-     const meta=categoryMeta[categoryKey]||{name:p.category||'Otros productos',icon:'📦',color:'#62564e',bg:'#f2efec'};
-     const opts=optionRows.filter(o=>String(o.product_id)===String(p.id));
-     const missing=(cp?.opciones||[]).filter(label=>!opts.some(o=>String(o.label).trim().toLocaleLowerCase('es')===String(label).trim().toLocaleLowerCase('es')));
-     const categoryHeader=categoryKey!==lastCategory?'<div class="category-test" style="--cat-color:'+meta.color+';--cat-bg:'+meta.bg+'"><h2>'+meta.icon+' '+escapeHtml(meta.name)+'</h2><p>Gestiona aquí todos los productos y sus opciones</p></div>':'';
-     lastCategory=categoryKey;
-     const saved=opts.map(o=>optionMarkup(o)).join('');
-     const pending=missing.map(label=>'<div class="option-item pending-option"><div class="option-heading"><div class="option-name">'+escapeHtml(label)+'</div><span class="option-state">Pendiente</span></div><div class="add-option-row"><input inputmode="decimal" placeholder="Precio (€)" aria-label="Precio para '+escapeHtml(label)+'" data-pending-price="'+p.id+'" data-pending-label="'+escapeHtml(label)+'"><button class="icon-button" title="Añadir opción" aria-label="Añadir opción" data-add-catalogue-option="'+p.id+'" data-option-label="'+escapeHtml(label)+'">➕</button></div></div>').join('');
-     return categoryHeader+'<article class="product product-unified"><div class="product-head"><div><div class="product-name">'+escapeHtml(p.name)+'</div><div class="category">'+escapeHtml(p.category||meta.name)+(p.active?'':' · Inactivo')+'</div></div></div>'+
-       '<details class="options-details" data-product-options="'+p.id+'"'+(openOptionPanels.has(String(p.id))?' open':'')+'><summary>Opciones - Añadir <span class="muted">'+opts.length+' guardadas · '+missing.length+' pendientes</span></summary><div class="options-content">'+
-       (saved||'')+(pending||'')+
-       '<div class="option" style="margin-top:14px;font-weight:700;color:var(--ink)">Añadir otra opción</div><div class="add-option-row"><label class="sr-only" for="new-label-'+p.id+'">Nombre opción</label><input id="new-label-'+p.id+'" placeholder="Nombre opción"><label class="sr-only" for="new-price-'+p.id+'">Precio (€)</label><input id="new-price-'+p.id+'" inputmode="decimal" placeholder="Precio (€)"><button class="icon-button" title="Añadir opción" aria-label="Añadir opción" data-add-option="'+p.id+'">➕</button></div></div></details></article>';
+     const key=cp?.cat||p.category||'otros';
+     if(!groupedProducts.has(key))groupedProducts.set(key,[]);
+     groupedProducts.get(key).push(p);
+   });
+   $('products').innerHTML=Array.from(groupedProducts.entries()).map(([categoryKey,items])=>{
+     const meta=categoryMeta[categoryKey]||{name:items[0]?.category||'Otros productos',icon:'📦',color:'#62564e',bg:'#f2efec'};
+     const productMarkup=items.map(p=>{
+       const cp=catalogue.find(item=>String(item.id)===String(p.id));
+       const opts=optionRows.filter(o=>String(o.product_id)===String(p.id));
+       const missing=(cp?.opciones||[]).filter(label=>!opts.some(o=>String(o.label).trim().toLocaleLowerCase('es')===String(label).trim().toLocaleLowerCase('es')));
+       const saved=opts.map(o=>optionMarkup(o)).join('');
+       const pending=missing.map(label=>'<div class="option-item pending-option"><div class="option-heading"><div class="option-name">'+escapeHtml(label)+'</div><span class="option-state">Pendiente</span></div><div class="add-option-row"><input inputmode="decimal" placeholder="Precio (€)" aria-label="Precio para '+escapeHtml(label)+'" data-pending-price="'+p.id+'" data-pending-label="'+escapeHtml(label)+'"><button class="icon-button" title="Añadir opción" aria-label="Añadir opción" data-add-catalogue-option="'+p.id+'" data-option-label="'+escapeHtml(label)+'">➕</button></div></div>').join('');
+       return '<article class="product product-unified"><div class="product-head"><div><div class="product-name">'+escapeHtml(p.name)+'</div><div class="category">'+escapeHtml(p.category||meta.name)+(p.active?'':' · Inactivo')+'</div></div></div>'+
+         '<details class="options-details" data-product-options="'+p.id+'"'+(openOptionPanels.has(String(p.id))?' open':'')+'><summary>Opciones - Añadir <span class="muted">'+opts.length+' guardadas · '+missing.length+' pendientes</span></summary><div class="options-content">'+
+         (saved||'')+(pending||'')+
+         '<div class="option" style="margin-top:14px;font-weight:700;color:var(--ink)">Añadir otra opción</div><div class="add-option-row"><label class="sr-only" for="new-label-'+p.id+'">Nombre opción</label><input id="new-label-'+p.id+'" placeholder="Nombre opción"><label class="sr-only" for="new-price-'+p.id+'">Precio (€)</label><input id="new-price-'+p.id+'" inputmode="decimal" placeholder="Precio (€)"><button class="icon-button" title="Añadir opción" aria-label="Añadir opción" data-add-option="'+p.id+'">➕</button></div></div></details></article>';
+     }).join('');
+     return '<details class="admin-category" data-admin-category="'+escapeHtml(categoryKey)+'" style="--cat-color:'+meta.color+';--cat-bg:'+meta.bg+'"'+(openCategoryPanels.has(String(categoryKey))?' open':'')+'><summary class="admin-category-summary"><span class="admin-category-title">'+meta.icon+' '+escapeHtml(meta.name)+'</span><span class="admin-category-subtitle">'+items.length+' productos</span><span class="admin-category-arrow" aria-hidden="true"></span></summary><div class="admin-category-content">'+productMarkup+'<button type="button" class="admin-category-close" data-close-admin-category>Cerrar categoría ↑</button></div></details>';
    }).join('');
    status('adminStatus',products.length+' productos cargados.');
+   } catch(err) {
+     status('adminStatus','Error al cargar el panel: '+(err?.message||String(err)));
+   }
  }
  function optionMarkup(o){return '<div class="option-item"><div class="option-heading"><div class="option-name">'+escapeHtml(o.label)+'</div><button class="option-toggle'+(o.active?'':' is-off')+'" data-toggle-option="'+o.id+'" data-next-active="'+(o.active?'false':'true')+'" title="'+(o.active?'Desactivar':'Activar')+'" aria-label="'+(o.active?'Desactivar':'Activar')+'">'+(o.active?'ON':'OFF')+'</button></div><div class="option-state">'+(o.active?'Activo':'Inactivo')+'</div><div class="price-row"><label class="sr-only" for="opt-'+o.id+'">Precio (€)</label><input id="opt-'+o.id+'" inputmode="decimal" value="'+(Number(o.price_cents||0)/100).toFixed(2)+'"><button class="save-icon" data-save-option="'+o.id+'" title="Guardar" aria-label="Guardar">💾</button><button class="secondary" data-delete-option="'+o.id+'" aria-label="Eliminar opción">×</button></div></div>'}
  function escapeHtml(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
@@ -125,6 +155,12 @@ button.secondary{background:#eee8e1;color:var(--ink)}button:disabled{opacity:.55
  });
  $('logout').addEventListener('click',async()=>{await client.auth.signOut();location.reload()});
  $('products').addEventListener('click',async e=>{
+   const closeCategory=e.target.closest('[data-close-admin-category]');
+   if(closeCategory){
+     const category=closeCategory.closest('details.admin-category');
+     if(category) category.open=false;
+     return;
+   }
    const productId=e.target.dataset.saveProduct, optionId=e.target.dataset.saveOption, addOptionProductId=e.target.dataset.addOption, toggleOptionId=e.target.dataset.toggleOption;
    const deleteOptionId=e.target.dataset.deleteOption;
    const catalogOptionProductId=e.target.dataset.useCatalogOption;
@@ -197,4 +233,11 @@ button.secondary{background:#eee8e1;color:var(--ink)}button:disabled{opacity:.55
    else {const cents=centsFromInput($('opt-'+optionId).value);if(!Number.isFinite(cents)||cents<0){status('adminStatus','Introduce un precio válido.');e.target.disabled=false;return}result=await client.from('product_options').update({price_cents:cents}).eq('id',optionId)}
    e.target.disabled=false;
    if(result.error){status('adminStatus','Error al guardar: '+result.error.message);return}
-   status('adminStat
+   status('adminStatus','Precio guardado correctamente.');
+ });
+ client.auth.getSession().then(({data})=>showSession(data.session));
+ client.auth.onAuthStateChange((_event,session)=>{if(!session){$('loginPanel').hidden=false;$('adminPanel').hidden=true;$('logout').hidden=true}});
+})();
+</script>
+</body>
+</html>
