@@ -29,10 +29,7 @@ values
 ('agua-zumos','Agua y Zumos','Agua mineral, con gas y zumos para toda la familia.','bebidas','agua-zumos',100,true,23),
 ('despensa','Huevos, Pan y Aceite','Básicos de despensa para completar tu compra.','despensa','despensa',450,true,24),
 ('barbacoa','Carbón y Barbacoa','Todo para encender la brasa sin complicaciones.','despensa','barbacoa',750,true,25),
-('salsas','Salsas y Adobos','El toque final para tus carnes.','despensa','salsas',320,true,26),
-('caza-especial','Carnes de Caza','Carnes especiales de caza, según disponibilidad y temporada.','caza','caza',0,true,27),
-('casqueria-tradicional','Casquería Tradicional','Piezas tradicionales para guisos y recetas de siempre.','casqueria','casquería',0,true,28),
-('vaca-buey-especial','Vaca y Buey','Cortes especiales y madurados, según disponibilidad.','vaca-buey','vacabuey',0,true,29)
+('salsas','Salsas y Adobos','El toque final para tus carnes.','despensa','salsas',320,true,26)
 on conflict (id) do update set
  name=excluded.name,
  description=excluded.description,
