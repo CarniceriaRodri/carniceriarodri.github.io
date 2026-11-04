@@ -38,6 +38,8 @@ button.secondary{background:#eee8e1;color:var(--ink)}button:disabled{opacity:.55
 .option{font-size:14px;color:var(--muted);margin-top:7px}
 [hidden]{display:none!important}
 @media(max-width:520px){.panel{padding:17px}.price-row{grid-template-columns:minmax(0,1fr) 92px 76px;gap:6px}.price-row label{grid-column:1/-1;margin:8px 0 0}.price-row input{grid-column:2;grid-row:2;padding:10px 7px}.price-row button{grid-column:3;grid-row:2;align-self:stretch;min-height:42px;width:100%;padding:8px 5px;font-size:13px}.price-row button.secondary{grid-column:auto}.add-option-row{grid-template-columns:minmax(0,1fr) 88px 42px;gap:5px}.add-option-row input{font-size:14px;padding:10px 6px}.product-head{display:block}.option{font-size:15px;color:var(--ink);font-weight:650;margin-top:14px}.product{padding:18px 0}}
+
+.manager-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.manager-grid .wide{grid-column:1/-1}.manager-grid textarea,.manager-grid select,.manager-grid input{width:100%;padding:12px;border:1px solid #cfc5bb;border-radius:9px;font:inherit;background:#fff}.manager-grid textarea{min-height:78px;resize:vertical}.manager-list{display:grid;gap:9px;margin-top:14px}.manager-item{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:12px;border:1px solid var(--line);border-radius:10px}.manager-item small{display:block;color:var(--muted)}.manager-item button{padding:8px 11px}.manager-preview{width:58px;height:58px;object-fit:cover;border-radius:8px;background:#eee}.manager-category{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;margin:10px 0}.manager-category input{min-width:0;padding:10px;border:1px solid #cfc5bb;border-radius:8px}@media(max-width:560px){.manager-grid{grid-template-columns:1fr}.manager-grid .wide{grid-column:auto}.manager-category{grid-template-columns:1fr}.manager-item{align-items:flex-start}}
 </style>
 </head>
 <body>
@@ -52,6 +54,22 @@ button.secondary{background:#eee8e1;color:var(--ink)}button:disabled{opacity:.55
 <section class="panel" id="adminPanel" hidden>
 <h1>Precios de productos</h1>
 <p class="muted">Introduce el precio en euros. Pulsa Guardar en cada cambio.</p>
+<section class="panel" id="managerPanel">
+<h2>Gestionar catálogo</h2><p class="muted">Crea productos, modifica sus datos y sube fotografías. Los cambios se guardan en Supabase.</p>
+<form id="productForm">
+<div class="manager-grid">
+<div class="wide"><label for="productName">Nombre del producto</label><input id="productName" maxlength="120" required></div>
+<div class="wide"><label for="productDescription">Descripción</label><textarea id="productDescription" maxlength="500"></textarea></div>
+<div><label for="productCategory">Categoría</label><select id="productCategory" required></select></div>
+<div><label for="productPrice">Precio (€)</label><input id="productPrice" inputmode="decimal" placeholder="Ej. 12,50" required></div>
+<div><label for="productImage">Fotografía (JPG, PNG o WebP; máx. 5 MB)</label><input id="productImage" type="file" accept="image/jpeg,image/png,image/webp"></div>
+<div><label for="productActive">Estado</label><select id="productActive"><option value="true">Activo</option><option value="false">Inactivo</option></select></div>
+<div class="wide"><small class="muted" id="imageHelp">Si no eliges una foto, se conservará la actual al editar.</small></div>
+</div><div class="actions"><button type="submit" id="saveProduct">Guardar producto</button><button type="button" class="secondary" id="cancelProduct" hidden>Cancelar edición</button></div>
+</form><p class="status" id="managerStatus" role="status"></p><div class="manager-list" id="managerProducts"></div>
+<hr style="border:0;border-top:1px solid var(--line);margin:22px 0"><h2>Categorías</h2><p class="muted">Añade o cambia el nombre de las categorías. No se borran categorías que tengan productos.</p>
+<div class="manager-category"><input id="newCategoryId" placeholder="Identificador (ej. aves)"><input id="newCategoryName" placeholder="Nombre de categoría"><button type="button" id="addCategory">Añadir</button></div><div id="managerCategories"></div>
+</section>
 <div class="notice" id="emptyNotice" hidden>La conexión está lista, pero todavía no hay productos cargados en la base de datos. Hay que importar el catálogo antes de editar precios.</div>
 <div id="products"></div><p class="status" id="adminStatus" role="status"></p>
 </section>
@@ -67,13 +85,13 @@ button.secondary{background:#eee8e1;color:var(--ink)}button:disabled{opacity:.55
  const centsFromInput = value => Math.round(Number(String(value).replace(',', '.')) * 100);
  function status(id,msg){$(id).textContent=msg}
  if(!window.supabase){status('loginStatus','No se ha cargado la conexión de Supabase. Comprueba Internet y vuelve a abrir el panel.');return}
- const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+ const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);\n let managerProducts=[]; let managerCategories=[]; let editingProductId=null;
  async function showSession(session){
    if(!session){$('loginPanel').hidden=false;$('adminPanel').hidden=true;$('logout').hidden=true;return}
    $('loginPanel').hidden=true;$('logout').hidden=false;
    const {data:admin,error:adminError}=await client.from('admin_users').select('user_id').eq('user_id',session.user.id).maybeSingle();
    if(adminError || !admin){$('adminPanel').hidden=false;$('products').innerHTML='';status('adminStatus','Esta cuenta no figura como administradora. Comprueba que tu UID está añadido en admin_users.');return}
-   $('adminPanel').hidden=false; await loadProducts();
+   $('adminPanel').hidden=false; await loadProducts(); await loadManager();
  }
  async function loadProducts(){
    try {
@@ -142,7 +160,48 @@ button.secondary{background:#eee8e1;color:var(--ink)}button:disabled{opacity:.55
      status('adminStatus','Error al cargar el panel: '+(err?.message||String(err)));
    }
  }
- function optionMarkup(o){return '<div class="option-item"><div class="option-heading"><div class="option-name">'+escapeHtml(o.label)+'</div><button class="option-toggle'+(o.active?'':' is-off')+'" data-toggle-option="'+o.id+'" data-next-active="'+(o.active?'false':'true')+'" title="'+(o.active?'Desactivar':'Activar')+'" aria-label="'+(o.active?'Desactivar':'Activar')+'">'+(o.active?'ON':'OFF')+'</button></div><div class="option-state">'+(o.active?'Activo':'Inactivo')+'</div><div class="price-row"><label class="sr-only" for="opt-'+o.id+'">Precio (€)</label><input id="opt-'+o.id+'" inputmode="decimal" value="'+(Number(o.price_cents||0)/100).toFixed(2)+'"><button class="save-icon" data-save-option="'+o.id+'" title="Guardar" aria-label="Guardar">💾</button><button class="secondary" data-delete-option="'+o.id+'" aria-label="Eliminar opción">×</button></div></div>'}
+
+ async function loadManager(){
+   const [pr,cr]=await Promise.all([
+     client.from('products').select('id,name,description,category,image,base_price_cents,active,sort_order').order('sort_order'),
+     client.from('categories').select('id,name,tagline,sort_order,active').order('sort_order')
+   ]);
+   if(pr.error||cr.error){status('managerStatus','No se pudo cargar el gestor: '+(pr.error?.message||cr.error?.message));return}
+   managerProducts=pr.data||[];managerCategories=(cr.data||[]).filter(x=>x.active);
+   $('productCategory').innerHTML=managerCategories.map(x=>'<option value="'+escapeHtml(x.id)+'">'+escapeHtml(x.name)+'</option>').join('');
+   $('managerProducts').innerHTML=managerProducts.map(p=>'<div class="manager-item"><div><strong>'+escapeHtml(p.name)+'</strong><small>'+escapeHtml(p.category)+' · '+euro(p.base_price_cents)+(p.active?'':' · Inactivo')+'</small></div><div class="actions"><button type="button" class="secondary" data-edit-product="'+escapeHtml(p.id)+'">Editar</button><button type="button" class="secondary" data-toggle-product="'+escapeHtml(p.id)+'" data-active="'+(!p.active)+'">'+(p.active?'Desactivar':'Activar')+'</button></div></div>').join('')||'<p class="muted">Todavía no hay productos.</p>';
+   $('managerCategories').innerHTML=(cr.data||[]).map(x=>'<div class="manager-item"><div><strong>'+escapeHtml(x.name)+'</strong><small>'+escapeHtml(x.id)+(x.active?'':' · Inactiva')+'</small></div><button type="button" class="secondary" data-toggle-category="'+escapeHtml(x.id)+'" data-active="'+(!x.active)+'">'+(x.active?'Desactivar':'Activar')+'</button></div>').join('');
+ }
+ function resetProductForm(){editingProductId=null;$('productForm').reset();$('cancelProduct').hidden=true;$('saveProduct').textContent='Guardar producto';}
+ $('cancelProduct').addEventListener('click',resetProductForm);
+ $('productForm').addEventListener('submit',async e=>{
+   e.preventDefault();const name=$('productName').value.trim(),category=$('productCategory').value,price=centsFromInput($('productPrice').value),file=$('productImage').files[0];
+   if(!name||!category||!Number.isFinite(price)||price<0){status('managerStatus','Revisa el nombre, la categoría y el precio.');return}
+   if(file&&(file.size>5242880||!['image/jpeg','image/png','image/webp'].includes(file.type))){status('managerStatus','La foto debe ser JPG, PNG o WebP y no superar 5 MB.');return}
+   const btn=$('saveProduct');btn.disabled=true;status('managerStatus','Guardando producto…');
+   try{
+     let id=editingProductId||name.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+     const previous=managerProducts.find(p=>p.id===id);let imagePath=previous?.image||'';
+     if(file){const ext=file.type==='image/png'?'png':file.type==='image/webp'?'webp':'jpg';const path=id+'/'+Date.now()+'.'+ext;const up=await client.storage.from('product-images').upload(path,file,{upsert:true,contentType:file.type});if(up.error)throw up.error;imagePath=client.storage.from('product-images').getPublicUrl(path).data.publicUrl;}
+     const payload={id,name,description:$('productDescription').value.trim(),category,image:imagePath,base_price_cents:price,active:$('productActive').value==='true',sort_order:previous?.sort_order??managerProducts.length};
+     const result=editingProductId?await client.from('products').update(payload).eq('id',editingProductId):await client.from('products').insert(payload);
+     if(result.error)throw result.error;
+     status('managerStatus','Producto guardado correctamente.');resetProductForm();await loadManager();await loadProducts();
+   }catch(err){status('managerStatus','No se pudo guardar: '+(err.message||String(err)));}
+   finally{btn.disabled=false;}
+ });
+ $('managerProducts').addEventListener('click',async e=>{
+   const edit=e.target.closest('[data-edit-product]');const toggle=e.target.closest('[data-toggle-product]');
+   if(edit){const p=managerProducts.find(x=>x.id===edit.dataset.editProduct);if(!p)return;editingProductId=p.id;$('productName').value=p.name;$('productDescription').value=p.description||'';$('productCategory').value=p.category;$('productPrice').value=(p.base_price_cents/100).toFixed(2);$('productActive').value=String(p.active);$('productImage').value='';$('cancelProduct').hidden=false;$('saveProduct').textContent='Guardar cambios';$('productForm').scrollIntoView({behavior:'smooth',block:'start'});return}
+   if(toggle){const p=managerProducts.find(x=>x.id===toggle.dataset.toggleProduct);if(!p)return;const active=toggle.dataset.active==='true';const {error}=await client.from('products').update({active}).eq('id',p.id);if(error){status('managerStatus','No se pudo cambiar el estado: '+error.message);return}status('managerStatus',active?'Producto activado.':'Producto desactivado.');await loadManager();await loadProducts();}
+ });
+ $('addCategory').addEventListener('click',async()=>{
+   const id=$('newCategoryId').value.trim().toLowerCase().replace(/[^a-z0-9_-]/g,'-'),name=$('newCategoryName').value.trim();if(!id||!name){status('managerStatus','Escribe el identificador y el nombre de la categoría.');return}
+   const {error}=await client.from('categories').insert({id,name,active:true,sort_order:managerCategories.length});if(error){status('managerStatus','No se pudo añadir la categoría: '+error.message);return}
+   $('newCategoryId').value='';$('newCategoryName').value='';status('managerStatus','Categoría añadida.');await loadManager();
+ });
+ $('managerCategories').addEventListener('click',async e=>{const b=e.target.closest('[data-toggle-category]');if(!b)return;const active=b.dataset.active==='true';const {error}=await client.from('categories').update({active}).eq('id',b.dataset.toggleCategory);if(error){status('managerStatus','No se pudo cambiar la categoría: '+error.message);return}status('managerStatus',active?'Categoría activada.':'Categoría desactivada.');await loadManager();});
+\n function optionMarkup(o){return '<div class="option-item"><div class="option-heading"><div class="option-name">'+escapeHtml(o.label)+'</div><button class="option-toggle'+(o.active?'':' is-off')+'" data-toggle-option="'+o.id+'" data-next-active="'+(o.active?'false':'true')+'" title="'+(o.active?'Desactivar':'Activar')+'" aria-label="'+(o.active?'Desactivar':'Activar')+'">'+(o.active?'ON':'OFF')+'</button></div><div class="option-state">'+(o.active?'Activo':'Inactivo')+'</div><div class="price-row"><label class="sr-only" for="opt-'+o.id+'">Precio (€)</label><input id="opt-'+o.id+'" inputmode="decimal" value="'+(Number(o.price_cents||0)/100).toFixed(2)+'"><button class="save-icon" data-save-option="'+o.id+'" title="Guardar" aria-label="Guardar">💾</button><button class="secondary" data-delete-option="'+o.id+'" aria-label="Eliminar opción">×</button></div></div>'}
  function escapeHtml(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
  $('login').addEventListener('click',async()=>{
    const button=$('login');button.disabled=true;status('loginStatus','Conectando con Supabase…');
