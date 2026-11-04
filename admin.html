@@ -91,7 +91,7 @@ button.secondary{background:#eee8e1;color:var(--ink)}button:disabled{opacity:.55
      const ib=catalogue.findIndex(x=>String(x.id)===String(b.id));
      return ia<0||ib<0?String(a.name).localeCompare(String(b.name),'es'):ia-ib;
    });
-   const {data:options,optError}=await client.from('product_options').select('id,product_id,label,price_cents,active,sort_order').order('sort_order');
+   const {data:options,error:optError}=await client.from('product_options').select('id,product_id,label,price_cents,active,sort_order').order('sort_order');
    if(optError){status('adminStatus','No se pudieron cargar las opciones: '+optError.message);return}
    const optionRows=options||[];
    let lastCategory='';
@@ -199,7 +199,7 @@ button.secondary{background:#eee8e1;color:var(--ink)}button:disabled{opacity:.55
    if(result.error){status('adminStatus','Error al guardar: '+result.error.message);return}
    status('adminStatus','Precio guardado correctamente.');
  });
- client.auth.getSession().then(({data})=>showSession(data.session));
+ client.auth.getSession().then(({data,error})=>{if(error)throw error;return showSession(data.session)}).catch(err=>{status('loginStatus','No se pudo comprobar la sesión: '+(err?.message||String(err)));$('loginPanel').hidden=false;$('adminPanel').hidden=true;});
  client.auth.onAuthStateChange((_event,session)=>{if(!session){$('loginPanel').hidden=false;$('adminPanel').hidden=true;$('logout').hidden=true}});
 })();
 </script>
