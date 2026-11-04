@@ -56,9 +56,10 @@ button.secondary{background:#eee8e1;color:var(--ink)}button:disabled{opacity:.55
  if(!window.supabase){status('loginStatus','No se ha cargado la conexión de Supabase. Comprueba Internet y vuelve a abrir el panel.');return}
  const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
  async function showSession(session){
-   if(!session){$('loginPanel').hidden=false;$('adminPanel').hidden=true;$('logout').hidden=true;return}
+   const userId=session && session.user && session.user.id;
+   if(!userId){$('loginPanel').hidden=false;$('adminPanel').hidden=true;$('logout').hidden=true;$('products').innerHTML='';status('loginStatus','No hay una sesión válida. Inicia sesión de nuevo.');return}
    $('loginPanel').hidden=true;$('logout').hidden=false;
-   const {data:admin,error:adminError}=await client.from('admin_users').select('user_id').eq('user_id',session.user.id).maybeSingle();
+   const {data:admin,error:adminError}=await client.from('admin_users').select('user_id').eq('user_id',userId).maybeSingle();
    if(adminError || !admin){$('adminPanel').hidden=false;$('products').innerHTML='';status('adminStatus','Esta cuenta no figura como administradora. Comprueba que tu UID está añadido en admin_users.');return}
    $('adminPanel').hidden=false; await loadProducts();
  }
