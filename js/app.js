@@ -497,17 +497,14 @@
       if (!response.ok) throw new Error('Supabase respondió ' + response.status);
       const rows = await response.json();
       rows.forEach(row => {
-        const product = PRODUCTOS.find(p => String(p.id) === String(row.id))
-          || PRODUCTOS.find(p => normalizarClave(p.nombre) === normalizarClave(row.name));
-        if (product) product.visible = row.active !== false;
         const normalizar = texto => String(texto || '')
-  .normalize('NFD')
-  .replace(/[\u0300-\u036f]/g, '')
-  .toLowerCase()
-  .replace(/[^a-z0-9]/g, '');
-
-const product = PRODUCTOS.find(p => String(p.id) === String(row.id))
-  || PRODUCTOS.find(p => normalizar(p.nombre) === normalizar(row.name));
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .toLowerCase()
+          .replace(/[^a-z0-9]/g, '');
+        const product = PRODUCTOS.find(p => String(p.id) === String(row.id))
+          || PRODUCTOS.find(p => normalizar(p.nombre) === normalizar(row.name));
+        if (product) product.visible = row.active !== false;
         if (!product || !Number.isFinite(Number(row.base_price_cents))) return;
         const unit = (product.precio && product.precio.match(/\/(kg|ud)/i) || [,'ud'])[1].toLowerCase();
         const basePrice = Number(row.base_price_cents) / 100;
