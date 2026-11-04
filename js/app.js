@@ -43,7 +43,7 @@
 
     $('#secciones').innerHTML = CATEGORIAS.map((c, i) => {
       // Solo se muestran productos que conservan al menos una opción activa.
-      const productos = PRODUCTOS.filter((p) => p.cat === c.id && p.visible !== false && Array.isArray(p.opciones) && p.opciones.length > 0);
+      const productos = PRODUCTOS.filter((p) => p.cat === c.id && Array.isArray(p.opciones) && p.opciones.length > 0);
       if (!productos.length) return '';
       return `
         <section class="cat" id="cat-${escapeHtml(c.id)}" data-cat="${escapeHtml(c.id)}">
@@ -498,13 +498,13 @@
       const rows = await response.json();
       rows.forEach(row => {
         const normalizar = texto => String(texto || '')
-          .normalize('NFD')
-          .replace(/[\u0300-\u036f]/g, '')
-          .toLowerCase()
-          .replace(/[^a-z0-9]/g, '');
-        const product = PRODUCTOS.find(p => String(p.id) === String(row.id))
-          || PRODUCTOS.find(p => normalizar(p.nombre) === normalizar(row.name));
-        if (product) product.visible = row.active !== false;
+  .normalize('NFD')
+  .replace(/[\u0300-\u036f]/g, '')
+  .toLowerCase()
+  .replace(/[^a-z0-9]/g, '');
+
+const product = PRODUCTOS.find(p => String(p.id) === String(row.id))
+  || PRODUCTOS.find(p => normalizar(p.nombre) === normalizar(row.name));
         if (!product || !Number.isFinite(Number(row.base_price_cents))) return;
         const unit = (product.precio && product.precio.match(/\/(kg|ud)/i) || [,'ud'])[1].toLowerCase();
         const basePrice = Number(row.base_price_cents) / 100;
