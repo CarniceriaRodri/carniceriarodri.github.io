@@ -82,12 +82,12 @@ button.secondary{background:#eee8e1;color:var(--ink)}button:disabled{opacity:.55
    status('adminStatus','Cargando productos…');
    const {data:products,error}=await client.from('products').select('id,name,category,base_price_cents,active,sort_order').order('sort_order');
    if(error){status('adminStatus','No se pudieron cargar los productos: '+error.message);return}
-   if(!visibleProducts.length){$('emptyNotice').hidden=false;$('products').innerHTML='';status('adminStatus','');return}
    $('emptyNotice').hidden=true;
    const catalogue=(window.PRODUCTOS||[]).filter(item=>item && typeof item==='object' && item.id!=null);
    const excludedAdminCategories=new Set(['caza','casceria','casqueria','vaca-buey','buey-vaca','vaca_buey','buey_vaca','bueyvaca']);
-   const categoryKeyFor=p=>{const cp=catalogue.find(item=>String(item.id)===String(p.id));return String(cp?.cat||p.category||'').normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').toLowerCase().replace(/\\s+/g,'-').replace(/[^a-z0-9_-]/g,'');};
+   const categoryKeyFor=p=>{const cp=catalogue.find(item=>String(item.id)===String(p.id));return String(cp?.cat||p.category||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9_-]/g,'');};
    const visibleProducts=products.filter(p=>!excludedAdminCategories.has(categoryKeyFor(p)));
+   if(!visibleProducts.length){$('emptyNotice').hidden=false;$('products').innerHTML='';status('adminStatus','');return}
    const categoryMeta={
      barbacoa:{name:'Barbacoa y preparados',icon:'🔥',color:'#9a4b28',bg:'#fbf0e8'},
      bebidas:{name:'Bebidas',icon:'🥤',color:'#356b83',bg:'#edf5f8'},
