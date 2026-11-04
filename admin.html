@@ -56,21 +56,16 @@ button.secondary{background:#eee8e1;color:var(--ink)}button:disabled{opacity:.55
  if(!window.supabase){status('loginStatus','No se ha cargado la conexión de Supabase. Comprueba Internet y vuelve a abrir el panel.');return}
  const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
  async function showSession(session){
-   const userId=session && session.user && session.user.id;
-   if(!userId){$('loginPanel').hidden=false;$('adminPanel').hidden=true;$('logout').hidden=true;$('products').innerHTML='';status('loginStatus','No hay una sesión válida. Inicia sesión de nuevo.');return}
+   if(!session){$('loginPanel').hidden=false;$('adminPanel').hidden=true;$('logout').hidden=true;return}
    $('loginPanel').hidden=true;$('logout').hidden=false;
-   const {data:admin,error:adminError}=await client.from('admin_users').select('user_id').eq('user_id',userId).maybeSingle();
+   const {data:admin,error:adminError}=await client.from('admin_users').select('user_id').eq('user_id',session.user.id).maybeSingle();
    if(adminError || !admin){$('adminPanel').hidden=false;$('products').innerHTML='';status('adminStatus','Esta cuenta no figura como administradora. Comprueba que tu UID está añadido en admin_users.');return}
    $('adminPanel').hidden=false; await loadProducts();
  }
  async function loadProducts(){
    const openOptionPanels=new Set(Array.from(document.querySelectorAll('.options-details[open]')).map(el=>el.dataset.productOptions));
-   status('adminStatus','Conectando con la base de datos…');
-   const withTimeout=(promise,label)=>Promise.race([promise,new Promise((_,reject)=>setTimeout(()=>reject(new Error('Tiempo de espera agotado al '+label+'. Comprueba la conexión y las políticas RLS de Supabase.')),12000))]);
-   let productsResult;
-   try { productsResult=await withTimeout(client.from('products').select('id,name,category,base_price_cents,active,sort_order').order('sort_order'),'leer la tabla products'); }
-   catch(err){status('adminStatus','Error cargando productos: '+(err?.message||String(err)));return}
-   const {data:products,error}=productsResult;
+   status('adminStatus','Cargando productos…');
+   const {data:products,error}=await client.from('products').select('id,name,category,base_price_cents,active,sort_order').order('sort_order');
    if(error){status('adminStatus','No se pudieron cargar los productos: '+error.message);return}
    if(!products || !products.length){$('emptyNotice').hidden=false;$('products').innerHTML='';status('adminStatus','');return}
    $('emptyNotice').hidden=true;
@@ -96,11 +91,7 @@ button.secondary{background:#eee8e1;color:var(--ink)}button:disabled{opacity:.55
      const ib=catalogue.findIndex(x=>String(x.id)===String(b.id));
      return ia<0||ib<0?String(a.name).localeCompare(String(b.name),'es'):ia-ib;
    });
-   status('adminStatus','Productos encontrados. Cargando opciones…');
-   let optionsResult;
-   try { optionsResult=await withTimeout(client.from('product_options').select('id,product_id,label,price_cents,active,sort_order').order('sort_order'),'leer la tabla product_options'); }
-   catch(err){status('adminStatus','Error cargando opciones: '+(err?.message||String(err)));return}
-   const {data:options,error:optError}=optionsResult;
+   const {data:options,optError}=await client.from('product_options').select('id,product_id,label,price_cents,active,sort_order').order('sort_order');
    if(optError){status('adminStatus','No se pudieron cargar las opciones: '+optError.message);return}
    const optionRows=options||[];
    let lastCategory='';
@@ -206,11 +197,4 @@ button.secondary{background:#eee8e1;color:var(--ink)}button:disabled{opacity:.55
    else {const cents=centsFromInput($('opt-'+optionId).value);if(!Number.isFinite(cents)||cents<0){status('adminStatus','Introduce un precio válido.');e.target.disabled=false;return}result=await client.from('product_options').update({price_cents:cents}).eq('id',optionId)}
    e.target.disabled=false;
    if(result.error){status('adminStatus','Error al guardar: '+result.error.message);return}
-   status('adminStatus','Precio guardado correctamente.');
- });
- client.auth.getSession().then(({data,error})=>{if(error)throw error;return showSession(data.session)}).catch(err=>{status('loginStatus','No se pudo comprobar la sesión: '+(err?.message||String(err)));$('loginPanel').hidden=false;$('adminPanel').hidden=true;});
- client.auth.onAuthStateChange((_event,session)=>{if(!session){$('loginPanel').hidden=false;$('adminPanel').hidden=true;$('logout').hidden=true}});
-})();
-</script>
-</body>
-</html>
+   status('adminStat
