@@ -1,20 +1,14 @@
 // Catálogo de Carnicería Rodri.
 
 window.CATEGORIAS = [
-  { id: 'barbacoa', nombre: 'Barbacoa y preparados', lema: 'Todo listo para encender la brasa y disfrutar.' },
-  { id: 'bebidas', nombre: 'Bebidas', lema: 'Refrescos, agua, zumos y bebidas para acompañar.' },
-  { id: 'caza', nombre: 'Caza y carnes especiales', lema: 'Carnes especiales y piezas de temporada.' },
-  { id: 'casqueria', nombre: 'Casquería', lema: 'Piezas tradicionales para recetas de siempre.' },
-  { id: 'cerdo', nombre: 'Cerdo', lema: 'Cortes frescos y preparados de cerdo.' },
-  { id: 'charcuteria', nombre: 'Charcutería y quesos', lema: 'Jamón, embutidos y quesos cortados a tu gusto.' },
-  { id: 'conejo', nombre: 'Conejo', lema: 'Conejo limpio y preparado para cocinar.' },
-  { id: 'cordero', nombre: 'Cordero y cabrito', lema: 'Cortes tiernos para la plancha, la brasa o el horno.' },
-  { id: 'despensa', nombre: 'Despensa y complementos', lema: 'Básicos para completar tu compra.' },
-  { id: 'elaborados', nombre: 'Elaborados de la casa', lema: 'Hechos aquí cada mañana, con nuestra propia receta.' },
-  { id: 'ibericos', nombre: 'Ibéricos', lema: 'Piezas selectas del cerdo ibérico.' },
-  { id: 'aves', nombre: 'Pollo y aves', lema: 'Pollo fresco, pavo y otras aves preparados a tu gusto.' },
-  { id: 'vaca-buey', nombre: 'Vaca, buey y carnes especiales', lema: 'Cortes con carácter, madurados y especiales.' },
-  { id: 'vacuno', nombre: 'Vacuno y ternera', lema: 'Ternera de confianza, cortada al momento.' },
+  { id: 'vacuno', nombre: 'Vacuno y Ternera', lema: 'Ternera de confianza y vaca madurada, cortada al momento.' },
+  { id: 'cerdo', nombre: 'Cerdo e Ibérico', lema: 'Del lomo de cebo a las piezas ibéricas más jugosas.' },
+  { id: 'aves', nombre: 'Pollo, Aves y Conejo', lema: 'Pollo fresco, pavo y conejo limpios y listos para cocinar.' },
+  { id: 'cordero', nombre: 'Cordero', lema: 'Cordero lechal tierno, para la plancha o el horno.' },
+  { id: 'elaborados', nombre: 'Elaborados de la Casa', lema: 'Hechos aquí cada mañana, con nuestra propia receta.' },
+  { id: 'charcuteria', nombre: 'Charcutería', lema: 'Jamón, embutidos y quesos cortados a tu gusto.' },
+  { id: 'bebidas', nombre: 'Refrescos y Bebidas', lema: 'Para acompañar la comida: todo bien frío.' },
+  { id: 'despensa', nombre: 'Despensa y Barbacoa', lema: 'Lo que no puede faltar para cocinar o encender la brasa.' },
 ]
 
 // 👇 EL TRUCO: Ponemos el precio final calculado directamente en el texto
@@ -78,7 +72,7 @@ window.PRODUCTOS = [
     opcionLabel: 'Preparación', opciones: ['Enteras en tiras', 'Troceadas para guiso / horno', 'Adobadas caseras', 'Marinadas barbacoa'],
   },
   {
-    id: 'iberico', cat: 'ibericos', img: 'iberico', etiqueta: 'Ibérico',
+    id: 'iberico', cat: 'cerdo', img: 'iberico', etiqueta: 'Ibérico',
     nombre: 'Ibérico Selecto', desc: 'Secreto, presa y pluma: las joyas del cerdo ibérico.',
     cantidades: ['500 gr - 12,45 €', '1 kg - 24,90 €', '1.5 kg - 37,35 €'], 
     opcionLabel: 'Pieza', opciones: ['Secreto ibérico', 'Presa ibérica', 'Pluma ibérica', 'Abanico ibérico', 'Lagarto ibérico', 'Carrillada ibérica'],
@@ -102,7 +96,7 @@ window.PRODUCTOS = [
     opcionLabel: 'Pieza', opciones: ['Alitas enteras', 'Alitas partidas', 'Alitas adobadas picantes', 'Jamoncitos de pollo', 'Filetes de pechuga de pavo', 'Contramuslo de pavo'],
   },
   {
-    id: 'conejo', cat: 'conejo', img: 'conejo',
+    id: 'conejo', cat: 'aves', img: 'conejo',
     nombre: 'Conejo y Codorniz', desc: 'Imprescindibles para la paella, el arroz o el ajillo.',
     cantidades: ['4 codornices - 11,50 €', '6 codornices - 11,50 €'], 
     opcionLabel: 'Preparación', opciones: ['Troceado para paella', 'Troceado para guisar', 'Entero sin trocear', 'Abierto para la plancha'],
@@ -186,7 +180,7 @@ window.PRODUCTOS = [
     opcionLabel: 'Producto', opciones: ['Huevos camperos (docena)', 'Huevos camperos (media docena)', 'Pan de pueblo', 'Barra de pan', 'Aceite de oliva virgen extra 1 L', 'Aceite de oliva virgen extra 5 L', 'Pimentón de la Vera', 'Sal gorda'],
   },
   {
-    id: 'barbacoa', cat: 'barbacoa', img: 'barbacoa', etiqueta: 'Para brasa',
+    id: 'barbacoa', cat: 'despensa', img: 'barbacoa', etiqueta: 'Para brasa',
     nombre: 'Carbón y Barbacoa', desc: 'Todo para encender la brasa sin complicaciones.',
     cantidades: ['1 unidad - 7,50 €', '2 unidades - 15,00 €', '3 unidades - 22,50 €', '4 unidades - 30,00 €', '6 unidades - 45,00 €'], 
     opcionLabel: 'Producto', opciones: ['Saco de carbón vegetal 3 kg', 'Saco de carbón vegetal 5 kg', 'Pastillas de encendido', 'Leña de encina', 'Bandejas de aluminio', 'Palillos para brochetas'],
@@ -197,25 +191,6 @@ window.PRODUCTOS = [
     cantidades: ['1 unidad - 3,20 €', '2 unidades - 6,40 €', '3 unidades - 9,60 €', '4 unidades - 12,80 €', '6 unidades - 19,20 €'], 
     opcionLabel: 'Producto', opciones: ['Alioli casero', 'Mojo picón', 'Chimichurri', 'Salsa barbacoa', 'Adobo para pinchos', 'Sazonador para carne', 'Mostaza antigua'],
   },
-  ,
-  {
-    id: 'caza-especial', cat: 'caza', img: 'caza',
-    nombre: 'Carnes de Caza', desc: 'Carnes especiales de caza, según disponibilidad y temporada.',
-    opcionLabel: 'Producto', opciones: ['Jabalí para guisar', 'Venado en tacos', 'Venado en filetes', 'Perdiz', 'Codorniz de caza'],
-    cantidades: ['Precio a consultar']
-  },
-  {
-    id: 'casqueria-tradicional', cat: 'casqueria', img: 'casquería',
-    nombre: 'Casquería Tradicional', desc: 'Piezas tradicionales para guisos y recetas de siempre.',
-    opcionLabel: 'Producto', opciones: ['Hígado de ternera', 'Hígado de cerdo', 'Riñones', 'Carrillada', 'Lengua de ternera', 'Callos y morro', 'Manitas de cerdo'],
-    cantidades: ['Precio a consultar']
-  },
-  {
-    id: 'vaca-buey-especial', cat: 'vaca-buey', img: 'vacabuey',
-    nombre: 'Vaca y Buey', desc: 'Cortes especiales y madurados, según disponibilidad.',
-    opcionLabel: 'Corte', opciones: ['Chuletón de vaca madurada', 'Chuletón de buey', 'Entrecot de vaca', 'Solomillo de vaca', 'Costilla de vaca para asar'],
-    cantidades: ['Precio a consultar']
-  }
 ]
 
 // Factores orientativos por opción para pruebas. 1 = precio base del producto.
