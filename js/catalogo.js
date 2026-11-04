@@ -3,8 +3,6 @@
 window.CATEGORIAS = [
   { id: 'barbacoa', nombre: 'Barbacoa y preparados', lema: 'Todo listo para encender la brasa y disfrutar.' },
   { id: 'bebidas', nombre: 'Bebidas', lema: 'Refrescos, agua, zumos y bebidas para acompañar.' },
-  { id: 'caza', nombre: 'Caza y carnes especiales', lema: 'Carnes especiales y piezas de temporada.' },
-  { id: 'casqueria', nombre: 'Casquería', lema: 'Piezas tradicionales para recetas de siempre.' },
   { id: 'cerdo', nombre: 'Cerdo', lema: 'Cortes frescos y preparados de cerdo.' },
   { id: 'charcuteria', nombre: 'Charcutería y quesos', lema: 'Jamón, embutidos y quesos cortados a tu gusto.' },
   { id: 'conejo', nombre: 'Conejo', lema: 'Conejo limpio y preparado para cocinar.' },
@@ -13,7 +11,6 @@ window.CATEGORIAS = [
   { id: 'elaborados', nombre: 'Elaborados de la casa', lema: 'Hechos aquí cada mañana, con nuestra propia receta.' },
   { id: 'ibericos', nombre: 'Ibéricos', lema: 'Piezas selectas del cerdo ibérico.' },
   { id: 'aves', nombre: 'Pollo y aves', lema: 'Pollo fresco, pavo y otras aves preparados a tu gusto.' },
-  { id: 'vaca-buey', nombre: 'Vaca, buey y carnes especiales', lema: 'Cortes con carácter, madurados y especiales.' },
   { id: 'vacuno', nombre: 'Vacuno y ternera', lema: 'Ternera de confianza, cortada al momento.' },
 ]
 
