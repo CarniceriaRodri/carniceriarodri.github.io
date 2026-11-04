@@ -66,7 +66,7 @@ button.secondary{background:#eee8e1;color:var(--ink)}button:disabled{opacity:.55
  async function loadProducts(){
    const openOptionPanels=new Set(Array.from(document.querySelectorAll('.options-details[open]')).map(el=>el.dataset.productOptions));
    status('adminStatus','Cargando productos…');
-   const {data:products,error}=await client.from('products').select('id,name,category,base_price_cents,active,sort_order').order('sort_order');
+   let {data:products,error}=await client.from('products').select('id,name,category,base_price_cents,active,sort_order').order('sort_order');
    if(products){const excludedCategories=['caza','casqueria','vaca-buey','vaca buey','vaca y buey'];const normalizeCategory=value=>String(value||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase('es').trim();products=products.filter(product=>!excludedCategories.includes(normalizeCategory(product.category)));}
    if(error){status('adminStatus','No se pudieron cargar los productos: '+error.message);return}
    if(!products || !products.length){$('emptyNotice').hidden=false;$('products').innerHTML='';status('adminStatus','');return}
