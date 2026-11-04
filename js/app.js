@@ -555,7 +555,7 @@
         }
       });
 
-      if (categories.length) window.CATEGORIAS = categories;
+      window.CATEGORIAS = categories;
       window.PRODUCTOS = products;
     } catch (error) {
       console.warn('No se pudo cargar el catálogo de Supabase; se mantiene el catálogo local.', error);
