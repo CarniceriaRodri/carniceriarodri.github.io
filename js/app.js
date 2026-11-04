@@ -487,24 +487,32 @@
     }));
 
   async function sincronizarPrecios() {
+    const baseUrl = 'https://ugqiomoywgpkmogcdjqn.supabase.co/rest/v1/';
+    const publicKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVncWlvbW95d2dwa21vZ2NkanFuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM2MDc0OTQsImV4cCI6MjEwOTE4MzQ0NH0.k--iBQrSD_raY-TQn01ZHPIkZJ5Xm_KrxEmwY08po3Q';
+    const headers = {
+      apikey: publicKey,
+      Authorization: 'Bearer ' + publicKey
+    };
     try {
-      const baseUrl = 'https://ugqiomoywgpkmogcdjqn.supabase.co/rest/v1/';
-      const publicKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVncWlvbW95d2dwa21vZ2NkanFuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM2MDc0OTQsImV4cCI6MjEwOTE4MzQ0NH0.k--iBQrSD_raY-TQn01ZHPIkZJ5Xm_KrxEmwY08po3Q';
-      const headers = { apikey: publicKey };
-
-      const [productsResponse, categoriesResponse, optionsResponse] = await Promise.all([
+      // Categorías y productos son la base del catálogo. Las opciones se cargan
+      // aparte para que un fallo en esa tabla no oculte toda la tienda.
+      const [productsResponse, categoriesResponse] = await Promise.all([
         fetch(baseUrl + 'products?select=id,name,description,category,image,base_price_cents,active,sort_order&active=eq.true&order=sort_order.asc', { headers, cache: 'no-store' }),
-        fetch(baseUrl + 'categories?select=id,name,tagline,sort_order,active&active=eq.true&order=sort_order.asc', { headers, cache: 'no-store' }),
-        fetch(baseUrl + 'product_options?select=product_id,label,price_cents,active', { headers, cache: 'no-store' })
+        fetch(baseUrl + 'categories?select=id,name,tagline,sort_order,active&active=eq.true&order=sort_order.asc', { headers, cache: 'no-store' })
       ]);
-      if (!productsResponse.ok) throw new Error('No se pudieron cargar los productos (' + productsResponse.status + ')');
-      if (!categoriesResponse.ok) throw new Error('No se pudieron cargar las categorías (' + categoriesResponse.status + ')');
-      if (!optionsResponse.ok) throw new Error('No se pudieron cargar las opciones (' + optionsResponse.status + ')');
+      if (!productsResponse.ok) throw new Error('Productos (' + productsResponse.status + '): ' + await productsResponse.text());
+      if (!categoriesResponse.ok) throw new Error('Categorías (' + categoriesResponse.status + '): ' + await categoriesResponse.text());
+      const [productRows, categoryRows] = await Promise.all([productsResponse.json(), categoriesResponse.json()]);
+      if (!Array.isArray(productRows) || !Array.isArray(categoryRows)) throw new Error('La respuesta de Supabase no tiene el formato esperado.');
 
-      const [productRows, categoryRows, optionRows] = await Promise.all([
-        productsResponse.json(), categoriesResponse.json(), optionsResponse.json()
-      ]);
-      if (!Array.isArray(productRows) || !Array.isArray(categoryRows)) throw new Error('Respuesta de catálogo no válida');
+      let optionRows = [];
+      try {
+        const optionResponse = await fetch(baseUrl + 'product_options?select=product_id,label,price_cents,active&active=eq.true', { headers, cache: 'no-store' });
+        if (optionResponse.ok) optionRows = await optionResponse.json();
+        else console.warn('No se pudieron cargar las opciones del catálogo:', optionResponse.status, await optionResponse.text());
+      } catch (optionError) {
+        console.warn('No se pudieron cargar las opciones del catálogo:', optionError);
+      }
 
       const legacyProducts = Array.isArray(PRODUCTOS) ? PRODUCTOS : [];
       const legacyCategories = Array.isArray(CATEGORIAS) ? CATEGORIAS : [];
@@ -513,15 +521,16 @@
         return {
           id: String(row.id),
           nombre: row.name || old?.nombre || String(row.id),
-          lema: row.tagline || old?.lema || ''
+          lema: row.tagline || old?.lema || '',
+          sort_order: Number(row.sort_order || 0)
         };
       });
 
       const products = productRows.filter(row => row.active !== false).map(row => {
         const old = legacyProducts.find(p => String(p.id) === String(row.id));
-        const options = optionRows
-          .filter(o => String(o.product_id) === String(row.id) && o.active !== false)
-          .map(o => String(o.label || '').trim())
+        const configuredOptions = optionRows
+          .filter(option => String(option.product_id) === String(row.id) && option.active !== false)
+          .map(option => String(option.label || '').trim())
           .filter(Boolean);
         const basePrice = Number(row.base_price_cents || 0) / 100;
         const unit = (old?.precio && old.precio.match(/\/(kg|ud)/i) || [,'kg'])[1].toLowerCase();
@@ -536,8 +545,8 @@
           active: row.active !== false,
           etiqueta: old?.etiqueta || '',
           opcionLabel: old?.opcionLabel || 'Opción',
-          opciones: options.length ? options : (old?.opciones?.length ? old.opciones : ['General']),
-          cantidades: old?.cantidades?.length ? old.cantidades : ['1 unidad'],
+          opciones: configuredOptions.length ? configuredOptions : (old?.opciones?.length ? old.opciones : ['General']),
+          cantidades: old?.cantidades?.length ? old.cantidades.slice() : ['1 unidad'],
           precio: basePrice > 0 ? basePrice.toFixed(2).replace('.', ',') + ' €/' + unit : (old?.precio || 'Precio a consultar'),
           preciosOpciones: {},
           cantidadesOriginales: old?.cantidades?.slice() || ['1 unidad'],
@@ -546,20 +555,20 @@
         };
       });
 
-      // Las opciones configuradas en Supabase prevalecen sobre las opciones locales.
       optionRows.forEach(row => {
         const product = products.find(p => String(p.id) === String(row.product_id));
         if (!product || row.active === false || !row.label) return;
-        if (Number.isFinite(Number(row.price_cents))) {
-          product.preciosOpciones[normalizarClave(row.label)] = Number(row.price_cents) / 100;
+        const optionPrice = Number(row.price_cents);
+        if (Number.isFinite(optionPrice)) {
+          product.preciosOpciones[normalizarClave(row.label)] = optionPrice / 100;
         }
       });
 
       window.CATEGORIAS = categories;
       window.PRODUCTOS = products;
+      console.info('Catálogo actualizado desde Supabase:', categories.length, 'categorías y', products.length, 'productos.');
     } catch (error) {
-      console.warn('No se pudo cargar el catálogo de Supabase; se mantiene el catálogo local.', error);
-      // Conserva el catálogo local si Supabase aún no está configurado o falla la conexión.
+      console.error('No se pudo cargar el catálogo de Supabase; se mantiene el catálogo local.', error);
     }
   }
 
