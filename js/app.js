@@ -309,7 +309,7 @@
       const subtotalNum = Number((precioNum * cantidadNum * factorPeso).toFixed(2));
       totalPedido += subtotalNum;
       return {
-        nombre: nombreProd,
+        nombre: l.opcion ? `${nombreProd} — ${l.opcion}` : nombreProd,
         cantidad: cantidadNum,
         unidad: unidadStr,
         precioUnitario: precioNum,
