@@ -169,13 +169,6 @@ a { color: inherit; }
 .search svg { width: 18px; height: 18px; color: var(--muted); flex-shrink: 0; }
 .search input { border: 0; background: none; outline: none; font: 500 .95rem var(--body); width: 100%; color: var(--ink); }
 
-.category-empty {
-  padding: 1rem 1.1rem;
-  border: 1px dashed var(--line);
-  border-radius: 10px;
-  color: var(--muted);
-  background: rgba(255,250,242,.55);
-}
 .chips {
   position: sticky; top: var(--topbar); z-index: 20; display: flex; gap: .5rem; overflow-x: auto;
   padding: .8rem 0; margin: 0 0 1rem; background: var(--paper); scrollbar-width: none;
