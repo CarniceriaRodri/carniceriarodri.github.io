@@ -12,7 +12,6 @@
   const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
 
   const img = (name, w, h) => `img/productos/${name}.jpg`;
-  const productImage = (p) => p && p.image ? p.image : img(p && p.img ? p.img : 'producto', 600, 450);
 
   const escapeHtml = (s) =>
     String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
@@ -43,7 +42,7 @@
       CATEGORIAS.map((c) => `<button type="button" class="chip" data-chip="${escapeHtml(c.id)}">${escapeHtml(c.nombre)}</button>`).join('');
 
     $('#secciones').innerHTML = CATEGORIAS.map((c, i) => {
-      const productos = PRODUCTOS.filter((p) => p.cat === c.id && p.active !== false && Array.isArray(p.opciones) && p.opciones.length > 0);
+      const productos = PRODUCTOS.filter((p) => p.cat === c.id && Array.isArray(p.opciones) && p.opciones.length > 0);
       return `
         <section class="cat" id="cat-${escapeHtml(c.id)}" data-cat="${escapeHtml(c.id)}">
           <header class="cat-head">
@@ -65,8 +64,9 @@
     return `
       <article class="card" data-id="${escapeHtml(p.id)}" data-search="${escapeHtml(normalize(keywords))}">
         <div class="card-img">
-          <img src="${escapeHtml(productImage(p))}" ${p.image ? '' : `srcset="${img(p.img, 400, 300)} 400w, ${img(p.img, 800, 600)} 800w"`} 
-               sizes="(max-width: 640px) 100vw, 360px" alt="${escapeHtml(p.nombre)}" loading="lazy" width="600" height="450" decoding="async">
+          <img src="${img(p.img, 600, 450)}" srcset="${img(p.img, 400, 300)} 400w, ${img(p.img, 800, 600)} 800w"
+               sizes="(max-width: 640px) 100vw, 360px" alt="${escapeHtml(p.nombre)}" loading="lazy" width="600" height="450" decoding="async"
+               onerror="this.onerror=null;this.removeAttribute('srcset');this.src='img/productos/${escapeHtml(p.img)}.jpg'">
           ${p.etiqueta ? `<span class="tag">${escapeHtml(p.etiqueta)}</span>` : ''}
         </div>
         <div class="card-body">
@@ -163,7 +163,7 @@
         : '';
       return `
         <li class="line">
-          <img src="${escapeHtml(productImage(p))}" alt="" width="60" height="60" loading="lazy" decoding="async">
+          <img src="${img(p.img, 120, 120)}" alt="" width="60" height="60" loading="lazy" decoding="async">
           <div class="line-info">
             <strong>${escapeHtml(p.nombre)}</strong>
             <span>${escapeHtml(l.cantidad)} · ${escapeHtml(l.opcion)}</span>
@@ -487,88 +487,88 @@
     }));
 
   async function sincronizarPrecios() {
-    const baseUrl = 'https://ugqiomoywgpkmogcdjqn.supabase.co/rest/v1/';
-    const publicKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVncWlvbW95d2dwa21vZ2NkanFuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM2MDc0OTQsImV4cCI6MjEwOTE4MzQ0NH0.k--iBQrSD_raY-TQn01ZHPIkZJ5Xm_KrxEmwY08po3Q';
-    const headers = {
-      apikey: publicKey,
-      Authorization: 'Bearer ' + publicKey
-    };
     try {
-      // Categorías y productos son la base del catálogo. Las opciones se cargan
-      // aparte para que un fallo en esa tabla no oculte toda la tienda.
-      const [productsResponse, categoriesResponse] = await Promise.all([
-        fetch(baseUrl + 'products?select=id,name,description,category,image,base_price_cents,active,sort_order&active=eq.true&order=sort_order.asc', { headers, cache: 'no-store' }),
-        fetch(baseUrl + 'categories?select=id,name,tagline,sort_order,active&active=eq.true&order=sort_order.asc', { headers, cache: 'no-store' })
-      ]);
-      if (!productsResponse.ok) throw new Error('Productos (' + productsResponse.status + '): ' + await productsResponse.text());
-      if (!categoriesResponse.ok) throw new Error('Categorías (' + categoriesResponse.status + '): ' + await categoriesResponse.text());
-      const [productRows, categoryRows] = await Promise.all([productsResponse.json(), categoriesResponse.json()]);
-      if (!Array.isArray(productRows) || !Array.isArray(categoryRows)) throw new Error('La respuesta de Supabase no tiene el formato esperado.');
-
-      let optionRows = [];
-      try {
-        const optionResponse = await fetch(baseUrl + 'product_options?select=product_id,label,price_cents,active&active=eq.true', { headers, cache: 'no-store' });
-        if (optionResponse.ok) optionRows = await optionResponse.json();
-        else console.warn('No se pudieron cargar las opciones del catálogo:', optionResponse.status, await optionResponse.text());
-      } catch (optionError) {
-        console.warn('No se pudieron cargar las opciones del catálogo:', optionError);
-      }
-
-      const legacyProducts = Array.isArray(PRODUCTOS) ? PRODUCTOS : [];
-      const legacyCategories = Array.isArray(CATEGORIAS) ? CATEGORIAS : [];
-      const categories = categoryRows.map(row => {
-        const old = legacyCategories.find(c => String(c.id) === String(row.id));
-        return {
-          id: String(row.id),
-          nombre: row.name || old?.nombre || String(row.id),
-          lema: row.tagline || old?.lema || '',
-          sort_order: Number(row.sort_order || 0)
-        };
+      const response = await fetch('https://ugqiomoywgpkmogcdjqn.supabase.co/rest/v1/products?select=id,name,base_price_cents,active&apikey=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVncWlvbW95d2dwa21vZ2NkanFuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM2MDc0OTQsImV4cCI6MjEwOTE4MzQ5NH0.k--iBQrSD_raY-TQn01ZHPIkZJ5Xm_KrxEmwY08po3Q', {
+        method: 'GET',
+        mode: 'cors',
+        cache: 'no-store',
+        
       });
+      if (!response.ok) throw new Error('Supabase respondió ' + response.status);
+      const rows = await response.json();
+      rows.forEach(row => {
+        const normalizar = texto => String(texto || '')
+  .normalize('NFD')
+  .replace(/[\u0300-\u036f]/g, '')
+  .toLowerCase()
+  .replace(/[^a-z0-9]/g, '');
 
-      const products = productRows.filter(row => row.active !== false).map(row => {
-        const old = legacyProducts.find(p => String(p.id) === String(row.id));
-        const configuredOptions = optionRows
-          .filter(option => String(option.product_id) === String(row.id) && option.active !== false)
-          .map(option => String(option.label || '').trim())
-          .filter(Boolean);
-        const basePrice = Number(row.base_price_cents || 0) / 100;
-        const unit = (old?.precio && old.precio.match(/\/(kg|ud)/i) || [,'kg'])[1].toLowerCase();
-        return {
-          ...(old || {}),
-          id: String(row.id),
-          cat: String(row.category || old?.cat || ''),
-          nombre: row.name || old?.nombre || String(row.id),
-          desc: row.description || old?.desc || '',
-          image: row.image || '',
-          img: old?.img || 'producto',
-          active: row.active !== false,
-          etiqueta: old?.etiqueta || '',
-          opcionLabel: old?.opcionLabel || 'Opción',
-          opciones: configuredOptions.length ? configuredOptions : (old?.opciones?.length ? old.opciones : ['General']),
-          cantidades: old?.cantidades?.length ? old.cantidades.slice() : ['1 unidad'],
-          precio: basePrice > 0 ? basePrice.toFixed(2).replace('.', ',') + ' €/' + unit : (old?.precio || 'Precio a consultar'),
-          preciosOpciones: {},
-          cantidadesOriginales: old?.cantidades?.slice() || ['1 unidad'],
-          factoresOpciones: { ...(old?.factoresOpciones || {}) },
-          sort_order: Number(row.sort_order || 0)
-        };
-      });
-
-      optionRows.forEach(row => {
-        const product = products.find(p => String(p.id) === String(row.product_id));
-        if (!product || row.active === false || !row.label) return;
-        const optionPrice = Number(row.price_cents);
-        if (Number.isFinite(optionPrice)) {
-          product.preciosOpciones[normalizarClave(row.label)] = optionPrice / 100;
+const product = PRODUCTOS.find(p => String(p.id) === String(row.id))
+  || PRODUCTOS.find(p => normalizar(p.nombre) === normalizar(row.name));
+        if (!product || !Number.isFinite(Number(row.base_price_cents))) return;
+        const unit = (product.precio && product.precio.match(/\/(kg|ud)/i) || [,'ud'])[1].toLowerCase();
+        const basePrice = Number(row.base_price_cents) / 100;
+        product.precio = basePrice.toFixed(2).replace('.', ',') + ' €/' + unit;
+        if (Array.isArray(product.cantidades)) {
+          product.cantidades = product.cantidades.map(label => {
+            const amountMatch = label.match(/[0-9]+(?:[.,][0-9]+)?/);
+            if (!amountMatch) return label;
+            const amount = Number(amountMatch[0].replace(',', '.'));
+            const lower = label.toLowerCase();
+            let factor = amount;
+            if (/gr|gram/.test(lower)) factor = amount / 1000;
+            else if (/kg|kilo/.test(lower)) factor = amount;
+            const value = (basePrice * factor).toFixed(2).replace('.', ',');
+            return label.replace(/-\s*[0-9]+(?:[.,][0-9]+)?\s*€/i, '- ' + value + ' €');
+          });
         }
       });
 
-      window.CATEGORIAS = categories;
-      window.PRODUCTOS = products;
-      console.info('Catálogo actualizado desde Supabase:', categories.length, 'categorías y', products.length, 'productos.');
+      // Cargar precios específicos guardados para cualquier producto.
+      const publicKey = response.url.split('apikey=')[1];
+      if (publicKey) {
+        const optionsResponse = await fetch(
+          'https://ugqiomoywgpkmogcdjqn.supabase.co/rest/v1/product_options?select=product_id,label,price_cents,active&apikey=' + publicKey,
+          { method: 'GET', mode: 'cors', cache: 'no-store' }
+        );
+        if (optionsResponse.ok) {
+          const optionRows = await optionsResponse.json();
+          PRODUCTOS.forEach(product => {
+            product.cantidadesOriginales = Array.isArray(product.cantidades) ? product.cantidades.slice() : [];
+            product.factoresOpciones = {};
+            const configured = window.FACTORES_OPCIONES && window.FACTORES_OPCIONES[product.id];
+            if (configured) Object.entries(configured).forEach(([label, factor]) => {
+              product.factoresOpciones[normalizarClave(label)] = factor;
+            });
+            product.preciosOpciones = {};
+          });
+          optionRows.forEach(row => {
+            const product = PRODUCTOS.find(p => String(p.id) === String(row.product_id));
+            if (!product || !row.label) return;
+
+            const label = String(row.label).trim();
+            const key = normalizarClave(label);
+
+            // Las opciones OFF se retiran de la tienda, aunque sigan guardadas en administración.
+            if (row.active === false) {
+              product.opciones = (Array.isArray(product.opciones) ? product.opciones : [])
+                .filter(option => normalizarClave(option) !== key);
+              return;
+            }
+
+            if (!Array.isArray(product.opciones)) product.opciones = [];
+            if (!product.opciones.some(option => normalizarClave(option) === key)) {
+              product.opciones.push(label);
+            }
+
+            if (Number.isFinite(Number(row.price_cents))) {
+              product.preciosOpciones[key] = Number(row.price_cents) / 100;
+            }
+          });
+        }
+      }
     } catch (error) {
-      console.error('No se pudo cargar el catálogo de Supabase; se mantiene el catálogo local.', error);
+      console.warn('No se pudieron sincronizar los precios; se muestran los precios locales.', error);
     }
   }
 
