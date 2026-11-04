@@ -118,7 +118,7 @@ button.secondary{background:#eee8e1;color:var(--ink)}button:disabled{opacity:.55
        const missing=(cp?.opciones||[]).filter(label=>!opts.some(o=>String(o.label).trim().toLocaleLowerCase('es')===String(label).trim().toLocaleLowerCase('es')));
        const saved=opts.map(o=>optionMarkup(o)).join('');
        const pending=missing.map(label=>'<div class="option-item pending-option"><div class="option-heading"><div class="option-name">'+escapeHtml(label)+'</div><span class="option-state">Pendiente</span></div><div class="add-option-row"><input inputmode="decimal" placeholder="Precio (€)" aria-label="Precio para '+escapeHtml(label)+'" data-pending-price="'+p.id+'" data-pending-label="'+escapeHtml(label)+'"><button class="icon-button" title="Añadir opción" aria-label="Añadir opción" data-add-catalogue-option="'+p.id+'" data-option-label="'+escapeHtml(label)+'">➕</button></div></div>').join('');
-       return '<article class="product product-unified"><div class="product-head"><div><div class="product-name">'+escapeHtml(p.name)+'</div><div class="category">'+escapeHtml(p.category||group.meta.name)+(p.active?'':' · Inactivo')+'</div></div></div>'+
+       return '<article class="product product-unified"><div class="product-head"><div><div class="product-name">'+escapeHtml(p.name)+'</div><div class="category">'+escapeHtml(p.category||group.meta.name)+'</div></div><button type="button" class="option-toggle'+(p.active?'':' is-off')+'" data-toggle-product="'+p.id+'" data-next-active="'+(p.active?'false':'true')+'">'+(p.active?'VISIBLE':'OCULTO')+'</button></div>'+
          '<details class="options-details" data-product-options="'+p.id+'"'+(openOptionPanels.has(String(p.id))?' open':'')+'><summary>Opciones - Añadir <span class="muted">'+opts.length+' guardadas · '+missing.length+' pendientes</span></summary><div class="options-content">'+
          (saved||'')+(pending||'')+
          '<div class="option" style="margin-top:14px;font-weight:700;color:var(--ink)">Añadir otra opción</div><div class="add-option-row"><label class="sr-only" for="new-label-'+p.id+'">Nombre opción</label><input id="new-label-'+p.id+'" placeholder="Nombre opción"><label class="sr-only" for="new-price-'+p.id+'">Precio (€)</label><input id="new-price-'+p.id+'" inputmode="decimal" placeholder="Precio (€)"><button class="icon-button" title="Añadir opción" aria-label="Añadir opción" data-add-option="'+p.id+'">➕</button></div></div></details></article>';
@@ -141,6 +141,18 @@ button.secondary{background:#eee8e1;color:var(--ink)}button:disabled{opacity:.55
  });
  $('logout').addEventListener('click',async()=>{await client.auth.signOut();location.reload()});
  $('products').addEventListener('click',async e=>{
+   const productToggle=e.target.closest('[data-toggle-product]');
+   if(productToggle){
+     const nextActive=productToggle.dataset.nextActive==='true';
+     productToggle.disabled=true;status('adminStatus',nextActive?'Mostrando producto en la web…':'Ocultando producto en la web…');
+     const {error}=await client.from('products').update({active:nextActive}).eq('id',productToggle.dataset.toggleProduct);
+     productToggle.disabled=false;
+     if(error){status('adminStatus','No se pudo cambiar la visibilidad: '+error.message);return}
+     productToggle.dataset.nextActive=nextActive?'false':'true';
+     productToggle.textContent=nextActive?'VISIBLE':'OCULTO';
+     productToggle.classList.toggle('is-off',!nextActive);
+     status('adminStatus',nextActive?'Producto visible en la web.':'Producto oculto en la web.');return;
+   }
    const closeCategoryButton=e.target.closest('[data-close-category]');
    if(closeCategoryButton){const categorySection=closeCategoryButton.closest('.category-section');if(categorySection)categorySection.open=false;return}
    const productId=e.target.dataset.saveProduct, optionId=e.target.dataset.saveOption, addOptionProductId=e.target.dataset.addOption, toggleOptionId=e.target.dataset.toggleOption;
