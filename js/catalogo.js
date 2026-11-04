@@ -197,25 +197,6 @@ window.PRODUCTOS = [
     cantidades: ['1 unidad - 3,20 €', '2 unidades - 6,40 €', '3 unidades - 9,60 €', '4 unidades - 12,80 €', '6 unidades - 19,20 €'], 
     opcionLabel: 'Producto', opciones: ['Alioli casero', 'Mojo picón', 'Chimichurri', 'Salsa barbacoa', 'Adobo para pinchos', 'Sazonador para carne', 'Mostaza antigua'],
   },
-  ,
-  {
-    id: 'caza-especial', cat: 'caza', img: 'caza',
-    nombre: 'Carnes de Caza', desc: 'Carnes especiales de caza, según disponibilidad y temporada.',
-    opcionLabel: 'Producto', opciones: ['Jabalí para guisar', 'Venado en tacos', 'Venado en filetes', 'Perdiz', 'Codorniz de caza'],
-    cantidades: ['Precio a consultar']
-  },
-  {
-    id: 'casqueria-tradicional', cat: 'casqueria', img: 'casquería',
-    nombre: 'Casquería Tradicional', desc: 'Piezas tradicionales para guisos y recetas de siempre.',
-    opcionLabel: 'Producto', opciones: ['Hígado de ternera', 'Hígado de cerdo', 'Riñones', 'Carrillada', 'Lengua de ternera', 'Callos y morro', 'Manitas de cerdo'],
-    cantidades: ['Precio a consultar']
-  },
-  {
-    id: 'vaca-buey-especial', cat: 'vaca-buey', img: 'vacabuey',
-    nombre: 'Vaca y Buey', desc: 'Cortes especiales y madurados, según disponibilidad.',
-    opcionLabel: 'Corte', opciones: ['Chuletón de vaca madurada', 'Chuletón de buey', 'Entrecot de vaca', 'Solomillo de vaca', 'Costilla de vaca para asar'],
-    cantidades: ['Precio a consultar']
-  }
 ]
 
 // Factores orientativos por opción para pruebas. 1 = precio base del producto.
