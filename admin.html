@@ -82,9 +82,12 @@ button.secondary{background:#eee8e1;color:var(--ink)}button:disabled{opacity:.55
    status('adminStatus','Cargando productos…');
    const {data:products,error}=await client.from('products').select('id,name,category,base_price_cents,active,sort_order').order('sort_order');
    if(error){status('adminStatus','No se pudieron cargar los productos: '+error.message);return}
-   if(!products || !products.length){$('emptyNotice').hidden=false;$('products').innerHTML='';status('adminStatus','');return}
+   if(!visibleProducts.length){$('emptyNotice').hidden=false;$('products').innerHTML='';status('adminStatus','');return}
    $('emptyNotice').hidden=true;
    const catalogue=(window.PRODUCTOS||[]).filter(item=>item && typeof item==='object' && item.id!=null);
+   const excludedAdminCategories=new Set(['caza','casceria','casqueria','vaca-buey','buey-vaca','vaca_buey','buey_vaca','bueyvaca']);
+   const categoryKeyFor=p=>{const cp=catalogue.find(item=>String(item.id)===String(p.id));return String(cp?.cat||p.category||'').normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').toLowerCase().replace(/\\s+/g,'-').replace(/[^a-z0-9_-]/g,'');};
+   const visibleProducts=products.filter(p=>!excludedAdminCategories.has(categoryKeyFor(p)));
    const categoryMeta={
      barbacoa:{name:'Barbacoa y preparados',icon:'🔥',color:'#9a4b28',bg:'#fbf0e8'},
      bebidas:{name:'Bebidas',icon:'🥤',color:'#356b83',bg:'#edf5f8'},
@@ -98,7 +101,7 @@ button.secondary{background:#eee8e1;color:var(--ink)}button:disabled{opacity:.55
      aves:{name:'Pollo y aves',icon:'🐔',color:'#8a6b20',bg:'#fbf7e9'},
      vacuno:{name:'Vacuno y ternera',icon:'🥩',color:'#7b2e20',bg:'#f8f0e9'}
    };
-   products.sort((a,b)=>{
+   visibleProducts.sort((a,b)=>{
      const pa=catalogue.find(x=>String(x.id)===String(a.id));
      const pb=catalogue.find(x=>String(x.id)===String(b.id));
      const ca=pa?.cat||a.category||'', cb=pb?.cat||b.category||'';
@@ -113,7 +116,7 @@ button.secondary{background:#eee8e1;color:var(--ink)}button:disabled{opacity:.55
    if(optionsError){status('adminStatus','No se pudieron cargar las opciones: '+optionsError.message);return}
    const optionRows=(options||[]).filter(o=>o && o.id!=null && o.product_id!=null);
    const groupedProducts=new Map();
-   products.filter(p=>p && p.id!=null).forEach(p=>{
+   visibleProducts.filter(p=>p && p.id!=null).forEach(p=>{
      const cp=catalogue.find(item=>String(item.id)===String(p.id));
      const key=cp?.cat||p.category||'otros';
      if(!groupedProducts.has(key))groupedProducts.set(key,[]);
@@ -134,7 +137,7 @@ button.secondary{background:#eee8e1;color:var(--ink)}button:disabled{opacity:.55
      }).join('');
      return '<details class="admin-category" data-admin-category="'+escapeHtml(categoryKey)+'" style="--cat-color:'+meta.color+';--cat-bg:'+meta.bg+'"'+(openCategoryPanels.has(String(categoryKey))?' open':'')+'><summary class="admin-category-summary"><span class="admin-category-title">'+meta.icon+' '+escapeHtml(meta.name)+'</span><span class="admin-category-subtitle">'+items.length+' productos</span><span class="admin-category-arrow" aria-hidden="true"></span></summary><div class="admin-category-content">'+productMarkup+'<button type="button" class="admin-category-close" data-close-admin-category>Cerrar categoría ↑</button></div></details>';
    }).join('');
-   status('adminStatus',products.length+' productos cargados.');
+   status('adminStatus',visibleProducts.length+' productos cargados.');
    } catch(err) {
      status('adminStatus','Error al cargar el panel: '+(err?.message||String(err)));
    }
