@@ -1,3 +1,4 @@
+
 <!doctype html>
 <html lang="es">
 <head>
@@ -197,4 +198,11 @@ button.secondary{background:#eee8e1;color:var(--ink)}button:disabled{opacity:.55
    else {const cents=centsFromInput($('opt-'+optionId).value);if(!Number.isFinite(cents)||cents<0){status('adminStatus','Introduce un precio válido.');e.target.disabled=false;return}result=await client.from('product_options').update({price_cents:cents}).eq('id',optionId)}
    e.target.disabled=false;
    if(result.error){status('adminStatus','Error al guardar: '+result.error.message);return}
-   status('adminStat
+   status('adminStatus','Precio guardado correctamente.');
+ });
+ client.auth.getSession().then(({data})=>showSession(data.session));
+ client.auth.onAuthStateChange((_event,session)=>{if(!session){$('loginPanel').hidden=false;$('adminPanel').hidden=true;$('logout').hidden=true}});
+})();
+</script>
+</body>
+</html>
