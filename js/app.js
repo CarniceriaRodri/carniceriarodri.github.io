@@ -488,7 +488,7 @@
         save();
         renderCart();
         if (checkoutForm) checkoutForm.reset();
-        $('.err').forEach((el) => el.classList.remove('show'));
+        $$('.err').forEach((el) => el.classList.remove('show'));
         pedidoPendiente = null;
 
         const titulo = document.getElementById('modalTitulo');
