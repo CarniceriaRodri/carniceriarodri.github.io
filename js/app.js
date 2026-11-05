@@ -236,7 +236,9 @@
     toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
   }
 
-  let enlaceWhatsAppPendiente = "";\n  let pedidoPendiente = null;\n  let pedidoEnviando = false;
+  let enlaceWhatsAppPendiente = "";
+  let pedidoPendiente = null;
+  let pedidoEnviando = false;
 
   // ——— Función para mostrar el modal ———
   function mostrarModal(idMostrar) {
