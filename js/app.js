@@ -363,7 +363,7 @@ if (!telefonoValido) return;
           token: TOKEN_SEGURO,
           codigoPedido: idMostrar,
           cliente: nombre,
-          telefono: telefono,
+          telefono: soloDigitos,
           total: Number(totalPedido.toFixed(2)),
           estado: 'Pendiente',
           productos: productosParaSheets
