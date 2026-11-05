@@ -289,12 +289,14 @@
     if (!nombre || !telefono || !hora) return;
 
     const soloDigitos = telefono.replace(/\D/g, '');
-    if (soloDigitos.length < 9) {
-      const err = $('[data-err="telefono"]');
-      err.textContent = "El teléfono debe tener al menos 9 dígitos.";
-      err.classList.add('show');
-      return;
-    }
+const telefonoValido = /^[6789]\d{8}$/.test(soloDigitos);
+
+const err = $('[data-err="telefono"]');
+err.textContent = "Introduce un teléfono español válido de 9 dígitos que empiece por 6, 7, 8 o 9.";
+err.classList.toggle('show', !telefonoValido);
+
+if (!telefonoValido) return;
+    
 
     const hoy = new Date();
     const dd = String(hoy.getDate()).padStart(2, '0');
