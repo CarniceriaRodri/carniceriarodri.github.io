@@ -1,4 +1,49 @@
-(function () {
+(async function () {
+
+  // Comprobar si la tienda está en mantenimiento
+  try {
+    const respuesta = await fetch(
+      'https://ugqiomoywgpkmogcdjqn.supabase.co/rest/v1/site_settings?select=maintenance_enabled,maintenance_message&id=eq.1',
+      {
+        headers: {
+          apikey: 'sb_publishable_FU3fmq19uyZ4jUmF_uhFgg_ywVmFPrL'
+        },
+        cache: 'no-store'
+      }
+    );
+
+    if (respuesta.ok) {
+      const ajustes = await respuesta.json();
+
+      if (ajustes[0]?.maintenance_enabled === true) {
+        const mensaje = ajustes[0].maintenance_message ||
+          'Estamos realizando tareas de mantenimiento. Volveremos muy pronto.';
+
+        document.body.replaceChildren();
+
+        const contenedor = document.createElement('main');
+        contenedor.style.cssText =
+          'min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:30px;font-family:system-ui,sans-serif;background:#f5f2ed;color:#211a17;';
+
+        const titulo = document.createElement('h1');
+        titulo.textContent = '🥩 Carnicería Rodri';
+
+        const aviso = document.createElement('h2');
+        aviso.textContent = 'Estamos en mantenimiento';
+
+        const texto = document.createElement('p');
+        texto.textContent = mensaje;
+
+        contenedor.append(titulo, aviso, texto);
+        document.body.appendChild(contenedor);
+        return;
+      }
+    }
+  } catch (error) {
+    console.warn('No se pudo comprobar el mantenimiento:', error);
+  }
+
+  // El resto de la tienda continúa debajo
   const TELEFONO = '34677228251';
   const STORAGE_KEY = 'rodri-encargo';
 
