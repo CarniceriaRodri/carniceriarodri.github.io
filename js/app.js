@@ -236,7 +236,7 @@
     toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
   }
 
-  let enlaceWhatsAppPendiente = "";
+  let enlaceWhatsAppPendiente = "";\n  let pedidoPendiente = null;\n  let pedidoEnviando = false;
 
   // ——— Función para mostrar el modal ———
   function mostrarModal(idMostrar) {
@@ -250,6 +250,14 @@
     const modalBackdrop = document.getElementById('modalBackdrop');
     const modalId = document.getElementById('confirmacionIdPedido');
     if (modalId) modalId.textContent = idMostrar;
+    const modalTitulo = document.getElementById('modalTitulo');
+    const modalHint = document.querySelector('.modal-hint');
+    if (modalTitulo) modalTitulo.textContent = 'Pedido preparado, aún no registrado';
+    if (modalHint) modalHint.textContent = 'Abre WhatsApp, envía el mensaje y vuelve aquí para confirmar. Si no lo envías, no se registrará.';
+    const btnAbrir = document.getElementById('btnEnviarWhatsApp');
+    const btnConfirmar = document.getElementById('btnConfirmarEnvio');
+    if (btnAbrir) { btnAbrir.hidden = false; btnAbrir.textContent = 'Abrir WhatsApp'; }
+    if (btnConfirmar) { btnConfirmar.hidden = true; btnConfirmar.disabled = false; btnConfirmar.textContent = 'Ya he enviado el WhatsApp'; }
     if (modal) {
       modal.removeAttribute('hidden');
       modal.style.display = 'block';
@@ -289,12 +297,11 @@
     if (!nombre || !telefono || !hora) return;
 
     const soloDigitos = telefono.replace(/\D/g, '');
-    if (soloDigitos.length < 9) {
-      const err = $('[data-err="telefono"]');
-      err.textContent = "El teléfono debe tener al menos 9 dígitos.";
-      err.classList.add('show');
-      return;
-    }
+    const telefonoValido = /^[6789]\d{8}$/.test(soloDigitos);
+    const errTelefono = $('[data-err="telefono"]');
+    errTelefono.textContent = "Introduce un teléfono español válido de 9 dígitos que empiece por 6, 7, 8 o 9.";
+    errTelefono.classList.toggle('show', !telefonoValido);
+    if (!telefonoValido) return;
 
     const hoy = new Date();
     const dd = String(hoy.getDate()).padStart(2, '0');
@@ -349,31 +356,22 @@
 
     enlaceWhatsAppPendiente = `https://wa.me/${TELEFONO}?text=${encodeURIComponent(textoWA)}`;
 
-    // Timeout de 8s para el fetch
-    try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 8000);
-      await fetch(APPS_SCRIPT_URL, {
-        method: "POST",
-        mode: "no-cors",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          token: TOKEN_SEGURO,
-          codigoPedido: idMostrar,
-          cliente: nombre,
-          telefono: telefono,
-          total: Number(totalPedido.toFixed(2)),
-          estado: 'Pendiente',
-          productos: productosParaSheets
-        }),
-        signal: controller.signal
-      });
-      clearTimeout(timeoutId);
-    } catch (error) {
-      console.warn("Error background sheets:", error);
-    }
+    // Se prepara el pedido, pero NO se registra hasta que el cliente vuelva de WhatsApp.
+    pedidoPendiente = {
+      id: idMostrar,
+      payload: {
+        token: TOKEN_SEGURO,
+        codigoPedido: idMostrar,
+        cliente: nombre,
+        telefono: soloDigitos,
+        total: Number(totalPedido.toFixed(2)),
+        estado: 'Pendiente',
+        productos: productosParaSheets
+      },
+      whatsappAbierto: false
+    };
 
-    // Mostrar el modal SIEMPRE, pase lo que pase
+    // Mostrar instrucciones: primero enviar WhatsApp y después confirmar aquí.
     mostrarModal(idMostrar);
   }
 
@@ -449,23 +447,70 @@
     if (e.target.closest('[data-close-cart]')) return closeCart();
   });
 
-  // Botón WhatsApp del modal
+  // Abrir WhatsApp no registra ni vacía el pedido.
   const btnWhatsAppModal = document.getElementById('btnEnviarWhatsApp');
+  const btnConfirmarEnvio = document.getElementById('btnConfirmarEnvio');
   if (btnWhatsAppModal) {
     btnWhatsAppModal.onclick = () => {
-      if (enlaceWhatsAppPendiente) {
-        window.open(enlaceWhatsAppPendiente, '_blank', 'noopener,noreferrer');
-      }
-      const modal = document.getElementById('modalConfirmacion');
-      const modalBackdrop = document.getElementById('modalBackdrop');
-      if (modal) modal.setAttribute('hidden', '');
-      if (modalBackdrop) modalBackdrop.setAttribute('hidden', '');
-      document.body.classList.remove('no-scroll');
-      cart = []; save(); renderCart();
+      if (!pedidoPendiente || !enlaceWhatsAppPendiente) return;
+      window.open(enlaceWhatsAppPendiente, '_blank');
+      pedidoPendiente.whatsappAbierto = true;
+      btnWhatsAppModal.textContent = 'Abrir WhatsApp de nuevo';
+      if (btnConfirmarEnvio) btnConfirmarEnvio.hidden = false;
+      const hint = document.querySelector('.modal-hint');
+      if (hint) hint.textContent = 'Cuando hayas pulsado Enviar en WhatsApp, vuelve aquí y pulsa «Ya he enviado el WhatsApp». Si no lo has enviado, no confirmes.';
     };
   }
 
-  // Botón "Cerrar" del modal
+  // Registrar en Sheets y vaciar solo después de la confirmación del cliente.
+  if (btnConfirmarEnvio) {
+    btnConfirmarEnvio.onclick = async () => {
+      if (!pedidoPendiente || !pedidoPendiente.whatsappAbierto || pedidoEnviando) return;
+      pedidoEnviando = true;
+      btnConfirmarEnvio.disabled = true;
+      btnConfirmarEnvio.textContent = 'Registrando pedido...';
+      let timeoutId;
+      try {
+        const controller = new AbortController();
+        timeoutId = setTimeout(() => controller.abort(), 10000);
+        await fetch(APPS_SCRIPT_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(pedidoPendiente.payload),
+          signal: controller.signal
+        });
+        clearTimeout(timeoutId);
+
+        cart = [];
+        save();
+        renderCart();
+        if (checkoutForm) checkoutForm.reset();
+        $('.err').forEach((el) => el.classList.remove('show'));
+        pedidoPendiente = null;
+
+        const titulo = document.getElementById('modalTitulo');
+        const hint = document.querySelector('.modal-hint');
+        if (titulo) titulo.textContent = '¡Solicitud de pedido enviada!';
+        if (hint) hint.textContent = 'Gracias. Hemos enviado la solicitud de registro. Guarda tu código de referencia.';
+        if (btnWhatsAppModal) btnWhatsAppModal.hidden = true;
+        btnConfirmarEnvio.hidden = true;
+        const cerrar = document.getElementById('btnCerrarModal');
+        if (cerrar) cerrar.textContent = 'Cerrar';
+      } catch (error) {
+        console.warn('No se pudo enviar el pedido a Google Sheets:', error);
+        const hint = document.querySelector('.modal-hint');
+        if (hint) hint.textContent = 'No se pudo enviar el registro. Tu carrito se conserva; comprueba la conexión e inténtalo de nuevo.';
+        btnConfirmarEnvio.disabled = false;
+        btnConfirmarEnvio.textContent = 'Reintentar registro';
+      } finally {
+        if (timeoutId) clearTimeout(timeoutId);
+        pedidoEnviando = false;
+      }
+    };
+  }
+
+  // Cerrar sin confirmar conserva el carrito y no registra el pedido.
   const btnCerrarModal = document.getElementById('btnCerrarModal');
   if (btnCerrarModal) {
     btnCerrarModal.onclick = () => {
@@ -474,6 +519,7 @@
       if (modal) modal.setAttribute('hidden', '');
       if (modalBackdrop) modalBackdrop.setAttribute('hidden', '');
       document.body.classList.remove('no-scroll');
+      pedidoPendiente = null;
     };
   }
 
@@ -482,11 +528,29 @@
   if (checkoutForm) checkoutForm.addEventListener('submit', enviar);
   $('#vaciar').addEventListener('click', () => { cart = []; save(); renderCart(); });
 
-  $$('#nombre, #telefono, #hora').forEach((el) =>
+  $('#nombre, #hora').forEach((el) =>
     el.addEventListener('input', () => {
       const err = $(`[data-err="${el.id}"]`);
       if (err) err.classList.remove('show');
     }));
+
+  const campoTelefono = $('#telefono');
+  if (campoTelefono) {
+    campoTelefono.addEventListener('input', () => {
+      const digitos = campoTelefono.value.replace(/\D/g, '').slice(0, 9);
+      const err = $('[data-err="telefono"]');
+      if (err) {
+        err.textContent = 'Introduce un teléfono español válido de 9 dígitos que empiece por 6, 7, 8 o 9.';
+        err.classList.toggle('show', digitos.length > 0 && !/^[6789]\d{8}$/.test(digitos));
+      }
+    });
+    campoTelefono.addEventListener('blur', () => {
+      const digitos = campoTelefono.value.replace(/\D/g, '').slice(0, 9);
+      if (/^[6789]\d{8}$/.test(digitos)) {
+        campoTelefono.value = digitos.replace(/(\d{3})(\d{2})(\d{2})(\d{2})/, '$1 $2 $3 $4');
+      }
+    });
+  }
 
   async function sincronizarPrecios() {
     try {
