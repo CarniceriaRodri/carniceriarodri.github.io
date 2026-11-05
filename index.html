@@ -212,8 +212,8 @@
 
       <label class="field">
         <span>Teléfono de contacto *</span>
-        <input type="tel" id="telefono" placeholder="Ej: 677 22 82 51" autocomplete="tel" inputmode="tel" maxlength="20" required>
-        <small class="err" data-err="telefono">Indica un teléfono por si surge algún problema.</small>
+        <input type="tel" id="telefono" placeholder="Ej: 677 22 82 51" autocomplete="tel" inputmode="tel" maxlength="11" required>
+        <small class="err" data-err="telefono">Debe tener 9 dígitos españoles y empezar por 6, 7, 8 o 9.</small>
       </label>
 
       <label class="field">
@@ -237,19 +237,20 @@
 <div id="modalConfirmacion" class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitulo" hidden>
   <div class="modal-inner">
     <div class="modal-icon" aria-hidden="true">✅</div>
-    <h3 id="modalTitulo">¡Pedido registrado!</h3>
+    <h3 id="modalTitulo">Pedido preparado, aún no registrado</h3>
     <p>Tu código de referencia es: <strong id="confirmacionIdPedido"></strong></p>
-    <p class="modal-hint">Para finalizar y enviar el detalle a nuestro WhatsApp, pulsa el botón de abajo.</p>
+    <p class="modal-hint">Abre WhatsApp, envía el mensaje y vuelve aquí para confirmar. Si no lo envías, no se registrará.</p>
     <button type="button" class="btn btn-whatsapp btn-block" id="btnEnviarWhatsApp">
       Enviar por WhatsApp
     </button>
-    <button type="button" class="link-btn" id="btnCerrarModal">Cerrar</button>
+    <button type="button" class="btn btn-primary btn-block" id="btnConfirmarEnvio" hidden>Ya he enviado el WhatsApp</button>
+    <button type="button" class="link-btn" id="btnCerrarModal">Cerrar sin registrar</button>
   </div>
 </div>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script src="js/catalogo.js?v=3.6"></script>
-<script src="js/app.js?v=4.10"></script>
+<script src="js/app.js?v=4.11"></script>
 </body>
 </html>
