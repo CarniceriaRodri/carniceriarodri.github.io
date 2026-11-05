@@ -308,8 +308,10 @@
       const { cantidadNum, unidadStr, precioNum, factorPeso } = calcularLinea(l, p);
       const subtotalNum = Number((precioNum * cantidadNum * factorPeso).toFixed(2));
       totalPedido += subtotalNum;
+      const productoCompleto = l.opcion ? `${nombreProd} — ${l.opcion}` : nombreProd;
       return {
-        producto: l.opcion ? `${nombreProd} — ${l.opcion}` : nombreProd,
+        producto: productoCompleto,
+        nombre: productoCompleto,
         cantidad: cantidadNum,
         unidad: unidadStr,
         precioUnitario: precioNum,
