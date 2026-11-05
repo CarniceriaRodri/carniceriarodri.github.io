@@ -530,7 +530,7 @@
   if (checkoutForm) checkoutForm.addEventListener('submit', enviar);
   $('#vaciar').addEventListener('click', () => { cart = []; save(); renderCart(); });
 
-  $('#nombre, #hora').forEach((el) =>
+  document.querySelectorAll('#nombre, #hora').forEach((el) =>
     el.addEventListener('input', () => {
       const err = $(`[data-err="${el.id}"]`);
       if (err) err.classList.remove('show');
