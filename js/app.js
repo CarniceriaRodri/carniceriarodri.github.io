@@ -237,7 +237,6 @@
   }
 
   let enlaceWhatsAppPendiente = "";
-  let pedidoPendiente = null;
 
   // ——— Función para mostrar el modal ———
   function mostrarModal(idMostrar) {
@@ -290,14 +289,12 @@
     if (!nombre || !telefono || !hora) return;
 
     const soloDigitos = telefono.replace(/\D/g, '');
-const telefonoValido = /^[6789]\d{8}$/.test(soloDigitos);
-
-const err = $('[data-err="telefono"]');
-err.textContent = "Introduce un teléfono español válido de 9 dígitos que empiece por 6, 7, 8 o 9.";
-err.classList.toggle('show', !telefonoValido);
-
-if (!telefonoValido) return;
-    
+    if (soloDigitos.length < 9) {
+      const err = $('[data-err="telefono"]');
+      err.textContent = "El teléfono debe tener al menos 9 dígitos.";
+      err.classList.add('show');
+      return;
+    }
 
     const hoy = new Date();
     const dd = String(hoy.getDate()).padStart(2, '0');
@@ -352,19 +349,34 @@ if (!telefonoValido) return;
 
     enlaceWhatsAppPendiente = `https://wa.me/${TELEFONO}?text=${encodeURIComponent(textoWA)}`;
 
-    // Preparar el pedido sin registrarlo todavía
-pedidoPendiente = {
-  token: TOKEN_SEGURO,
-  codigoPedido: idMostrar,
-  cliente: nombre,
-  telefono: soloDigitos,
-  total: Number(totalPedido.toFixed(2)),
-  estado: 'Pendiente',
-  productos: productosParaSheets
-};
+    // Timeout de 8s para el fetch
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 8000);
+      await fetch(APPS_SCRIPT_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          token: TOKEN_SEGURO,
+          codigoPedido: idMostrar,
+          cliente: nombre,
+          telefono: telefono,
+          total: Number(totalPedido.toFixed(2)),
+          estado: 'Pendiente',
+          productos: productosParaSheets
+        }),
+        signal: controller.signal
+      });
+      clearTimeout(timeoutId);
+    } catch (error) {
+      console.warn("Error background sheets:", error);
+    }
 
-// Mostrar el modal
-mostrarModal(idMostrar);
+    // Mostrar el modal SIEMPRE, pase lo que pase
+    mostrarModal(idMostrar);
+  }
+
   // Actualiza precio y cantidades al cambiar cualquier opción del catálogo.
   document.addEventListener('change', (e) => {
     const select = e.target.closest('.card [data-field="opcion"]');
@@ -437,58 +449,22 @@ mostrarModal(idMostrar);
     if (e.target.closest('[data-close-cart]')) return closeCart();
   });
 
-  // Registrar pedido y abrir WhatsApp
-const btnWhatsAppModal = document.getElementById('btnEnviarWhatsApp');
-let pedidoEnviando = false;
-
-if (btnWhatsAppModal) {
-  btnWhatsAppModal.onclick = async () => {
-    if (!pedidoPendiente || !enlaceWhatsAppPendiente || pedidoEnviando) return;
-
-    pedidoEnviando = true;
-    btnWhatsAppModal.disabled = true;
-
-    // Abrir WhatsApp
-    window.open(enlaceWhatsAppPendiente, '_blank', 'noopener,noreferrer');
-
-    try {
-      await fetch(APPS_SCRIPT_URL, {
-        method: 'POST',
-        mode: 'no-cors',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(pedidoPendiente)
-      });
-
-      // Vaciar carrito
-      cart = [];
-      save();
-      renderCart();
-
-      // Limpiar formulario
-      if (checkoutForm) checkoutForm.reset();
-      $$('.err').forEach(el => el.classList.remove('show'));
-
-      pedidoPendiente = null;
-      enlaceWhatsAppPendiente = '';
-
-      // Cerrar modal
+  // Botón WhatsApp del modal
+  const btnWhatsAppModal = document.getElementById('btnEnviarWhatsApp');
+  if (btnWhatsAppModal) {
+    btnWhatsAppModal.onclick = () => {
+      if (enlaceWhatsAppPendiente) {
+        window.open(enlaceWhatsAppPendiente, '_blank', 'noopener,noreferrer');
+      }
       const modal = document.getElementById('modalConfirmacion');
       const modalBackdrop = document.getElementById('modalBackdrop');
-
       if (modal) modal.setAttribute('hidden', '');
       if (modalBackdrop) modalBackdrop.setAttribute('hidden', '');
-
       document.body.classList.remove('no-scroll');
+      cart = []; save(); renderCart();
+    };
+  }
 
-    } catch (error) {
-      console.warn('Error al registrar el pedido:', error);
-      alert('No se pudo iniciar el registro. Comprueba la conexión e inténtalo de nuevo.');
-      btnWhatsAppModal.disabled = false;
-    } finally {
-      pedidoEnviando = false;
-    }
-  };
-}
   // Botón "Cerrar" del modal
   const btnCerrarModal = document.getElementById('btnCerrarModal');
   if (btnCerrarModal) {
