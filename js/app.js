@@ -452,20 +452,33 @@ if (!telefonoValido) return;
   });
 
   // Botón WhatsApp del modal
-  const btnWhatsAppModal = document.getElementById('btnEnviarWhatsApp');
-  if (btnWhatsAppModal) {
-    btnWhatsAppModal.onclick = () => {
-      if (enlaceWhatsAppPendiente) {
-        window.open(enlaceWhatsAppPendiente, '_blank', 'noopener,noreferrer');
-      }
-      const modal = document.getElementById('modalConfirmacion');
-      const modalBackdrop = document.getElementById('modalBackdrop');
-      if (modal) modal.setAttribute('hidden', '');
-      if (modalBackdrop) modalBackdrop.setAttribute('hidden', '');
-      document.body.classList.remove('no-scroll');
-      cart = []; save(); renderCart();
-    };
-  }
+  // Abrir WhatsApp y vaciar el carrito al pulsar el botón
+const btnWhatsAppModal = document.getElementById('btnEnviarWhatsApp');
+
+if (btnWhatsAppModal) {
+  btnWhatsAppModal.onclick = () => {
+    if (!enlaceWhatsAppPendiente) return;
+
+    window.open(enlaceWhatsAppPendiente, '_blank', 'noopener,noreferrer');
+
+    // Vaciar carrito
+    cart = [];
+    save();
+    renderCart();
+
+    // Limpiar formulario
+    if (checkoutForm) checkoutForm.reset();
+
+    // Cerrar modal
+    const modal = document.getElementById('modalConfirmacion');
+    const modalBackdrop = document.getElementById('modalBackdrop');
+
+    if (modal) modal.setAttribute('hidden', '');
+    if (modalBackdrop) modalBackdrop.setAttribute('hidden', '');
+
+    document.body.classList.remove('no-scroll');
+  };
+}
 
   // Botón "Cerrar" del modal
   const btnCerrarModal = document.getElementById('btnCerrarModal');
