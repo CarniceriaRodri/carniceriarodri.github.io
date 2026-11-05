@@ -39,6 +39,15 @@ button.secondary{background:#eee8e1;color:var(--ink)}button:disabled{opacity:.55
 </section>
 <section class="panel" id="adminPanel" hidden>
 <h1>Precios de productos</h1>
+ <div class="panel" style="background:#fff4e5;border-color:#e8c99e">
+  <h2>Modo mantenimiento</h2>
+  <p class="muted">Actívalo para mostrar un aviso a los clientes y detener temporalmente los pedidos.</p>
+  <label style="display:flex;align-items:center;gap:10px">
+    <input id="maintenanceToggle" type="checkbox" style="width:20px;height:20px">
+    Activar modo mantenimiento
+  </label>
+  <p class="status" id="maintenanceStatus" role="status"></p>
+</div>
 <p class="muted">Introduce el precio en euros. Pulsa Guardar en cada cambio.</p>
 <div class="notice" id="emptyNotice" hidden>La conexión está lista, pero todavía no hay productos cargados en la base de datos. Hay que importar el catálogo antes de editar precios.</div>
 <div id="products"></div><p class="status" id="adminStatus" role="status"></p>
@@ -56,12 +65,45 @@ button.secondary{background:#eee8e1;color:var(--ink)}button:disabled{opacity:.55
  function status(id,msg){$(id).textContent=msg}
  if(!window.supabase){status('loginStatus','No se ha cargado la conexión de Supabase. Comprueba Internet y vuelve a abrir el panel.');return}
  const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  async function loadMaintenance(){
+   const toggle=$('maintenanceToggle');
+   if(!toggle)return;
+   status('maintenanceStatus','Consultando estado…');
+   const {data,error}=await client.from('site_settings')
+     .select('maintenance_enabled').eq('id',1).maybeSingle();
+   if(error || !data){
+     status('maintenanceStatus','No se pudo consultar el mantenimiento: '+(error?.message||'No hay configuración.'));
+     toggle.disabled=true;
+     return;
+   }
+   toggle.disabled=false;
+   toggle.checked=!!data.maintenance_enabled;
+   status('maintenanceStatus',toggle.checked?'Mantenimiento ACTIVADO.':'Mantenimiento desactivado.');
+ }
+
+ $('maintenanceToggle').addEventListener('change',async()=>{
+   const toggle=$('maintenanceToggle');
+   const nuevoEstado=toggle.checked;
+   toggle.disabled=true;
+   status('maintenanceStatus','Guardando cambio…');
+   const {error}=await client.from('site_settings')
+     .update({maintenance_enabled:nuevoEstado}).eq('id',1);
+   toggle.disabled=false;
+   if(error){
+     toggle.checked=!nuevoEstado;
+     status('maintenanceStatus','No se pudo guardar: '+error.message);
+     return;
+   }
+   status('maintenanceStatus',nuevoEstado?'Mantenimiento ACTIVADO.':'Mantenimiento desactivado.');
+ });
  async function showSession(session){
    if(!session || !session.user || !session.user.id){$('loginPanel').hidden=false;$('adminPanel').hidden=true;$('logout').hidden=true;return}
    $('loginPanel').hidden=true;$('logout').hidden=false;
    const {data:admin,error:adminError}=await client.from('admin_users').select('user_id').eq('user_id',session.user.id).maybeSingle();
    if(adminError || !admin){$('adminPanel').hidden=false;$('products').innerHTML='';status('adminStatus','Esta cuenta no figura como administradora. Comprueba que tu UID está añadido en admin_users.');return}
-   $('adminPanel').hidden=false; await loadProducts();
+   $('adminPanel').hidden=false;
+await loadMaintenance();
+await loadProducts();
  }
  async function loadProducts(){
    const openOptionPanels=new Set(Array.from(document.querySelectorAll('.options-details[open]')).map(el=>el.dataset.productOptions));
