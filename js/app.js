@@ -237,6 +237,7 @@
   }
 
   let enlaceWhatsAppPendiente = "";
+  let pedidoPendiente = null;
 
   // ——— Función para mostrar el modal ———
   function mostrarModal(idMostrar) {
@@ -351,34 +352,19 @@ if (!telefonoValido) return;
 
     enlaceWhatsAppPendiente = `https://wa.me/${TELEFONO}?text=${encodeURIComponent(textoWA)}`;
 
-    // Timeout de 8s para el fetch
-    try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 8000);
-      await fetch(APPS_SCRIPT_URL, {
-        method: "POST",
-        mode: "no-cors",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          token: TOKEN_SEGURO,
-          codigoPedido: idMostrar,
-          cliente: nombre,
-          telefono: soloDigitos,
-          total: Number(totalPedido.toFixed(2)),
-          estado: 'Pendiente',
-          productos: productosParaSheets
-        }),
-        signal: controller.signal
-      });
-      clearTimeout(timeoutId);
-    } catch (error) {
-      console.warn("Error background sheets:", error);
-    }
+    // Preparar el pedido sin registrarlo todavía
+pedidoPendiente = {
+  token: TOKEN_SEGURO,
+  codigoPedido: idMostrar,
+  cliente: nombre,
+  telefono: soloDigitos,
+  total: Number(totalPedido.toFixed(2)),
+  estado: 'Pendiente',
+  productos: productosParaSheets
+};
 
-    // Mostrar el modal SIEMPRE, pase lo que pase
-    mostrarModal(idMostrar);
-  }
-
+// Mostrar el modal
+mostrarModal(idMostrar);
   // Actualiza precio y cantidades al cambiar cualquier opción del catálogo.
   document.addEventListener('change', (e) => {
     const select = e.target.closest('.card [data-field="opcion"]');
@@ -451,35 +437,58 @@ if (!telefonoValido) return;
     if (e.target.closest('[data-close-cart]')) return closeCart();
   });
 
-  // Botón WhatsApp del modal
-  // Abrir WhatsApp y vaciar el carrito al pulsar el botón
+  // Registrar pedido y abrir WhatsApp
 const btnWhatsAppModal = document.getElementById('btnEnviarWhatsApp');
+let pedidoEnviando = false;
 
 if (btnWhatsAppModal) {
-  btnWhatsAppModal.onclick = () => {
-    if (!enlaceWhatsAppPendiente) return;
+  btnWhatsAppModal.onclick = async () => {
+    if (!pedidoPendiente || !enlaceWhatsAppPendiente || pedidoEnviando) return;
 
+    pedidoEnviando = true;
+    btnWhatsAppModal.disabled = true;
+
+    // Abrir WhatsApp
     window.open(enlaceWhatsAppPendiente, '_blank', 'noopener,noreferrer');
 
-    // Vaciar carrito
-    cart = [];
-    save();
-    renderCart();
+    try {
+      await fetch(APPS_SCRIPT_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(pedidoPendiente)
+      });
 
-    // Limpiar formulario
-    if (checkoutForm) checkoutForm.reset();
+      // Vaciar carrito
+      cart = [];
+      save();
+      renderCart();
 
-    // Cerrar modal
-    const modal = document.getElementById('modalConfirmacion');
-    const modalBackdrop = document.getElementById('modalBackdrop');
+      // Limpiar formulario
+      if (checkoutForm) checkoutForm.reset();
+      $$('.err').forEach(el => el.classList.remove('show'));
 
-    if (modal) modal.setAttribute('hidden', '');
-    if (modalBackdrop) modalBackdrop.setAttribute('hidden', '');
+      pedidoPendiente = null;
+      enlaceWhatsAppPendiente = '';
 
-    document.body.classList.remove('no-scroll');
+      // Cerrar modal
+      const modal = document.getElementById('modalConfirmacion');
+      const modalBackdrop = document.getElementById('modalBackdrop');
+
+      if (modal) modal.setAttribute('hidden', '');
+      if (modalBackdrop) modalBackdrop.setAttribute('hidden', '');
+
+      document.body.classList.remove('no-scroll');
+
+    } catch (error) {
+      console.warn('Error al registrar el pedido:', error);
+      alert('No se pudo iniciar el registro. Comprueba la conexión e inténtalo de nuevo.');
+      btnWhatsAppModal.disabled = false;
+    } finally {
+      pedidoEnviando = false;
+    }
   };
 }
-
   // Botón "Cerrar" del modal
   const btnCerrarModal = document.getElementById('btnCerrarModal');
   if (btnCerrarModal) {
