@@ -1,10 +1,10 @@
-
 (() => {
  const SUPABASE_URL = 'https://ugqiomoywgpkmogcdjqn.supabase.co';
- const SUPABASE_KEY = 'sb_publishable_FU3Fm q19uyZ4jUmF_uhFgg_ywVmFPrL';
+ const SUPABASE_KEY = 'PEGA_AQUI_LA_CLAVE_PUBLICA_ORIGINAL_SIN_ESPACIOS';
  const $ = id => document.getElementById(id);
  const euro = cents => (Number(cents || 0)/100).toFixed(2).replace('.', ',') + ' €';
- const centsFromInput = value => Math.round(Number(String(value).replace(',', '.')));
+ const centsFromInput = value => Math.round(Number(String(value).replace(',', '.')) * 100);
+
  function status(id,msg){$(id).textContent=msg}
 
  if(!window.supabase){
@@ -12,7 +12,7 @@
    return;
  }
 
- const SUPABASE_KEY = 'sb_publishable_FU3Fm q19uyZ4jUmF_uhFgg_ywVmFPrL'.replace(' ', '');
+ const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
  async function loadMaintenance(){
    const toggle=$('maintenanceToggle');
