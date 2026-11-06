@@ -97,13 +97,43 @@ button.secondary{background:#eee8e1;color:var(--ink)}button:disabled{opacity:.55
    status('maintenanceStatus',nuevoEstado?'Mantenimiento ACTIVADO.':'Mantenimiento desactivado.');
  });
  async function showSession(session){
-   if(!session || !session.user || !session.user.id){$('loginPanel').hidden=false;$('adminPanel').hidden=true;$('logout').hidden=true;return}
-   $('loginPanel').hidden=true;$('logout').hidden=false;
-   const {data:admin,error:adminError}=await client.from('admin_users').select('user_id').eq('user_id',session.user.id).maybeSingle();
-   if(adminError || !admin){$('adminPanel').hidden=false;$('products').innerHTML='';status('adminStatus','Esta cuenta no figura como administradora. Comprueba que tu UID está añadido en admin_users.');return}
+   if(!session || !session.user || !session.user.id){
+     $('loginPanel').hidden=false;
+     $('adminPanel').hidden=true;
+     $('logout').hidden=true;
+     $('products').innerHTML='';
+     return;
+   }
+
+   // Mantener oculto el panel mientras se comprueba la autorización
+   $('adminPanel').hidden=true;
+   $('products').innerHTML='';
+   $('logout').hidden=false;
+
+   const {data:admin,error:adminError}=await client
+     .from('admin_users')
+     .select('user_id')
+     .eq('user_id',session.user.id)
+     .maybeSingle();
+
+   // Denegar el acceso si la cuenta no es administradora o falla la comprobación
+   if(adminError || !admin){
+     $('loginPanel').hidden=false;
+     status(
+       'loginStatus',
+       adminError
+         ? 'No se pudo verificar la autorización de esta cuenta.'
+         : 'Esta cuenta no está autorizada para administrar la web.'
+     );
+     return;
+   }
+
+   // Mostrar el panel únicamente tras confirmar que es administrador
+   $('loginPanel').hidden=true;
    $('adminPanel').hidden=false;
-await loadMaintenance();
-await loadProducts();
+   status('loginStatus','');
+   await loadMaintenance();
+   await loadProducts();
  }
  async function loadProducts(){
    const openOptionPanels=new Set(Array.from(document.querySelectorAll('.options-details[open]')).map(el=>el.dataset.productOptions));
