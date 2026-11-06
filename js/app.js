@@ -421,24 +421,28 @@
     try {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 8000);
-      await fetch(APPS_SCRIPT_URL, {
-        method: "POST",
-        mode: "no-cors",
-        headers: { "Content-Type": "text/plain;charset=UTF-8" },
-        body: JSON.stringify({
-          turnstileToken: turnstileToken,
-          codigoPedido: idMostrar,
-          cliente: nombre,
-          telefono: telefono,
-          total: Number(totalPedido.toFixed(2)),
-          estado: 'Pendiente',
-          productos: productosParaSheets
-        }),
-        signal: controller.signal
-      });
-      clearTimeout(timeoutId);
+      try {
+        await fetch(APPS_SCRIPT_URL, {
+          method: "POST",
+          mode: "no-cors",
+          headers: { "Content-Type": "text/plain;charset=UTF-8" },
+          body: JSON.stringify({
+            turnstileToken: turnstileToken,
+            codigoPedido: idMostrar,
+            cliente: nombre,
+            telefono: telefono,
+            total: Number(totalPedido.toFixed(2)),
+            estado: 'Pendiente',
+            productos: productosParaSheets
+          }),
+          signal: controller.signal
+        });
+      } finally {
+        clearTimeout(timeoutId);
+      }
     } catch (error) {
-      console.warn("Error background sheets:", error);
+      console.warn("No se pudo completar el envío a la hoja de pedidos:", error);
+      toast("No hemos podido confirmar el envío. Completa también el envío por WhatsApp.");
     }
 
     // El token Turnstile es de un solo uso: limpiar el widget tras cada intento.
