@@ -570,7 +570,8 @@
 
     if (e.target.matches('[data-field="opcion"]')) {
       cardEl.dataset.opcionElegida = 'true';
-      mostrarFotoOpcionPollo(cardEl);
+      // La foto de preparación solo aparece al elegir también la cantidad.
+      restaurarFotoPrincipalPollo(cardEl);
       programarRestauracionPollo(cardEl);
       return;
     }
