@@ -594,20 +594,22 @@
       picker.querySelectorAll('[data-option-index]').forEach((button, i) => {
         button.setAttribute('aria-selected', String(i === index));
       });
-      // Mantiene abierto el desplegable y desplaza la lista solo lo necesario
-      // para que la opción elegida quede visible entre las dos filas.
+      // El cursor permanece en el mismo punto: la lista se desplaza una fila
+      // después de cada selección y rebota al llegar a cualquiera de los extremos.
       const list = picker.querySelector('[data-option-list]');
       const selectedButton = picker.querySelector('[data-option-index="' + index + '"]');
       if (list && selectedButton && previousIndex !== index) {
-        const top = selectedButton.offsetTop;
-        const bottom = top + selectedButton.offsetHeight;
-        // Al avanzar, la opción elegida queda arriba y aparece la siguiente debajo.
-        // Al retroceder, queda abajo y aparece la anterior encima.
-        if (index > previousIndex) {
-          list.scrollTop = top;
-        } else {
-          list.scrollTop = bottom - list.clientHeight;
-        }
+        const lastIndex = select.options.length - 1;
+        let direction = Number(list.dataset.bounceDirection || 1);
+        if (index >= lastIndex) direction = -1;
+        else if (index <= 0) direction = 1;
+        list.dataset.bounceDirection = String(direction);
+        const step = selectedButton.offsetHeight || 42;
+        const maxScroll = Math.max(0, list.scrollHeight - list.clientHeight);
+        list.scrollTo({
+          top: Math.max(0, Math.min(maxScroll, list.scrollTop + direction * step)),
+          behavior: 'smooth'
+        });
       }
       select.dispatchEvent(new Event('change', { bubbles: true }));
       return;
