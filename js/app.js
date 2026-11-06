@@ -123,7 +123,7 @@
                   <select class="option-picker-native" data-field="opcion" tabindex="-1" aria-hidden="true">${p.opciones.map((o) => `<option>${escapeHtml(o)}</option>`).join('')}</select>
                   <button type="button" class="option-picker-trigger" aria-haspopup="listbox" aria-expanded="false" data-option-trigger>${escapeHtml(p.opciones[0] || 'Elige una opción')}</button>
                   <div class="option-picker-list" role="listbox" hidden data-option-list>
-                    ${p.opciones.map((o, i) => `<button type="button" role="option" aria-selected="${i === 0 ? 'true' : 'false'}" data-option-index="${i}">${escapeHtml(o)}</button>`).join('')}
+                    ${Array.from({ length: 5 }, (_, copy) => p.opciones.map((o, i) => `<button type="button" role="option" aria-selected="${i === 0 ? 'true' : 'false'}" data-option-index="${i}" data-option-copy="${copy}">${escapeHtml(o)}</button>`).join('')).join('')}
                   </div>
                 </div>` : `
                 <select data-field="opcion">${p.opciones.map((o) => `<option>${escapeHtml(o)}</option>`).join('')}</select>`}
@@ -577,6 +577,16 @@
       cerrarDesplegablesPollo(picker);
       list.hidden = !abrir;
       trigger.setAttribute('aria-expanded', String(abrir));
+      if (abrir && !list.dataset.loopReady) {
+        const first = list.querySelector('[data-option-copy="0"]');
+        const second = list.querySelector('[data-option-copy="1"]');
+        if (first && second) {
+          const groupHeight = second.offsetTop - first.offsetTop;
+          list.dataset.loopGroupHeight = String(groupHeight);
+          list.scrollTop = groupHeight * 2;
+        }
+        list.dataset.loopReady = 'true';
+      }
       mostrarFotoOpcionPollo(picker.closest('.card'));
       return;
     }
@@ -591,26 +601,32 @@
       if (!select || !select.options[index]) return;
       select.selectedIndex = index;
       triggerButton.textContent = select.options[index].textContent;
-      picker.querySelectorAll('[data-option-index]').forEach((button, i) => {
-        button.setAttribute('aria-selected', String(i === index));
+      picker.querySelectorAll('[data-option-index]').forEach((button) => {
+        button.setAttribute('aria-selected', String(Number(button.dataset.optionIndex) === index));
       });
-      // Recorrido circular: el desplegable avanza siempre en el mismo sentido.
-      // Al alcanzar un extremo, vuelve al otro sin cerrar la lista.
+      // La lista usa copias idénticas antes y después para que el bucle no muestre huecos.
       const list = picker.querySelector('[data-option-list]');
-      const selectedButton = picker.querySelector('[data-option-index="' + index + '"]');
-      if (list && selectedButton && previousIndex !== index) {
-        const direction = index > previousIndex ? 1 : -1;
-        const step = selectedButton.offsetHeight || 42;
-        const maxScroll = Math.max(0, list.scrollHeight - list.clientHeight);
-        let nextScroll = list.scrollTop + direction * step;
-        if (direction > 0 && nextScroll >= maxScroll) nextScroll = 0;
-        else if (direction < 0 && nextScroll <= 0) nextScroll = maxScroll;
-        list.scrollTo({ top: nextScroll, behavior: 'smooth' });
+      if (list && previousIndex !== index) {
+        let direction = index > previousIndex ? 1 : -1;
+        if (previousIndex === select.options.length - 1 && index === 0) direction = 1;
+        if (previousIndex === 0 && index === select.options.length - 1) direction = -1;
+        const step = choice.offsetHeight || 42;
+        list.scrollTo({ top: list.scrollTop + direction * step, behavior: 'smooth' });
       }
       select.dispatchEvent(new Event('change', { bubbles: true }));
       return;
     }
   });
+
+  // Recentrar entre copias idénticas cuando se llega a los extremos del carrusel vertical.
+  document.addEventListener('scroll', (e) => {
+    const list = e.target;
+    if (!list.matches?.('[data-option-list][data-loop-ready]')) return;
+    const groupHeight = Number(list.dataset.loopGroupHeight || 0);
+    if (!groupHeight) return;
+    if (list.scrollTop < groupHeight * 1.25) list.scrollTop += groupHeight * 2;
+    else if (list.scrollTop > groupHeight * 3.75) list.scrollTop -= groupHeight * 2;
+  }, true);
 
   // Cierra la lista con Escape y permite recorrer opciones con teclado.
   document.addEventListener('keydown', (e) => {
