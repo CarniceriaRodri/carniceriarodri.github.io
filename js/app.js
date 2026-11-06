@@ -47,8 +47,6 @@
   const TELEFONO = '34677228251';
   const STORAGE_KEY = 'rodri-encargo';
 
-  // 🔒 Token compartido con Apps Script (debe coincidir con TOKEN_VALIDO en code.gs)
-  const TOKEN_SEGURO = "xr1st1na_R0dr1-roldayan-xW590ÑoqR339";
 
   // ⚡ URL del Apps Script
   const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwvcM-Ta_XHbzRnAU_6FxS6h7gwafmGx0VbEKygUCdlS8EsrfjFaftCpUaE0flj4EZX/exec";
@@ -423,7 +421,6 @@
         mode: "no-cors",
         headers: { "Content-Type": "text/plain;charset=UTF-8" },
         body: JSON.stringify({
-          token: TOKEN_SEGURO,
           turnstileToken: turnstileToken,
           codigoPedido: idMostrar,
           cliente: nombre,
