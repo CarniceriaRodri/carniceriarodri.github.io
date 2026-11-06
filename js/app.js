@@ -359,26 +359,17 @@
 }
 
   function actualizarRestriccionesHora() {
-    const campoHora = $('#hora');
-    if (!campoHora) return;
-    campoHora.min = '08:00';
-campoHora.max = '20:00';
-campoHora.step = '60';
-    const dia = $('#dia').value;
-    let horaMinima = 8 * 60;
-    if (dia === 'Hoy') {
-      const ahora = new Date();
-      const minimo = new Date(ahora.getTime() + 60 * 60 * 1000);
-      horaMinima = Math.max(horaMinima, minimo.getHours() * 60 + minimo.getMinutes());
-      horaMinima = Math.ceil(horaMinima / 30) * 30;
-    }
-    const hh = String(Math.floor(horaMinima / 60)).padStart(2, '0');
-    const mm = String(horaMinima % 60).padStart(2, '0');
-    campoHora.min = horaMinima <= 20 * 60 ? `${hh}:${mm}` : '20:30';
-    if (campoHora.value && !validarHoraRecogida(dia, campoHora.value)) {
-      campoHora.value = '';
-    }
+  const campoHora = $('#hora');
+  if (!campoHora) return;
+
+  campoHora.min = '08:00';
+  campoHora.max = '20:00';
+  campoHora.step = '60';
+
+  if (campoHora.value && !validarHoraRecogida($('#dia').value, campoHora.value)) {
+    campoHora.value = '';
   }
+}
 
   // ——— Envío por Google Sheets y WhatsApp ———
   async function enviar(e) {
@@ -408,7 +399,7 @@ campoHora.step = '60';
     errorTelefono.classList.toggle('show', !telefonoValido);
 
     const horaValida = validarHoraRecogida(dia, hora);
-    errorHora.textContent = 'La recogida debe ser entre las 08:00 y las 20:00, en intervalos de 30 minutos y con al menos una hora de antelación.';
+     errorHora.textContent = 'La recogida debe ser entre las 08:00 y las 20:00.';
     errorHora.classList.toggle('show', !horaValida);
 
     if (!nombreValido || !telefonoValido || !horaValida) return;
