@@ -586,6 +586,7 @@
       const picker = choice.closest('[data-option-picker]');
       const select = picker.querySelector('[data-field="opcion"]');
       const triggerButton = picker.querySelector('[data-option-trigger]');
+      const previousIndex = select ? select.selectedIndex : -1;
       const index = Number(choice.dataset.optionIndex);
       if (!select || !select.options[index]) return;
       select.selectedIndex = index;
@@ -597,12 +598,14 @@
       // para que la opción elegida quede visible entre las dos filas.
       const list = picker.querySelector('[data-option-list]');
       const selectedButton = picker.querySelector('[data-option-index="' + index + '"]');
-      if (list && selectedButton) {
+      if (list && selectedButton && previousIndex !== index) {
         const top = selectedButton.offsetTop;
         const bottom = top + selectedButton.offsetHeight;
-        if (top < list.scrollTop) {
+        // Al avanzar, la opción elegida queda arriba y aparece la siguiente debajo.
+        // Al retroceder, queda abajo y aparece la anterior encima.
+        if (index > previousIndex) {
           list.scrollTop = top;
-        } else if (bottom > list.scrollTop + list.clientHeight) {
+        } else {
           list.scrollTop = bottom - list.clientHeight;
         }
       }
