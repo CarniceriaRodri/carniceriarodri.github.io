@@ -501,7 +501,31 @@
     mostrarModal(idMostrar);
   }
 
-  // Recuperar la foto principal solo al salir de toda la tarjeta del pollo.
+  // Fotos y estado de selección para la prueba de Pollo Fresco.
+  function mostrarFotoOpcionPollo(cardEl) {
+    const select = cardEl?.querySelector('[data-field="opcion"]');
+    const imagen = cardEl?.querySelector('.card-img img');
+    if (!select || !imagen) return;
+    const fotosPollo = {
+      pechugasenfiletes: 'img/productos/pechugasenfiletes.jpg',
+      pechugasenteras: 'img/productos/pechugasenteras.jpg',
+      muslosycontramuslos: 'img/productos/musloscontramuslos.jpg',
+      contramuslodeshuesado: 'img/productos/pollocontramuslodeshuesado.jpg',
+      troceadoparaguisar: 'img/productos/pollotroceado.jpg',
+      abiertoparaasar: 'img/productos/pollo entero.jpg'
+    };
+    const foto = fotosPollo[normalizarClave(select.value)];
+    if (!foto) return;
+    imagen.onerror = () => {
+      imagen.onerror = null;
+      imagen.removeAttribute('srcset');
+      imagen.src = 'img/productos/pollo.jpg';
+    };
+    imagen.removeAttribute('srcset');
+    imagen.src = foto;
+    imagen.alt = 'Pollo fresco: ' + select.value;
+  }
+
   function restaurarFotoPrincipalPollo(cardEl) {
     const imagen = cardEl?.querySelector('.card-img img');
     if (!imagen) return;
@@ -511,18 +535,43 @@
     imagen.alt = 'Pollo Fresco';
   }
 
+  function seleccionPolloCompleta(cardEl) {
+    return cardEl?.dataset.opcionElegida === 'true' &&
+      cardEl?.dataset.cantidadElegida === 'true';
+  }
+
+  // Solo se conserva la foto de preparación cuando el cliente ha cambiado ambos desplegables.
+  document.addEventListener('change', (e) => {
+    const cardEl = e.target.closest('.card[data-id="pollo"]');
+    if (!cardEl || !e.isTrusted) return;
+
+    if (e.target.matches('[data-field="opcion"]')) {
+      cardEl.dataset.opcionElegida = 'true';
+      // La preparación se muestra mientras el cliente está interactuando con ella.
+      mostrarFotoOpcionPollo(cardEl);
+      return;
+    }
+
+    if (e.target.matches('[data-field="cantidad"]')) {
+      cardEl.dataset.cantidadElegida = 'true';
+      if (seleccionPolloCompleta(cardEl)) mostrarFotoOpcionPollo(cardEl);
+    }
+  });
+
   document.addEventListener('focusout', (e) => {
     const cardEl = e.target.closest('.card[data-id="pollo"]');
     if (!cardEl) return;
-    // Cambiar del desplegable a cantidad u otro control de la misma tarjeta no restaura la foto.
+    // Al moverse entre controles de la tarjeta, no se considera que haya salido del producto.
     if (e.relatedTarget && cardEl.contains(e.relatedTarget)) return;
-    restaurarFotoPrincipalPollo(cardEl);
+    if (!seleccionPolloCompleta(cardEl)) restaurarFotoPrincipalPollo(cardEl);
   });
 
   // También cubre la salida al pulsar fuera de la tarjeta, incluso en zonas no enfocables.
   document.addEventListener('pointerdown', (e) => {
     const cardEl = document.querySelector('.card[data-id="pollo"]');
-    if (cardEl && !cardEl.contains(e.target)) restaurarFotoPrincipalPollo(cardEl);
+    if (cardEl && !cardEl.contains(e.target) && !seleccionPolloCompleta(cardEl)) {
+      restaurarFotoPrincipalPollo(cardEl);
+    }
   });
 
   // Actualiza precio y cantidades al cambiar cualquier opción del catálogo.
@@ -533,30 +582,7 @@
     const p = PRODUCTOS.find(x => x.id === cardEl.dataset.id);
     if (!p) return;
 
-    // Cambiar la fotografía solo ante una selección manual del cliente.
-    // Los change sintéticos usados al sincronizar precios no deben alterar la imagen inicial.
-    if (p.id === 'pollo' && e.isTrusted) {
-      const fotosPollo = {
-        pechugasenfiletes: 'img/productos/pechugasenfiletes.jpg',
-        pechugasenteras: 'img/productos/pechugasenteras.jpg',
-        muslosycontramuslos: 'img/productos/musloscontramuslos.jpg',
-        contramuslodeshuesado: 'img/productos/pollocontramuslodeshuesado.jpg',
-        troceadoparaguisar: 'img/productos/pollotroceado.jpg',
-        abiertoparaasar: 'img/productos/pollo entero.jpg'
-      };
-      const foto = fotosPollo[normalizarClave(select.value)];
-      const imagen = cardEl.querySelector('.card-img img');
-      if (foto && imagen) {
-        imagen.onerror = () => {
-          imagen.onerror = null;
-          imagen.removeAttribute('srcset');
-          imagen.src = 'img/productos/pollo.jpg';
-        };
-        imagen.removeAttribute('srcset');
-        imagen.src = foto;
-        imagen.alt = 'Pollo fresco: ' + select.value;
-      }
-    }
+    // La fotografía de Pollo Fresco se gestiona en el controlador de selección manual.
 
     const key = normalizarClave(select.value);
     const baseMatch = String(p.precio || '').replace(',', '.').match(/[0-9]+(?:\.[0-9]+)?/);
@@ -597,6 +623,11 @@
       const cantidad = $('[data-field="cantidad"]', c).value;
       const opcion = $('[data-field="opcion"]', c).value;
       addToCart(p.id, cantidad, opcion);
+      if (p.id === 'pollo') {
+        c.dataset.opcionElegida = 'false';
+        c.dataset.cantidadElegida = 'false';
+        restaurarFotoPrincipalPollo(c);
+      }
       add.classList.add('added');
       setTimeout(() => add.classList.remove('added'), 900);
       toast(`Añadido: ${p.nombre} · ${cantidad}`);
