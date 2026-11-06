@@ -273,6 +273,7 @@ select:focus, input:focus, textarea:focus { outline: none; border-color: var(--b
   border-radius: 10px 10px 0 0; box-shadow: 0 -10px 20px rgba(27, 21, 19, .16);
 }
 .option-picker-list[hidden] { display: none; }
+.option-picker-list::after { content: ''; display: block; height: 2.65rem; }
 .option-picker-list button {
   display: block; width: 100%; min-height: 2.65rem; padding: .55rem .75rem;
   border: 0; border-bottom: 1px solid var(--line); background: #fff;
