@@ -336,31 +336,83 @@
     document.body.classList.add('no-scroll');
   }
 
+  // Validación de recogida: horario 08:00-20:00, cada 30 minutos y mínimo 60 minutos.
+  function fechaRecogidaSeleccionada(dia, hora) {
+    if (!hora || !/^\\d{2}:\\d{2}$/.test(hora)) return null;
+    const [horas, minutos] = hora.split(':').map(Number);
+    const desplazamiento = dia === 'Hoy' ? 0 : dia === 'Mañana' ? 1 : 2;
+    const fecha = new Date();
+    fecha.setDate(fecha.getDate() + desplazamiento);
+    fecha.setHours(horas, minutos, 0, 0);
+    return fecha;
+  }
+
+  function validarHoraRecogida(dia, hora) {
+    const fecha = fechaRecogidaSeleccionada(dia, hora);
+    if (!fecha) return false;
+    const [horas, minutos] = hora.split(':').map(Number);
+    if (horas < 8 || horas > 20 || (horas === 20 && minutos > 0) || minutos % 30 !== 0) return false;
+    return fecha.getTime() >= Date.now() + 60 * 60 * 1000;
+  }
+
+  function actualizarRestriccionesHora() {
+    const campoHora = $('#hora');
+    if (!campoHora) return;
+    campoHora.min = '08:00';
+    campoHora.max = '20:00';
+    campoHora.step = '1800';
+
+    const dia = $('#dia').value;
+    let horaMinima = 8 * 60;
+    if (dia === 'Hoy') {
+      const ahora = new Date();
+      const minimo = new Date(ahora.getTime() + 60 * 60 * 1000);
+      horaMinima = Math.max(horaMinima, minimo.getHours() * 60 + minimo.getMinutes());
+      horaMinima = Math.ceil(horaMinima / 30) * 30;
+    }
+    const hh = String(Math.floor(horaMinima / 60)).padStart(2, '0');
+    const mm = String(horaMinima % 60).padStart(2, '0');
+    campoHora.min = horaMinima <= 20 * 60 ? `${hh}:${mm}` : '20:30';
+    if (campoHora.value && !validarHoraRecogida(dia, campoHora.value)) {
+      campoHora.value = '';
+    }
+  }
+
   // ——— Envío por Google Sheets y WhatsApp ———
   async function enviar(e) {
     e.preventDefault();
 
-    const nombre = $('#nombre').value.trim();
+    const nombre = $('#nombre').value.trim().replace(/\s+/g, ' ');
     const telefono = $('#telefono').value.trim();
     const hora = $('#hora').value;
     const dia = $('#dia').value;
     const notas = $('#observaciones').value.trim();
 
-    $('[data-err="nombre"]').classList.toggle('show', !nombre);
-    $('[data-err="telefono"]').classList.toggle('show', !telefono);
-    $('[data-err="hora"]').classList.toggle('show', !hora);
-    if (!nombre || !telefono || !hora) return;
+    const nombreValido = /^[\p{L}]+(?:[’'-][\p{L}]+)*(?:\s+[\p{L}]+(?:[’'-][\p{L}]+)*)+$/u.test(nombre);
+    const errorNombre = $('[data-err="nombre"]');
+    const errorTelefono = $('[data-err="telefono"]');
+    const errorHora = $('[data-err="hora"]');
+
+    errorNombre.textContent = 'Escribe al menos un nombre y un apellido, sin números.';
+    errorNombre.classList.toggle('show', !nombreValido);
+
+    const formatoTelefonoValido = /^\+?[\d\s().-]+$/.test(telefono);
+    let soloDigitos = telefono.replace(/\D/g, '');
+    if (soloDigitos.startsWith('34') && soloDigitos.length === 11) {
+      soloDigitos = soloDigitos.slice(2);
+    }
+    const telefonoValido = formatoTelefonoValido && /^[67]\d{8}$/.test(soloDigitos);
+    errorTelefono.textContent = 'Introduce un móvil español de 9 cifras que empiece por 6 o 7. Puedes añadir +34.';
+    errorTelefono.classList.toggle('show', !telefonoValido);
+
+    const horaValida = validarHoraRecogida(dia, hora);
+    errorHora.textContent = 'La recogida debe ser entre las 08:00 y las 20:00, en intervalos de 30 minutos y con al menos una hora de antelación.';
+    errorHora.classList.toggle('show', !horaValida);
+
+    if (!nombreValido || !telefonoValido || !horaValida) return;
 
     if (!turnstileToken) {
       toast('Completa la verificación de seguridad antes de enviar el pedido.');
-      return;
-    }
-
-    const soloDigitos = telefono.replace(/\D/g, '');
-    if (soloDigitos.length < 9) {
-      const err = $('[data-err="telefono"]');
-      err.textContent = "El teléfono debe tener al menos 9 dígitos.";
-      err.classList.add('show');
       return;
     }
 
@@ -421,24 +473,28 @@
     try {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 8000);
-      await fetch(APPS_SCRIPT_URL, {
-        method: "POST",
-        mode: "no-cors",
-        headers: { "Content-Type": "text/plain;charset=UTF-8" },
-        body: JSON.stringify({
-          turnstileToken: turnstileToken,
-          codigoPedido: idMostrar,
-          cliente: nombre,
-          telefono: telefono,
-          total: Number(totalPedido.toFixed(2)),
-          estado: 'Pendiente',
-          productos: productosParaSheets
-        }),
-        signal: controller.signal
-      });
-      clearTimeout(timeoutId);
+      try {
+        await fetch(APPS_SCRIPT_URL, {
+          method: "POST",
+          mode: "no-cors",
+          headers: { "Content-Type": "text/plain;charset=UTF-8" },
+          body: JSON.stringify({
+            turnstileToken: turnstileToken,
+            codigoPedido: idMostrar,
+            cliente: nombre,
+            telefono: telefono,
+            total: Number(totalPedido.toFixed(2)),
+            estado: 'Pendiente',
+            productos: productosParaSheets
+          }),
+          signal: controller.signal
+        });
+      } finally {
+        clearTimeout(timeoutId);
+      }
     } catch (error) {
-      console.warn("Error background sheets:", error);
+      console.warn("No se pudo completar el envío a la hoja de pedidos:", error);
+      toast("No hemos podido confirmar el envío. Completa también el envío por WhatsApp.");
     }
 
     // El token Turnstile es de un solo uso: limpiar el widget tras cada intento.
@@ -555,6 +611,14 @@
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeCart(); });
   $('#buscar').addEventListener('input', filtrar);
   if (checkoutForm) checkoutForm.addEventListener('submit', enviar);
+  $('#dia').addEventListener('change', () => {
+    actualizarRestriccionesHora();
+    $('[data-err="hora"]').classList.remove('show');
+  });
+  $('#hora').addEventListener('change', () => {
+    $('[data-err="hora"]').classList.remove('show');
+  });
+  actualizarRestriccionesHora();
   $('#vaciar').addEventListener('click', () => { cart = []; save(); renderCart(); });
 
   $$('#nombre, #telefono, #hora').forEach((el) =>

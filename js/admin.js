@@ -75,9 +75,10 @@
      $('products').innerHTML='';
      status('loginStatus',
        adminError
-         ? 'No se pudo verificar la autorización de esta cuenta. Cierra sesión e inténtalo de nuevo.'
-         : 'Esta cuenta no está autorizada para administrar la web.'
+         ? 'No se pudo verificar la autorización de esta cuenta. Se cerrará la sesión por seguridad.'
+         : 'Esta cuenta no está autorizada para administrar la web. Se cerrará la sesión.'
      );
+     await client.auth.signOut();
      return;
    }
 

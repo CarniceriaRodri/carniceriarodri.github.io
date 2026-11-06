@@ -43,7 +43,7 @@
     "@type": "Store",
     "name": "Carnicería Rodri & Charcutería",
     "image": "img/hero.jpg",
-    "url": "https://tudominio.com",
+    "url": "https://carniceriarodri.github.io/",
     "telephone": "+34677228251"
   }
   </script>
@@ -163,7 +163,7 @@
 
 <footer class="footer">
   <p><strong>Carnicería Rodri &amp; Charcutería</strong> · Calidad de siempre, trato cercano.</p>
-  <p class="muted">Los pesos son aproximados: el importe final se calcula al pesar en tienda.</p>
+    <p class="muted">Los pesos son aproximados: el importe final se calcula al pesar en tienda.</p>
 </footer>
 
 <button class="float-bar" type="button" data-open-cart hidden>
@@ -197,9 +197,9 @@
       </label>
       <div class="field-row">
         <label class="field">
-          <span>Tu nombre *</span>
+          <span>Nombre y apellidos *</span>
           <input type="text" id="nombre" placeholder="Ej: María García" autocomplete="name" maxlength="80" required>
-          <small class="err" data-err="nombre">Dinos tu nombre para preparar el pedido.</small>
+          <small class="err" data-err="nombre">Escribe al menos un nombre y un apellido, sin números.</small>
         </label>
         <label class="field">
           <span>Día de recogida *</span>
@@ -214,15 +214,15 @@
       <label class="field">
         <span>Teléfono de contacto *</span>
         <input type="tel" id="telefono" placeholder="Ej: 677 22 82 51" autocomplete="tel" inputmode="tel" maxlength="20" required>
-        <small class="err" data-err="telefono">Indica un teléfono por si surge algún problema.</small>
+        <small class="err" data-err="telefono">Introduce un móvil español de 9 cifras que empiece por 6 o 7. Puedes añadir +34.</small>
       </label>
 
       <label class="field">
-        <span>Hora aproximada *</span>
-        <input type="time" id="hora" required>
-        <small class="err" data-err="hora">Indica a qué hora pasarás a recogerlo.</small>
+        <span>Hora de recogida *</span>
+        <input type="time" id="hora" min="08:00" max="20:00" step="1800" required>
+        <small class="err" data-err="hora">Elige una hora entre las 08:00 y las 20:00, en intervalos de 30 minutos y con al menos una hora de antelación.</small>
       </label>
-      <div id="turnstile-container" class="field" aria-label="Verificación de seguridad"></div>
+            <div id="turnstile-container" class="field" aria-label="Verificación de seguridad"></div>
       <button type="submit" class="btn btn-whatsapp btn-block">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12.05 0C5.5 0 .16 5.34.16 11.89c0 2.1.55 4.14 1.59 5.95L.06 24l6.3-1.65a11.9 11.9 0 0 0 5.69 1.45c6.56 0 11.9-5.34 11.9-11.9C23.94 5.34 18.6 0 12.05 0z"/></svg>
         Enviar pedido por WhatsApp
@@ -239,9 +239,9 @@
 <div id="modalConfirmacion" class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitulo" hidden>
   <div class="modal-inner">
     <div class="modal-icon" aria-hidden="true">✅</div>
-    <h3 id="modalTitulo">¡Pedido preparado!</h3>
+    <h3 id="modalTitulo">Completa tu pedido</h3>
     <p>Tu código de referencia es: <strong id="confirmacionIdPedido"></strong></p>
-    <p class="modal-hint">Pulsa el botón para enviar el detalle por WhatsApp. Te confirmaremos la recepción del pedido.</p>
+    <p class="modal-hint">Pulsa el botón para enviar el detalle por WhatsApp. El pedido no estará confirmado hasta que te confirmemos su recepción.</p>
     <button type="button" class="btn btn-whatsapp btn-block" id="btnEnviarWhatsApp">
       Enviar por WhatsApp
     </button>
