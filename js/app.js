@@ -540,6 +540,29 @@
       cardEl?.dataset.cantidadElegida === 'true';
   }
 
+  // Restaura la foto principal tras 8 segundos sin nuevas selecciones.
+  const temporizadoresPollo = new WeakMap();
+
+  function cancelarRestauracionPollo(cardEl) {
+    const anterior = temporizadoresPollo.get(cardEl);
+    if (anterior) clearTimeout(anterior);
+    temporizadoresPollo.delete(cardEl);
+  }
+
+  function programarRestauracionPollo(cardEl) {
+    cancelarRestauracionPollo(cardEl);
+    const temporizador = setTimeout(() => {
+      // No cambiar la foto mientras el cliente siga usando esta tarjeta.
+      if (cardEl.contains(document.activeElement)) {
+        programarRestauracionPollo(cardEl);
+        return;
+      }
+      restaurarFotoPrincipalPollo(cardEl);
+      temporizadoresPollo.delete(cardEl);
+    }, 8000);
+    temporizadoresPollo.set(cardEl, temporizador);
+  }
+
   // Solo se conserva la foto de preparación cuando el cliente ha cambiado ambos desplegables.
   document.addEventListener('change', (e) => {
     const cardEl = e.target.closest('.card[data-id="pollo"]');
@@ -547,14 +570,15 @@
 
     if (e.target.matches('[data-field="opcion"]')) {
       cardEl.dataset.opcionElegida = 'true';
-      // La preparación se muestra mientras el cliente está interactuando con ella.
       mostrarFotoOpcionPollo(cardEl);
+      programarRestauracionPollo(cardEl);
       return;
     }
 
     if (e.target.matches('[data-field="cantidad"]')) {
       cardEl.dataset.cantidadElegida = 'true';
       if (seleccionPolloCompleta(cardEl)) mostrarFotoOpcionPollo(cardEl);
+      programarRestauracionPollo(cardEl);
     }
   });
 
@@ -563,13 +587,19 @@
     if (!cardEl) return;
     // Al moverse entre controles de la tarjeta, no se considera que haya salido del producto.
     if (e.relatedTarget && cardEl.contains(e.relatedTarget)) return;
-    if (!seleccionPolloCompleta(cardEl)) restaurarFotoPrincipalPollo(cardEl);
+    if (!seleccionPolloCompleta(cardEl)) {
+      cancelarRestauracionPollo(cardEl);
+      restaurarFotoPrincipalPollo(cardEl);
+    } else {
+      programarRestauracionPollo(cardEl);
+    }
   });
 
   // También cubre la salida al pulsar fuera de la tarjeta, incluso en zonas no enfocables.
   document.addEventListener('pointerdown', (e) => {
     const cardEl = document.querySelector('.card[data-id="pollo"]');
     if (cardEl && !cardEl.contains(e.target) && !seleccionPolloCompleta(cardEl)) {
+      cancelarRestauracionPollo(cardEl);
       restaurarFotoPrincipalPollo(cardEl);
     }
   });
@@ -624,6 +654,7 @@
       const opcion = $('[data-field="opcion"]', c).value;
       addToCart(p.id, cantidad, opcion);
       if (p.id === 'pollo') {
+        cancelarRestauracionPollo(c);
         c.dataset.opcionElegida = 'false';
         c.dataset.cantidadElegida = 'false';
         restaurarFotoPrincipalPollo(c);
