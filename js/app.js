@@ -501,16 +501,28 @@
     mostrarModal(idMostrar);
   }
 
-  // Al salir del desplegable, recuperar la fotografía principal del pollo.
-  document.addEventListener('focusout', (e) => {
-    const select = e.target.closest('.card[data-id="pollo"] [data-field="opcion"]');
-    if (!select) return;
-    const imagen = select.closest('.card').querySelector('.card-img img');
+  // Recuperar la foto principal solo al salir de toda la tarjeta del pollo.
+  function restaurarFotoPrincipalPollo(cardEl) {
+    const imagen = cardEl?.querySelector('.card-img img');
     if (!imagen) return;
     imagen.onerror = null;
     imagen.removeAttribute('srcset');
     imagen.src = 'img/productos/pollo.jpg';
     imagen.alt = 'Pollo Fresco';
+  }
+
+  document.addEventListener('focusout', (e) => {
+    const cardEl = e.target.closest('.card[data-id="pollo"]');
+    if (!cardEl) return;
+    // Cambiar del desplegable a cantidad u otro control de la misma tarjeta no restaura la foto.
+    if (e.relatedTarget && cardEl.contains(e.relatedTarget)) return;
+    restaurarFotoPrincipalPollo(cardEl);
+  });
+
+  // También cubre la salida al pulsar fuera de la tarjeta, incluso en zonas no enfocables.
+  document.addEventListener('pointerdown', (e) => {
+    const cardEl = document.querySelector('.card[data-id="pollo"]');
+    if (cardEl && !cardEl.contains(e.target)) restaurarFotoPrincipalPollo(cardEl);
   });
 
   // Actualiza precio y cantidades al cambiar cualquier opción del catálogo.
