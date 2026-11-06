@@ -49,7 +49,7 @@
 
 
   // ⚡ URL del Apps Script
-  const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwvcM-Ta_XHbzRnAU_6FxS6h7gwafmGx0VbEKygUCdlS8EsrfjFaftCpUaE0flj4EZX/exec";
+  const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz0Ydh6S00C_8LHjfpTGk4np3G2qmwbmUPMZSOMOMWWHX60K3zF5T38WQSv1Aw1UDxH/exec";
 
   const $ = (sel, root = document) => root.querySelector(sel);
   const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
