@@ -508,6 +508,31 @@
     const cardEl = select.closest('.card');
     const p = PRODUCTOS.find(x => x.id === cardEl.dataset.id);
     if (!p) return;
+
+    // Fotografía específica según la preparación elegida en Pollo Fresco.
+    if (p.id === 'pollo') {
+      const fotosPollo = {
+        'pechugas en filetes': 'img/productos/pechugasenfiletes.jpg',
+        'pechugas enteras': 'img/productos/pechugasenteras.jpg',
+        'muslos y contramuslos': 'img/productos/musloscontramuslos.jpg',
+        'contramuslo deshuesado': 'img/productos/pollocontramuslodeshuesado.jpg',
+        'troceado para guisar': 'img/productos/pollotroceado.jpg',
+        'abierto para asar': 'img/productos/pollo entero.jpg'
+      };
+      const foto = fotosPollo[normalizarClave(select.value)];
+      const imagen = cardEl.querySelector('.card-img img');
+      if (foto && imagen) {
+        imagen.onerror = () => {
+          imagen.onerror = null;
+          imagen.removeAttribute('srcset');
+          imagen.src = 'img/productos/pollo.jpg';
+        };
+        imagen.removeAttribute('srcset');
+        imagen.src = foto;
+        imagen.alt = 'Pollo fresco: ' + select.value;
+      }
+    }
+
     const key = normalizarClave(select.value);
     const baseMatch = String(p.precio || '').replace(',', '.').match(/[0-9]+(?:\.[0-9]+)?/);
     const basePrice = baseMatch ? Number(baseMatch[0]) : 0;
