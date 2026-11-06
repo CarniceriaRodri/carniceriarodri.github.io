@@ -3,7 +3,7 @@
 window.CATEGORIAS = [
   { id: 'vacuno', nombre: 'Vacuno y Ternera', lema: 'Ternera de confianza y vaca madurada, cortada al momento.' },
   { id: 'cerdo', nombre: 'Cerdo e Ibérico', lema: 'Del lomo de cebo a las piezas ibéricas más jugosas.' },
-  { id: 'aves', nombre: 'Pollo, Aves y Conejo', lema: 'Pollo fresco, pavo y conejo limpios y listos para cocinar.' },
+  { id: 'aves', nombre: 'Pollo, aves', lema: 'Pollo fresco, pavo y conejo limpios y listos para cocinar.' },
   { id: 'cordero', nombre: 'Cordero', lema: 'Cordero lechal tierno, para la plancha o el horno.' },
   { id: 'elaborados', nombre: 'Elaborados', lema: 'Hechos aquí cada mañana, con nuestra propia receta.' },
   { id: 'charcuteria', nombre: 'Charcutería', lema: 'Jamón, embutidos y quesos cortados a tu gusto.' },
