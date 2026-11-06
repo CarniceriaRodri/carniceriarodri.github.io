@@ -348,20 +348,22 @@
   }
 
   function validarHoraRecogida(dia, hora) {
-    const fecha = fechaRecogidaSeleccionada(dia, hora);
-    if (!fecha) return false;
-    const [horas, minutos] = hora.split(':').map(Number);
-    if (horas < 8 || horas > 20 || (horas === 20 && minutos > 0) || minutos % 30 !== 0) return false;
-    return fecha.getTime() >= Date.now() + 60 * 60 * 1000;
-  }
+  if (!hora || !/^\d{2}:\d{2}$/.test(hora)) return false;
+
+  const [horas, minutos] = hora.split(':').map(Number);
+
+  return horas >= 8 &&
+    (horas < 20 || (horas === 20 && minutos === 0)) &&
+    minutos >= 0 &&
+    minutos <= 59;
+}
 
   function actualizarRestriccionesHora() {
     const campoHora = $('#hora');
     if (!campoHora) return;
     campoHora.min = '08:00';
-    campoHora.max = '20:00';
-    campoHora.step = '1800';
-
+campoHora.max = '20:00';
+campoHora.step = '60';
     const dia = $('#dia').value;
     let horaMinima = 8 * 60;
     if (dia === 'Hoy') {
