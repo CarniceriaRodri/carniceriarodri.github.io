@@ -512,12 +512,12 @@
     // Prueba visual: cambiar la fotografía de Pollo Fresco según su preparación.
     if (p.id === 'pollo') {
       const fotosPollo = {
-        'pechugas en filetes': 'https://images.pexels.com/photos/6107734/pexels-photo-6107734.jpeg?auto=compress&cs=tinysrgb&w=1000',
-        'pechugas enteras': 'https://images.pexels.com/photos/6107731/pexels-photo-6107731.jpeg?auto=compress&cs=tinysrgb&w=1000',
-        'muslos y contramuslos': 'https://images.pexels.com/photos/12381147/pexels-photo-12381147.jpeg?auto=compress&cs=tinysrgb&w=1000',
-        'contramuslo deshuesado': 'https://images.pexels.com/photos/12381147/pexels-photo-12381147.jpeg?auto=compress&cs=tinysrgb&w=1000',
-        'troceado para guisar': 'https://images.pexels.com/photos/23359724/pexels-photo-23359724.jpeg?auto=compress&cs=tinysrgb&w=1000',
-        'abierto para asar': 'https://images.pexels.com/photos/10842248/pexels-photo-10842248.jpeg?auto=compress&cs=tinysrgb&w=1000'
+        'pechugas en filetes': 'img/productos/pechugasenfiletes.jpg',
+        'pechugas enteras': 'img/productos/pechugasenteras.jpg',
+        'muslos y contramuslos': 'img/productos/musloscontramuslos.jpg',
+        'contramuslo deshuesado': 'img/productos/pollocontramuslodeshuesado.jpg',
+        'troceado para guisar': 'img/productos/pollotroceado.jpg',
+        'abierto para asar': 'img/productos/pollo-entero.jpg'
       };
       const foto = fotosPollo[normalizarClave(select.value)];
       const imagen = cardEl.querySelector('.card-img img');

@@ -84,7 +84,7 @@ window.PRODUCTOS = [
     opcionLabel: 'Pieza', opciones: ['Chuletas de aguja', 'Chuletas de lomo', 'Panceta en tiras', 'Panceta para torreznos', 'Solomillo de cerdo', 'Codillo', 'Manitas de cerdo'],
   },
   {
-    id: 'pollo', cat: 'aves', img: 'pollo', etiqueta: 'Más pedido',
+    id: 'pollo', cat: 'aves', img: 'pollo-entero', etiqueta: 'Más pedido',
     nombre: 'Pollo Fresco', desc: 'Pollo entero o en piezas, limpio y preparado a tu gusto.',
     cantidades: ['500 gr - 3,25 €', '1 kg - 6,50 €', '1.5 kg - 9,75 €', '2 kg - 13,00 €', '1 pollo entero - 6,50 €', '1 pollo de corral - 6,50 €'], 
     opcionLabel: 'Preparación', opciones: ['Pechugas en filetes', 'Pechugas enteras', 'Muslos y contramuslos', 'Contramuslo deshuesado', 'Troceado para guisar', 'Abierto para asar'],
