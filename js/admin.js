@@ -111,7 +111,7 @@
    const categoryMeta={
      vacuno:{name:'Vacuno y Ternera',icon:'🥩',color:'#7b2e20',bg:'#f8f0e9'},
      cerdo:{name:'Cerdo e Ibérico',icon:'🐖',color:'#8a4d36',bg:'#fbf1ed'},
-     aves:{name:'Pollo, Aves y Conejo',icon:'🐔',color:'#8a6b20',bg:'#fbf7e9'},
+     aves:{name:'Pollo, aves',icon:'🐔',color:'#8a6b20',bg:'#fbf7e9'},
      cordero:{name:'Cordero',icon:'🐑',color:'#766044',bg:'#f5f1e9'},
      elaborados:{name:'Elaborados de la Casa',icon:'🍖',color:'#9a4b28',bg:'#fbf0e8'},
      charcuteria:{name:'Charcutería',icon:'🧀',color:'#80612a',bg:'#f8f4e8'},
