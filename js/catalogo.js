@@ -5,7 +5,7 @@ window.CATEGORIAS = [
   { id: 'cerdo', nombre: 'Cerdo e Ibérico', lema: 'Del lomo de cebo a las piezas ibéricas más jugosas.' },
   { id: 'aves', nombre: 'Pollo, Aves y Conejo', lema: 'Pollo fresco, pavo y conejo limpios y listos para cocinar.' },
   { id: 'cordero', nombre: 'Cordero', lema: 'Cordero lechal tierno, para la plancha o el horno.' },
-  { id: 'elaborados', nombre: 'Elaborados de la Casa', lema: 'Hechos aquí cada mañana, con nuestra propia receta.' },
+  { id: 'elaborados', nombre: 'Elaborados', lema: 'Hechos aquí cada mañana, con nuestra propia receta.' },
   { id: 'charcuteria', nombre: 'Charcutería', lema: 'Jamón, embutidos y quesos cortados a tu gusto.' },
   { id: 'bebidas', nombre: 'Refrescos y Bebidas', lema: 'Para acompañar la comida: todo bien frío.' },
   { id: 'despensa', nombre: 'Despensa y Barbacoa', lema: 'Lo que no puede faltar para cocinar o encender la brasa.' },
