@@ -507,19 +507,19 @@
     const imagen = cardEl?.querySelector('.card-img img');
     if (!select || !imagen) return;
     const fotosPollo = {
-      pechugasenfiletes: 'img/productos/pechugasenfiletes.jpg',
-      pechugasenteras: 'img/productos/pechugasenteras.jpg',
-      muslosycontramuslos: 'img/productos/musloscontramuslos.jpg',
-      contramuslodeshuesado: 'img/productos/pollocontramuslodeshuesado.jpg',
-      troceadoparaguisar: 'img/productos/pollotroceado.jpg',
-      abiertoparaasar: 'img/productos/pollo entero.jpg'
+      pechugasenfiletes: 'img/productos/pollo/pechugas-filetes.jpg',
+      pechugasenteras: 'img/productos/pollo/pechugas-enteras.jpg',
+      muslosycontramuslos: 'img/productos/pollo/muslos-contramuslos.jpg',
+      contramuslodeshuesado: 'img/productos/pollo/contramuslo-deshuesado.jpg',
+      troceadoparaguisar: 'img/productos/pollo/pollo-troceado.jpg',
+      abiertoparaasar: 'img/productos/pollo/pollo-entero.jpg'
     };
     const foto = fotosPollo[normalizarClave(select.value)];
     if (!foto) return;
     imagen.onerror = () => {
       imagen.onerror = null;
       imagen.removeAttribute('srcset');
-      imagen.src = 'img/productos/pollo.jpg';
+      imagen.src = 'img/productos/pollo/pollo.jpg';
     };
     imagen.removeAttribute('srcset');
     imagen.src = foto;
@@ -531,7 +531,7 @@
     if (!imagen) return;
     imagen.onerror = null;
     imagen.removeAttribute('srcset');
-    imagen.src = 'img/productos/pollo.jpg';
+    imagen.src = 'img/productos/pollo/pollo.jpg';
     imagen.alt = 'Pollo Fresco';
   }
 
