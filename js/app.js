@@ -585,20 +585,19 @@
   document.addEventListener('focusout', (e) => {
     const cardEl = e.target.closest('.card[data-id="pollo"]');
     if (!cardEl) return;
-    // Al moverse entre controles de la tarjeta, no se considera que haya salido del producto.
-    if (e.relatedTarget && cardEl.contains(e.relatedTarget)) return;
-    if (!seleccionPolloCompleta(cardEl)) {
+    // Espera al cambio real de foco: algunos desplegables notifican relatedTarget como null
+    // incluso cuando el cliente está pasando al control de cantidad dentro de la misma tarjeta.
+    setTimeout(() => {
+      if (cardEl.contains(document.activeElement)) return;
       cancelarRestauracionPollo(cardEl);
       restaurarFotoPrincipalPollo(cardEl);
-    } else {
-      programarRestauracionPollo(cardEl);
-    }
+    }, 0);
   });
 
-  // También cubre la salida al pulsar fuera de la tarjeta, incluso en zonas no enfocables.
+  // Al pulsar fuera de Pollo Fresco, restaura siempre su imagen principal.
   document.addEventListener('pointerdown', (e) => {
     const cardEl = document.querySelector('.card[data-id="pollo"]');
-    if (cardEl && !cardEl.contains(e.target) && !seleccionPolloCompleta(cardEl)) {
+    if (cardEl && !cardEl.contains(e.target)) {
       cancelarRestauracionPollo(cardEl);
       restaurarFotoPrincipalPollo(cardEl);
     }
