@@ -513,11 +513,11 @@
     if (p.id === 'pollo') {
       const fotosPollo = {
         'pechugas en filetes': 'https://images.pexels.com/photos/6107734/pexels-photo-6107734.jpeg?auto=compress&cs=tinysrgb&w=1000',
-        'pechugas enteras': 'https://images.pexels.com/photos/6107730/pexels-photo-6107730.jpeg?auto=compress&cs=tinysrgb&w=1000',
+        'pechugas enteras': 'https://images.pexels.com/photos/6107731/pexels-photo-6107731.jpeg?auto=compress&cs=tinysrgb&w=1000',
         'muslos y contramuslos': 'https://images.pexels.com/photos/12381147/pexels-photo-12381147.jpeg?auto=compress&cs=tinysrgb&w=1000',
-        'contramuslo deshuesado': 'https://images.pexels.com/photos/6107733/pexels-photo-6107733.jpeg?auto=compress&cs=tinysrgb&w=1000',
-        'troceado para guisar': 'https://images.pexels.com/photos/6107725/pexels-photo-6107725.jpeg?auto=compress&cs=tinysrgb&w=1000',
-        'abierto para asar': 'https://images.pexels.com/photos/10842249/pexels-photo-10842249.jpeg?auto=compress&cs=tinysrgb&w=1000'
+        'contramuslo deshuesado': 'https://images.pexels.com/photos/12381147/pexels-photo-12381147.jpeg?auto=compress&cs=tinysrgb&w=1000',
+        'troceado para guisar': 'https://images.pexels.com/photos/23359724/pexels-photo-23359724.jpeg?auto=compress&cs=tinysrgb&w=1000',
+        'abierto para asar': 'https://images.pexels.com/photos/10842248/pexels-photo-10842248.jpeg?auto=compress&cs=tinysrgb&w=1000'
       };
       const foto = fotosPollo[normalizarClave(select.value)];
       const imagen = cardEl.querySelector('.card-img img');
