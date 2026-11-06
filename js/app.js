@@ -118,7 +118,15 @@
           <div class="card-fields">
             <label>
               <span>${escapeHtml(p.opcionLabel)}</span>
-              <select data-field="opcion">${p.opciones.map((o) => `<option>${escapeHtml(o)}</option>`).join('')}</select>
+              ${p.id === 'pollo' ? `
+                <div class="option-picker" data-option-picker>
+                  <select class="option-picker-native" data-field="opcion" tabindex="-1" aria-hidden="true">${p.opciones.map((o) => `<option>${escapeHtml(o)}</option>`).join('')}</select>
+                  <button type="button" class="option-picker-trigger" aria-haspopup="listbox" aria-expanded="false" data-option-trigger>${escapeHtml(p.opciones[0] || 'Elige una opción')}</button>
+                  <div class="option-picker-list" role="listbox" hidden data-option-list>
+                    ${p.opciones.map((o, i) => `<button type="button" role="option" aria-selected="${i === 0 ? 'true' : 'false'}" data-option-index="${i}">${escapeHtml(o)}</button>`).join('')}
+                  </div>
+                </div>` : `
+                <select data-field="opcion">${p.opciones.map((o) => `<option>${escapeHtml(o)}</option>`).join('')}</select>`}
             </label>
             ${p.precio ? `<p class="card-precio" data-price>${escapeHtml(p.precio)} </p>` : ''}
             <label>
@@ -535,35 +543,70 @@
     imagen.alt = 'Pollo Fresco';
   }
 
-  // Al tocar o enfocar el desplegable, muestra la foto de la opción seleccionada.
-  // Si se elige otra preparación, el evento change actualiza la fotografía.
+  // Desplegable compacto de preparaciones: dos opciones visibles y scroll vertical.
+  function cerrarDesplegablesPollo(excepto) {
+    document.querySelectorAll('.card[data-id="pollo"] [data-option-list]').forEach(list => {
+      const picker = list.closest('[data-option-picker]');
+      if (picker === excepto) return;
+      list.hidden = true;
+      picker.querySelector('[data-option-trigger]')?.setAttribute('aria-expanded', 'false');
+    });
+  }
+
   document.addEventListener('pointerdown', (e) => {
     const cardEl = document.querySelector('.card[data-id="pollo"]');
     if (!cardEl) return;
-
     if (!cardEl.contains(e.target)) {
+      cerrarDesplegablesPollo();
       restaurarFotoPrincipalPollo(cardEl);
       return;
     }
-
-    if (e.target.closest('[data-field="opcion"]')) {
+    if (e.target.closest('[data-option-picker]')) {
       mostrarFotoOpcionPollo(cardEl);
+    } else {
+      cerrarDesplegablesPollo();
     }
   });
 
-  // También funciona al llegar al desplegable con teclado o navegación accesible.
-  document.addEventListener('focusin', (e) => {
-    const cardEl = e.target.closest('.card[data-id="pollo"]');
-    if (cardEl && e.target.matches('[data-field="opcion"]')) {
-      mostrarFotoOpcionPollo(cardEl);
+  document.addEventListener('click', (e) => {
+    const trigger = e.target.closest('[data-option-trigger]');
+    if (trigger) {
+      const picker = trigger.closest('[data-option-picker]');
+      const list = picker.querySelector('[data-option-list]');
+      const abrir = list.hidden;
+      cerrarDesplegablesPollo(picker);
+      list.hidden = !abrir;
+      trigger.setAttribute('aria-expanded', String(abrir));
+      mostrarFotoOpcionPollo(picker.closest('.card'));
+      return;
+    }
+
+    const choice = e.target.closest('[data-option-index]');
+    if (choice) {
+      const picker = choice.closest('[data-option-picker]');
+      const select = picker.querySelector('[data-field="opcion"]');
+      const triggerButton = picker.querySelector('[data-option-trigger]');
+      const index = Number(choice.dataset.optionIndex);
+      if (!select || !select.options[index]) return;
+      select.selectedIndex = index;
+      triggerButton.textContent = select.options[index].textContent;
+      picker.querySelectorAll('[data-option-index]').forEach((button, i) => {
+        button.setAttribute('aria-selected', String(i === index));
+      });
+      cerrarDesplegablesPollo();
+      select.dispatchEvent(new Event('change', { bubbles: true }));
+      return;
     }
   });
 
-  // Al cambiar la preparación, actualiza la foto a la nueva opción.
+  // Cierra la lista con Escape y permite recorrer opciones con teclado.
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') cerrarDesplegablesPollo();
+  });
+
   document.addEventListener('change', (e) => {
     const cardEl = e.target.closest('.card[data-id="pollo"]');
-    if (!cardEl || !e.isTrusted) return;
-    if (e.target.matches('[data-field="opcion"]')) {
+    if (cardEl && e.target.matches('[data-field="opcion"]')) {
       mostrarFotoOpcionPollo(cardEl);
     }
   });
