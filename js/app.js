@@ -593,7 +593,19 @@
       picker.querySelectorAll('[data-option-index]').forEach((button, i) => {
         button.setAttribute('aria-selected', String(i === index));
       });
-      cerrarDesplegablesPollo();
+      // Mantiene abierto el desplegable y desplaza la lista solo lo necesario
+      // para que la opción elegida quede visible entre las dos filas.
+      const list = picker.querySelector('[data-option-list]');
+      const selectedButton = picker.querySelector('[data-option-index="' + index + '"]');
+      if (list && selectedButton) {
+        const top = selectedButton.offsetTop;
+        const bottom = top + selectedButton.offsetHeight;
+        if (top < list.scrollTop) {
+          list.scrollTop = top;
+        } else if (bottom > list.scrollTop + list.clientHeight) {
+          list.scrollTop = bottom - list.clientHeight;
+        }
+      }
       select.dispatchEvent(new Event('change', { bubbles: true }));
       return;
     }
