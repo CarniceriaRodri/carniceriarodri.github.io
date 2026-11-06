@@ -558,19 +558,12 @@
       filtrar();
 
       // Desplazar la barra horizontal para mantener visible la categoría seleccionada.
-      const barraCategorias = $('#chips');
-      if (barraCategorias) {
-        const barraRect = barraCategorias.getBoundingClientRect();
-        const chipRect = chip.getBoundingClientRect();
-        const destino = barraCategorias.scrollLeft +
-          chipRect.left - barraRect.left -
-          (barraCategorias.clientWidth - chipRect.width) / 2;
-        const maximo = barraCategorias.scrollWidth - barraCategorias.clientWidth;
-        barraCategorias.scrollTo({
-          left: Math.max(0, Math.min(destino, maximo)),
-          behavior: 'smooth'
-        });
-      }
+      // scrollIntoView con inline:center actúa sobre la barra desplazable en móvil.
+      chip.scrollIntoView({
+        behavior: 'smooth',
+        block: 'nearest',
+        inline: 'center'
+      });
 
       $('#catalogo').scrollIntoView({ behavior: 'smooth', block: 'start' });
       return;
