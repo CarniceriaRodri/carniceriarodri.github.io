@@ -508,6 +508,31 @@
     const cardEl = select.closest('.card');
     const p = PRODUCTOS.find(x => x.id === cardEl.dataset.id);
     if (!p) return;
+
+    // Prueba visual: cambiar la fotografía de Pollo Fresco según su preparación.
+    if (p.id === 'pollo') {
+      const fotosPollo = {
+        'pechugas en filetes': 'https://images.pexels.com/photos/6107734/pexels-photo-6107734.jpeg?auto=compress&cs=tinysrgb&w=1000',
+        'pechugas enteras': 'https://images.pexels.com/photos/6107730/pexels-photo-6107730.jpeg?auto=compress&cs=tinysrgb&w=1000',
+        'muslos y contramuslos': 'https://images.pexels.com/photos/12381147/pexels-photo-12381147.jpeg?auto=compress&cs=tinysrgb&w=1000',
+        'contramuslo deshuesado': 'https://images.pexels.com/photos/6107733/pexels-photo-6107733.jpeg?auto=compress&cs=tinysrgb&w=1000',
+        'troceado para guisar': 'https://images.pexels.com/photos/6107725/pexels-photo-6107725.jpeg?auto=compress&cs=tinysrgb&w=1000',
+        'abierto para asar': 'https://images.pexels.com/photos/10842249/pexels-photo-10842249.jpeg?auto=compress&cs=tinysrgb&w=1000'
+      };
+      const foto = fotosPollo[normalizarClave(select.value)];
+      const imagen = cardEl.querySelector('.card-img img');
+      if (foto && imagen) {
+        imagen.onerror = () => {
+          imagen.onerror = null;
+          imagen.removeAttribute('srcset');
+          imagen.src = 'img/productos/pollo.jpg';
+        };
+        imagen.removeAttribute('srcset');
+        imagen.src = foto;
+        imagen.alt = 'Pollo fresco: ' + select.value;
+      }
+    }
+
     const key = normalizarClave(select.value);
     const baseMatch = String(p.precio || '').replace(',', '.').match(/[0-9]+(?:\.[0-9]+)?/);
     const basePrice = baseMatch ? Number(baseMatch[0]) : 0;
