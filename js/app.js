@@ -512,12 +512,12 @@
     // Fotografía específica según la preparación elegida en Pollo Fresco.
     if (p.id === 'pollo') {
       const fotosPollo = {
-        'pechugas en filetes': 'img/productos/pechugasenfiletes.jpg',
-        'pechugas enteras': 'img/productos/pechugasenteras.jpg',
-        'muslos y contramuslos': 'img/productos/musloscontramuslos.jpg',
-        'contramuslo deshuesado': 'img/productos/pollocontramuslodeshuesado.jpg',
-        'troceado para guisar': 'img/productos/pollotroceado.jpg',
-        'abierto para asar': 'img/productos/pollo entero.jpg'
+        pechugasenfiletes: 'img/productos/pechugasenfiletes.jpg',
+        pechugasenteras: 'img/productos/pechugasenteras.jpg',
+        muslosycontramuslos: 'img/productos/musloscontramuslos.jpg',
+        contramuslodeshuesado: 'img/productos/pollocontramuslodeshuesado.jpg',
+        troceadoparaguisar: 'img/productos/pollotroceado.jpg',
+        abiertoparaasar: 'img/productos/pollo entero.jpg'
       };
       const foto = fotosPollo[normalizarClave(select.value)];
       const imagen = cardEl.querySelector('.card-img img');
