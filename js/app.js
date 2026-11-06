@@ -248,6 +248,21 @@
   const cartBtn = $('.cart-btn');
   const checkoutForm = $('#checkout');
 
+  // Verificación anti-bots de Cloudflare Turnstile
+  let turnstileToken = '';
+  let turnstileWidgetId = null;
+  const turnstileContainer = $('#turnstile-container');
+  const TURNSTILE_SITE_KEY = '0x4AAAAAAF2ddTXIxCLGKWQT';
+
+  if (window.turnstile && turnstileContainer) {
+    turnstileWidgetId = window.turnstile.render(turnstileContainer, {
+      sitekey: TURNSTILE_SITE_KEY,
+      callback: (token) => { turnstileToken = token; },
+      'expired-callback': () => { turnstileToken = ''; },
+      'error-callback': () => { turnstileToken = ''; toast('No se pudo completar la verificación. Recarga la página e inténtalo de nuevo.'); }
+    });
+  }
+
   function openCart() {
     backdrop.hidden = false;
     drawer.removeAttribute('inert');
@@ -333,6 +348,11 @@
     $('[data-err="hora"]').classList.toggle('show', !hora);
     if (!nombre || !telefono || !hora) return;
 
+    if (!turnstileToken) {
+      toast('Completa la verificación de seguridad antes de enviar el pedido.');
+      return;
+    }
+
     const soloDigitos = telefono.replace(/\D/g, '');
     if (soloDigitos.length < 9) {
       const err = $('[data-err="telefono"]');
@@ -401,9 +421,10 @@
       await fetch(APPS_SCRIPT_URL, {
         method: "POST",
         mode: "no-cors",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "text/plain;charset=UTF-8" },
         body: JSON.stringify({
           token: TOKEN_SEGURO,
+          turnstileToken: turnstileToken,
           codigoPedido: idMostrar,
           cliente: nombre,
           telefono: telefono,
@@ -418,7 +439,14 @@
       console.warn("Error background sheets:", error);
     }
 
-    // Mostrar el modal SIEMPRE, pase lo que pase
+    // El token Turnstile es de un solo uso: limpiar el widget tras cada intento.
+    if (window.turnstile && turnstileWidgetId !== null) {
+      window.turnstile.reset(turnstileWidgetId);
+      turnstileToken = '';
+    }
+
+    // El navegador usa no-cors y no puede leer la respuesta de Apps Script.
+    // Se conserva el comportamiento actual del modal.
     mostrarModal(idMostrar);
   }
 
