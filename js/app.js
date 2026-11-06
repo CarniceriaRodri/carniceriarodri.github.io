@@ -607,9 +607,9 @@
       // La lista usa copias idénticas antes y después para que el bucle no muestre huecos.
       const list = picker.querySelector('[data-option-list]');
       if (list && previousIndex !== index) {
-        let direction = index > previousIndex ? 1 : -1;
-        if (previousIndex === select.options.length - 1 && index === 0) direction = 1;
-        if (previousIndex === 0 && index === select.options.length - 1) direction = -1;
+        let direction = index > previousIndex ? -1 : 1;
+        if (previousIndex === select.options.length - 1 && index === 0) direction = -1;
+        if (previousIndex === 0 && index === select.options.length - 1) direction = 1;
         const step = choice.offsetHeight || 42;
         list.scrollTo({ top: list.scrollTop + direction * step, behavior: 'smooth' });
       }
