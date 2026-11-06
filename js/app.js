@@ -501,6 +501,18 @@
     mostrarModal(idMostrar);
   }
 
+  // Al salir del desplegable, recuperar la fotografía principal del pollo.
+  document.addEventListener('focusout', (e) => {
+    const select = e.target.closest('.card[data-id="pollo"] [data-field="opcion"]');
+    if (!select) return;
+    const imagen = select.closest('.card').querySelector('.card-img img');
+    if (!imagen) return;
+    imagen.onerror = null;
+    imagen.removeAttribute('srcset');
+    imagen.src = 'img/productos/pollo.jpg';
+    imagen.alt = 'Pollo Fresco';
+  });
+
   // Actualiza precio y cantidades al cambiar cualquier opción del catálogo.
   document.addEventListener('change', (e) => {
     const select = e.target.closest('.card [data-field="opcion"]');
