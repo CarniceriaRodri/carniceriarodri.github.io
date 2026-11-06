@@ -509,8 +509,9 @@
     const p = PRODUCTOS.find(x => x.id === cardEl.dataset.id);
     if (!p) return;
 
-    // Fotografía específica según la preparación elegida en Pollo Fresco.
-    if (p.id === 'pollo') {
+    // Cambiar la fotografía solo ante una selección manual del cliente.
+    // Los change sintéticos usados al sincronizar precios no deben alterar la imagen inicial.
+    if (p.id === 'pollo' && e.isTrusted) {
       const fotosPollo = {
         pechugasenfiletes: 'img/productos/pechugasenfiletes.jpg',
         pechugasenteras: 'img/productos/pechugasenteras.jpg',
