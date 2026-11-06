@@ -47,11 +47,9 @@
   const TELEFONO = '34677228251';
   const STORAGE_KEY = 'rodri-encargo';
 
-  // 🔒 Token compartido con Apps Script (debe coincidir con TOKEN_VALIDO en code.gs)
-  const TOKEN_SEGURO = "xr1st1na_R0dr1-roldayan-xW590ÑoqR339";
 
   // ⚡ URL del Apps Script
-  const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwvcM-Ta_XHbzRnAU_6FxS6h7gwafmGx0VbEKygUCdlS8EsrfjFaftCpUaE0flj4EZX/exec";
+  const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz0Ydh6S00C_8LHjfpTGk4np3G2qmwbmUPMZSOMOMWWHX60K3zF5T38WQSv1Aw1UDxH/exec";
 
   const $ = (sel, root = document) => root.querySelector(sel);
   const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
@@ -248,6 +246,21 @@
   const cartBtn = $('.cart-btn');
   const checkoutForm = $('#checkout');
 
+  // Verificación anti-bots de Cloudflare Turnstile
+  let turnstileToken = '';
+  let turnstileWidgetId = null;
+  const turnstileContainer = $('#turnstile-container');
+  const TURNSTILE_SITE_KEY = '0x4AAAAAAF2ddTXIxCLGKWQT';
+
+  if (window.turnstile && turnstileContainer) {
+    turnstileWidgetId = window.turnstile.render(turnstileContainer, {
+      sitekey: TURNSTILE_SITE_KEY,
+      callback: (token) => { turnstileToken = token; },
+      'expired-callback': () => { turnstileToken = ''; },
+      'error-callback': () => { turnstileToken = ''; toast('No se pudo completar la verificación. Recarga la página e inténtalo de nuevo.'); }
+    });
+  }
+
   function openCart() {
     backdrop.hidden = false;
     drawer.removeAttribute('inert');
@@ -333,6 +346,11 @@
     $('[data-err="hora"]').classList.toggle('show', !hora);
     if (!nombre || !telefono || !hora) return;
 
+    if (!turnstileToken) {
+      toast('Completa la verificación de seguridad antes de enviar el pedido.');
+      return;
+    }
+
     const soloDigitos = telefono.replace(/\D/g, '');
     if (soloDigitos.length < 9) {
       const err = $('[data-err="telefono"]');
@@ -401,9 +419,9 @@
       await fetch(APPS_SCRIPT_URL, {
         method: "POST",
         mode: "no-cors",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "text/plain;charset=UTF-8" },
         body: JSON.stringify({
-          token: TOKEN_SEGURO,
+          turnstileToken: turnstileToken,
           codigoPedido: idMostrar,
           cliente: nombre,
           telefono: telefono,
@@ -418,7 +436,14 @@
       console.warn("Error background sheets:", error);
     }
 
-    // Mostrar el modal SIEMPRE, pase lo que pase
+    // El token Turnstile es de un solo uso: limpiar el widget tras cada intento.
+    if (window.turnstile && turnstileWidgetId !== null) {
+      window.turnstile.reset(turnstileWidgetId);
+      turnstileToken = '';
+    }
+
+    // El navegador usa no-cors y no puede leer la respuesta de Apps Script.
+    // Se conserva el comportamiento actual del modal.
     mostrarModal(idMostrar);
   }
 

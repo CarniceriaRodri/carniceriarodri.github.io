@@ -7,11 +7,12 @@
   <!-- 🔒 Seguridad: CSP, referrer policy y permisos -->
   <meta http-equiv="Content-Security-Policy" content="
     default-src 'self';
-    script-src 'self';
+    script-src 'self' https://challenges.cloudflare.com;
     style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
     font-src 'self' https://fonts.gstatic.com;
     img-src 'self' data:;
-     connect-src 'self' https://script.google.com https://script.googleusercontent.com https://wa.me https://ugqiomoywgpkmogcdjqn.supabase.co;
+    frame-src https://challenges.cloudflare.com;
+    connect-src 'self' https://script.google.com https://script.googleusercontent.com https://wa.me https://ugqiomoywgpkmogcdjqn.supabase.co https://challenges.cloudflare.com;
     form-action 'self';
     base-uri 'self';
     object-src 'none';
@@ -221,6 +222,7 @@
         <input type="time" id="hora" required>
         <small class="err" data-err="hora">Indica a qué hora pasarás a recogerlo.</small>
       </label>
+      <div id="turnstile-container" class="field" aria-label="Verificación de seguridad"></div>
       <button type="submit" class="btn btn-whatsapp btn-block">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12.05 0C5.5 0 .16 5.34.16 11.89c0 2.1.55 4.14 1.59 5.95L.06 24l6.3-1.65a11.9 11.9 0 0 0 5.69 1.45c6.56 0 11.9-5.34 11.9-11.9C23.94 5.34 18.6 0 12.05 0z"/></svg>
         Enviar pedido por WhatsApp
@@ -237,9 +239,9 @@
 <div id="modalConfirmacion" class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitulo" hidden>
   <div class="modal-inner">
     <div class="modal-icon" aria-hidden="true">✅</div>
-    <h3 id="modalTitulo">¡Pedido registrado!</h3>
+    <h3 id="modalTitulo">¡Pedido preparado!</h3>
     <p>Tu código de referencia es: <strong id="confirmacionIdPedido"></strong></p>
-    <p class="modal-hint">Para finalizar y enviar el detalle a nuestro WhatsApp, pulsa el botón de abajo.</p>
+    <p class="modal-hint">Pulsa el botón para enviar el detalle por WhatsApp. Te confirmaremos la recepción del pedido.</p>
     <button type="button" class="btn btn-whatsapp btn-block" id="btnEnviarWhatsApp">
       Enviar por WhatsApp
     </button>
@@ -250,6 +252,7 @@
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script src="js/catalogo.js?v=3.6"></script>
-<script src="js/app.js?v=4.10"></script>
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" defer></script>
+<script src="js/app.js?v=4.11" defer></script>
 </body>
 </html>
