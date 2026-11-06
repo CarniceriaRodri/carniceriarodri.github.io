@@ -252,16 +252,21 @@
   const turnstileContainer = $('#turnstile-container');
   const TURNSTILE_SITE_KEY = '0x4AAAAAAF2ddTXIxCLGKWQT';
 
-  if (window.turnstile && turnstileContainer) {
-    turnstileWidgetId = window.turnstile.render(turnstileContainer, {
-      sitekey: TURNSTILE_SITE_KEY,
-      callback: (token) => { turnstileToken = token; },
-      'expired-callback': () => { turnstileToken = ''; },
-      'error-callback': () => { turnstileToken = ''; toast('No se pudo completar la verificación. Recarga la página e inténtalo de nuevo.'); }
-    });
+  function inicializarTurnstile() {
+    // El formulario empieza oculto si el carrito está vacío.
+    // Renderizar Turnstile solo cuando el formulario ya está visible.
+    if (turnstileWidgetId === null && window.turnstile && turnstileContainer && !checkoutForm.hidden) {
+      turnstileWidgetId = window.turnstile.render(turnstileContainer, {
+        sitekey: TURNSTILE_SITE_KEY,
+        callback: (token) => { turnstileToken = token; },
+        'expired-callback': () => { turnstileToken = ''; },
+        'error-callback': () => { turnstileToken = ''; toast('No se pudo completar la verificación. Recarga la página e inténtalo de nuevo.'); }
+      });
+    }
   }
 
   function openCart() {
+    inicializarTurnstile();
     backdrop.hidden = false;
     drawer.removeAttribute('inert');
     requestAnimationFrame(() => {
