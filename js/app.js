@@ -535,20 +535,36 @@
     imagen.alt = 'Pollo Fresco';
   }
 
-  // Al elegir una preparación, muestra su foto y la mantiene hasta salir del producto.
+  // Al tocar o enfocar el desplegable, muestra la foto de la opción seleccionada.
+  // Si se elige otra preparación, el evento change actualiza la fotografía.
+  document.addEventListener('pointerdown', (e) => {
+    const cardEl = document.querySelector('.card[data-id="pollo"]');
+    if (!cardEl) return;
+
+    if (!cardEl.contains(e.target)) {
+      restaurarFotoPrincipalPollo(cardEl);
+      return;
+    }
+
+    if (e.target.closest('[data-field="opcion"]')) {
+      mostrarFotoOpcionPollo(cardEl);
+    }
+  });
+
+  // También funciona al llegar al desplegable con teclado o navegación accesible.
+  document.addEventListener('focusin', (e) => {
+    const cardEl = e.target.closest('.card[data-id="pollo"]');
+    if (cardEl && e.target.matches('[data-field="opcion"]')) {
+      mostrarFotoOpcionPollo(cardEl);
+    }
+  });
+
+  // Al cambiar la preparación, actualiza la foto a la nueva opción.
   document.addEventListener('change', (e) => {
     const cardEl = e.target.closest('.card[data-id="pollo"]');
     if (!cardEl || !e.isTrusted) return;
     if (e.target.matches('[data-field="opcion"]')) {
       mostrarFotoOpcionPollo(cardEl);
-    }
-  });
-
-  // Al pulsar fuera de Pollo Fresco, restaura su imagen principal.
-  document.addEventListener('pointerdown', (e) => {
-    const cardEl = document.querySelector('.card[data-id="pollo"]');
-    if (cardEl && !cardEl.contains(e.target)) {
-      restaurarFotoPrincipalPollo(cardEl);
     }
   });
 
