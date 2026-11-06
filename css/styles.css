@@ -173,11 +173,13 @@ a { color: inherit; }
   position: sticky; top: var(--topbar); z-index: 20; display: flex; gap: .5rem; overflow-x: auto;
   padding: .8rem 0; margin: 0 0 1rem; background: var(--paper); scrollbar-width: none;
   border-bottom: 1px solid var(--line);
+  scroll-padding-inline: 1rem;
 }
 .chips::-webkit-scrollbar { display: none; }
 .chip {
   flex-shrink: 0; cursor: pointer; border: 1.5px solid var(--line); background: transparent;
   border-radius: 999px; padding: .5rem 1rem; font: 600 .85rem var(--body); color: var(--ink-2); transition: all .2s;
+  scroll-margin-inline: 1rem;
 }
 .chip:hover { border-color: var(--ink); color: var(--ink); }
 .chip.is-active { background: var(--ink); border-color: var(--ink); color: var(--paper); }
