@@ -263,14 +263,14 @@ select:focus, input:focus, textarea:focus { outline: none; border-color: var(--b
 .option-picker-trigger::after {
   content: ''; position: absolute; right: .9rem; top: 50%; width: 8px; height: 8px;
   border-right: 2px solid var(--blood); border-bottom: 2px solid var(--blood);
-  transform: translateY(-70%) rotate(45deg);
+  transform: translateY(-30%) rotate(225deg);
 }
-.option-picker-trigger[aria-expanded="true"] { border-color: var(--blood); border-radius: 10px 10px 0 0; }
+.option-picker-trigger[aria-expanded="true"] { border-color: var(--blood); border-radius: 0 0 10px 10px; }
 .option-picker-list {
-  position: absolute; z-index: 30; top: 100%; left: 0; right: 0;
+  position: absolute; z-index: 30; bottom: 100%; left: 0; right: 0;
   max-height: 5.4rem; overflow-y: auto; overscroll-behavior: contain;
-  background: #fff; border: 1.5px solid var(--blood); border-top: 0;
-  border-radius: 0 0 10px 10px; box-shadow: 0 10px 20px rgba(27, 21, 19, .16);
+  background: #fff; border: 1.5px solid var(--blood); border-bottom: 0;
+  border-radius: 10px 10px 0 0; box-shadow: 0 -10px 20px rgba(27, 21, 19, .16);
 }
 .option-picker-list[hidden] { display: none; }
 .option-picker-list button {
