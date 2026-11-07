@@ -773,7 +773,7 @@
     if (!(optionPrice > 0)) return;
     p.precioNumOpciones = p.precioNumOpciones || {};
     p.precioNumOpciones[key] = optionPrice;
-    const unit = (String(p.precio || '').match(/\/(kg|ud)/i) || [,'kg'])[1].toLowerCase();
+    const unit = (String(p.precio || '').match(/\/(kg|ud)/i) || [null, p.saleUnit || 'kg'])[1].toLowerCase();
     const priceText = optionPrice.toFixed(2).replace('.', ',') + ' €/' + unit;
     const priceEl = cardEl.querySelector('[data-price]');
     if (priceEl) priceEl.innerHTML = escapeHtml(priceText) + ' ';
