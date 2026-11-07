@@ -708,8 +708,13 @@
     if (quantity) actualizarImagenTarjeta(quantity.closest('.card'), true);
   });
   document.addEventListener('pointerdown', (event) => {
-    if (event.target.closest('.card')) return;
-    document.querySelectorAll('.card[data-selected-image]').forEach(cardEl => actualizarImagenTarjeta(cardEl, false));
+    const tarjetaActiva = event.target.closest('.card');
+    // Al interactuar con otra tarjeta (o fuera del catálogo), las anteriores
+    // vuelven a su fotografía principal. La tarjeta que se está usando conserva
+    // la foto de la opción elegida hasta que se cambie de producto.
+    document.querySelectorAll('.card[data-selected-image]').forEach(cardEl => {
+      if (cardEl !== tarjetaActiva) actualizarImagenTarjeta(cardEl, false);
+    });
   });
   // Actualiza precio y cantidades al cambiar cualquier opción del catálogo.
   document.addEventListener('change', (e) => {
