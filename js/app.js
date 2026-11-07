@@ -152,7 +152,7 @@
               <span>${escapeHtml(p.opcionLabel)}</span>
               <select data-field="opcion">${p.opciones.map((o) => `<option>${escapeHtml(o)}</option>`).join('')}</select>
             </label>
-            ${p.precio ? `<p class="card-precio" data-price>${escapeHtml(p.precio)} </p>` : ''}
+            <p class="card-precio" data-price>${escapeHtml(p.precio || 'Selecciona una opción para ver el precio')} </p>
             <label>
               <span>Cantidad</span>
               <select data-field="cantidad">${p.cantidades.map((o) => `<option>${escapeHtml(o)}</option>`).join('')}</select>
@@ -201,15 +201,15 @@
     else if (/^kg|kilo/.test(unidadStr)) unidadStr = 'kg';
     else unidadStr = 'ud';
     let precioNum = 0;
-    if (p && p.precio) {
+    if (p) {
       const key = normalizarClave(l.opcion);
-      const unit = (p.precio.match(/\/(kg|ud)/i) || [,'ud'])[0];
+      const unit = ((p.precio || '').match(/\/(kg|ud)/i) || [,'ud'])[0];
       const optionValue = p.preciosOpciones && Number.isFinite(Number(p.preciosOpciones[key]))
         ? Number(p.preciosOpciones[key])
         : (p.precioNumOpciones && Number.isFinite(p.precioNumOpciones[key]) ? p.precioNumOpciones[key] : null);
       const elegido = optionValue !== null
         ? optionValue.toFixed(2).replace('.', ',') + ' €' + unit
-        : p.precio;
+        : (p.precio || '');
       const m = elegido.replace(',', '.').match(/[\d.]+/);
       if (m) precioNum = parseFloat(m[0]);
     }
