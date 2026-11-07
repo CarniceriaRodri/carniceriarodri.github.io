@@ -254,12 +254,8 @@
   const cartBtn = $('.cart-btn');
   const checkoutForm = $('#checkout');
 
-  // Aviso nativo solo al abandonar realmente la página; no intercepta la navegación interna.
-  window.addEventListener('beforeunload', (event) => {
-    if (!cart.length) return;
-    event.preventDefault();
-    event.returnValue = '';
-  });
+  // No interceptar el botón Atrás de Android/Chrome.
+  // El carrito se conserva en localStorage al navegar fuera y volver.
 
 
   // Verificación anti-bots de Cloudflare Turnstile
