@@ -93,7 +93,7 @@
  async function loadProducts(){
    const openOptionPanels=new Set(Array.from(document.querySelectorAll('.options-details[open]')).map(el=>el.dataset.productOptions));
    status('adminStatus','Cargando productos…');
-   let {data:products,error}=await client.from('products').select('id,name,category,image,base_price_cents,active,sort_order').order('sort_order');
+   let {data:products,error}=await client.from('products').select('id,name,category,image,base_price_cents,active,sort_order,sale_unit,preparations').order('sort_order');
    if(products){
      const excludedCategories=['caza','casqueria','vaca-buey','vaca buey','vaca y buey'];
      const normalizeCategory=value=>String(value||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase('es').trim();
@@ -159,9 +159,11 @@
        const missing=(cp?.opciones||[]).filter(label=>!opts.some(o=>String(o.label).trim().toLocaleLowerCase('es')===String(label).trim().toLocaleLowerCase('es')));
        const saved=opts.map(o=>optionMarkup(o,p)).join('');
        const pending=missing.map(label=>'<div class="option-item pending-option"><div class="option-heading"><div class="option-name">'+escapeHtml(label)+'</div><span class="option-state">Pendiente</span></div><div class="add-option-row"><input inputmode="decimal" placeholder="Precio (€)" aria-label="Precio para '+escapeHtml(label)+'" data-pending-price="'+p.id+'" data-pending-label="'+escapeHtml(label)+'"><button class="icon-button" title="Añadir opción" aria-label="Añadir opción" data-add-catalogue-option="'+p.id+'" data-option-label="'+escapeHtml(label)+'">➕</button></div></div>').join('');
+       const prepValues=Array.isArray(p.preparations)?p.preparations:[];
+       const prepEditor='<div class="options-content" style="padding:10px 0"><label>Tipo de venta<select data-sale-unit="'+p.id+'"><option value="">Sin definir</option><option value="kg"'+(p.sale_unit==='kg'?' selected':'')+'>Por kilo</option><option value="ud"'+(p.sale_unit==='ud'?' selected':'')+'>Por unidad</option></select></label><label style="display:block;margin-top:8px">Preparaciones gratuitas (una por línea)<textarea rows="3" data-preparations="'+p.id+'" placeholder="Filetes finos&#10;Filetes gruesos&#10;En dados">'+escapeHtml(prepValues.join('\n'))+'</textarea></label><button type="button" class="secondary" data-save-product-settings="'+p.id+'">Guardar venta y preparaciones</button></div>';
        return '<article class="product product-unified"><div class="product-head"><div><div class="product-name">'+escapeHtml(p.name)+'</div><div class="category">'+escapeHtml(p.category||group.meta.name)+(p.active?'':' · Inactivo')+'</div></div><button type="button" class="image-action product-image-action" data-image-product="'+escapeHtml(p.id)+'" data-image-category="'+escapeHtml(cp?.cat||p.category||'otros')+'" data-image-product-slug="'+escapeHtml(cp?.id||p.name||p.id)+'" data-image-path="'+escapeHtml(p.image||'')+'" title="Gestionar imagen principal" aria-label="Gestionar imagen principal de '+escapeHtml(p.name)+'">📷 Imagen</button></div>'+
          '<details class="options-details" data-product-options="'+p.id+'"'+(openOptionPanels.has(String(p.id))?' open':'')+'><summary>'+(group.key==='bebidas'?'Variedades y formatos':'Preparaciones y opciones')+' <span class="muted">'+opts.length+' guardadas · '+missing.length+' pendientes</span></summary><div class="options-content">'+
-         (saved||'')+(pending||'')+
+         '<details class="product-settings"><summary>Venta y preparaciones gratuitas</summary>'+prepEditor+'</details>'+(saved||'')+(pending||'')+
          '<div class="option" style="margin-top:14px;font-weight:700;color:var(--ink)">'+(group.key==='bebidas'?'Añadir variedad y formato':'Añadir preparación u opción')+'</div><div class="add-option-row"><label class="sr-only" for="new-label-'+p.id+'">Nombre opción</label><input id="new-label-'+p.id+'" placeholder="'+(group.key==='bebidas'?'Ej. Fanta naranja · botella 1,5 L':'Nombre de la opción')+'"><label class="sr-only" for="new-price-'+p.id+'">Precio (€)</label><input id="new-price-'+p.id+'" inputmode="decimal" placeholder="Precio (€)"><button class="icon-button" aria-label="Añadir opción" data-add-option="'+p.id+'">➕</button></div></div></details></article>';
      }).join('');
      const sectionOpen=hadCategoryPanels&&openCategoryPanels.has(String(group.key));
@@ -332,6 +334,21 @@
    }
    if(imageOptionButton){
      openImageEditor({kind:'option',id:imageOptionButton.dataset.imageOption,name:imageOptionButton.closest('.option-item')?.querySelector('.option-name')?.textContent||'Preparación',category:imageOptionButton.dataset.imageCategory,productSlug:imageOptionButton.dataset.imageProductSlug,optionSlug:imageOptionButton.dataset.imageOptionSlug,path:imageOptionButton.dataset.imagePath||null,showImage:imageOptionButton.dataset.showImage!=='false'});
+     return;
+   }
+
+   const settingsButton=e.target.closest('[data-save-product-settings]');
+   if(settingsButton){
+     const id=settingsButton.dataset.saveProductSettings;
+     const unit=$('[data-sale-unit="'+id+'"]').value||null;
+     const preparations=$('[data-preparations="'+id+'"]').value.split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
+     settingsButton.disabled=true;
+     status('adminStatus','Guardando configuración…');
+     const {error}=await client.from('products').update({sale_unit:unit,preparations}).eq('id',id);
+     settingsButton.disabled=false;
+     if(error){status('adminStatus','No se pudo guardar: '+error.message);return}
+     status('adminStatus','Tipo de venta y preparaciones guardados.');
+     await loadProducts();
      return;
    }
 
