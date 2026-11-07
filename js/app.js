@@ -285,6 +285,13 @@
     // No interferir con el envío ni con la confirmación del pedido.
     if (pedidoEnProceso) return;
 
+    // Si el panel del carrito está abierto, Atrás lo cierra primero.
+    if (drawer && drawer.classList.contains('open')) {
+      closeCart();
+      prepararHistorialSalida();
+      return;
+    }
+
     // Sin productos, el botón Atrás funciona de forma nativa.
     if (!cart.length) return;
 
@@ -740,6 +747,7 @@
       if (modal) modal.setAttribute('hidden', '');
       if (modalBackdrop) modalBackdrop.setAttribute('hidden', '');
       document.body.classList.remove('no-scroll');
+      pedidoEnProceso = false;
       cart = []; save(); renderCart();
     };
   }
