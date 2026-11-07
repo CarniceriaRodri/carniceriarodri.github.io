@@ -615,7 +615,7 @@
       const uds = l.uds > 1 ? `${l.uds} × ` : '';
       const { cantidadNum, unidadStr, precioNum, factorPeso } = calcularLinea(l, p);
       const sub = Number((precioNum * cantidadNum * factorPeso).toFixed(2));
-      return `• ${uds}*${p ? p.nombre : l.id}* — ${l.cantidad} (${l.opcion}) → ${sub.toFixed(2).replace('.', ',')} €`;
+      return `• ${uds}*${p ? p.nombre : l.id}* — ${l.cantidad} (${l.opcion}${l.preparacion ? ' · ' + l.preparacion : ''}) → ${sub.toFixed(2).replace('.', ',')} €`;
     });
 
     const submitBtn = checkoutForm.querySelector('button[type="submit"]');
@@ -900,7 +900,7 @@
 
   async function sincronizarPrecios() {
     try {
-      const response = await fetch('https://ugqiomoywgpkmogcdjqn.supabase.co/rest/v1/products?select=id,name,base_price_cents,active,image&apikey=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVncWlvbW95d2dwa21vZ2NkanFuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM2MDc0OTQsImV4cCI6MjEwOTE4MzQ5NH0.k--iBQrSD_raY-TQn01ZHPIkZJ5Xm_KrxEmwY08po3Q', {
+      const response = await fetch('https://ugqiomoywgpkmogcdjqn.supabase.co/rest/v1/products?select=id,name,base_price_cents,active,image,sale_unit,preparations&apikey=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVncWlvbW95d2dwa21vZ2NkanFuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM2MDc0OTQsImV4cCI6MjEwOTE4MzQ5NH0.k--iBQrSD_raY-TQn01ZHPIkZJ5Xm_KrxEmwY08po3Q', {
         method: 'GET',
         mode: 'cors',
         cache: 'no-store',
