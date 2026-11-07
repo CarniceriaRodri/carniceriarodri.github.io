@@ -75,6 +75,16 @@
   const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
 
   const img = (name, w, h) => `img/productos/${name}.jpg`;
+  const publicImageUrl = (path) => {
+    if (!path) return '';
+    let value = String(path).trim();
+    if (value.startsWith('http://') || value.startsWith('https://') || value.startsWith('data:') || value.startsWith('img/')) return value;
+    if (value.startsWith('products/') || value.startsWith('options/')) return 'https://ugqiomoywgpkmogcdjqn.supabase.co/storage/v1/object/public/product-images/' + value.split('/').map(encodeURIComponent).join('/');
+    if (value.startsWith('/')) value = value.slice(1);
+    if (value.toLowerCase().endsWith('.jpg')) value = value.slice(0, -4);
+    return img(value, 600, 450);
+  };
+  const imageForProduct = (product) => product?.imageUrl || img(product?.img || '', 600, 450);
 
   const escapeHtml = (s) =>
     String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
@@ -129,9 +139,9 @@
     return `
       <article class="card" data-id="${escapeHtml(p.id)}" data-search="${escapeHtml(normalize(keywords))}">
         <div class="card-img">
-          <img src="${img(p.img, 600, 450)}" srcset="${img(p.img, 400, 300)} 400w, ${img(p.img, 800, 600)} 800w"
+          <img src="${imageForProduct(p)}" ${p.imageUrl ? "" : `srcset="${img(p.img, 400, 300)} 400w, ${img(p.img, 800, 600)} 800w`}
                sizes="(max-width: 640px) 100vw, 360px" alt="${escapeHtml(p.nombre)}" loading="lazy" width="600" height="450" decoding="async"
-               onerror="this.onerror=null;this.removeAttribute('srcset');this.src='img/productos/${escapeHtml(p.img)}.jpg'">
+               onerror="this.onerror=null;this.removeAttribute('srcset');this.src='${img(p.img, 600, 450)}'">
           ${p.etiqueta ? `<span class="tag">${escapeHtml(p.etiqueta)}</span>` : ''}
         </div>
         <div class="card-body">
@@ -230,7 +240,7 @@
         : '';
       return `
         <li class="line">
-          <img src="${img(l.img || p.img, 120, 120)}" alt="" width="60" height="60" loading="lazy" decoding="async">
+          <img src="${l.img ? publicImageUrl(l.img) : imageForProduct(p)}" alt="" width="60" height="60" loading="lazy" decoding="async">
           <div class="line-info">
             <strong>${escapeHtml(p.nombre)}</strong>
             <span>${escapeHtml(l.cantidad)} · ${escapeHtml(l.opcion)}</span>
@@ -658,67 +668,39 @@
     mostrarModal(idMostrar);
   }
 
-  // Fotos y estado de selección para la prueba de Pollo Fresco.
-  function mostrarFotoOpcionPollo(cardEl) {
-    const select = cardEl?.querySelector('[data-field="opcion"]');
-    const imagen = cardEl?.querySelector('.card-img img');
-    if (!select || !imagen) return;
-    const fotosPollo = {
-      pechugasenfiletes: 'img/productos/pollo/pechugas-filetes.jpg',
-      pechugasenteras: 'img/productos/pollo/pechugas-enteras.jpg',
-      muslosycontramuslos: 'img/productos/pollo/muslos-contramuslos.jpg',
-      contramuslodeshuesado: 'img/productos/pollo/contramuslo-deshuesado.jpg',
-      troceadoparaguisar: 'img/productos/pollo/pollo-troceado.jpg',
-      abiertoparaasar: 'img/productos/pollo/pollo-entero.jpg'
-    };
-    const foto = fotosPollo[normalizarClave(select.value)];
-    if (!foto) return;
-    imagen.onerror = () => {
-      imagen.onerror = null;
-      imagen.removeAttribute('srcset');
-      imagen.src = 'img/productos/pollo/pollo.jpg';
-    };
-    imagen.removeAttribute('srcset');
-    imagen.src = foto;
-    imagen.alt = 'Pollo fresco: ' + select.value;
+  // Las imágenes de las preparaciones se muestran al elegir la cantidad.
+  function imagenDeOpcion(product, optionLabel) {
+    const key = normalizarClave(optionLabel);
+    const saved = product?.optionImages?.[key];
+    if (saved?.showImage && saved.url) return saved.url;
+    if (product?.id === 'pollo') {
+      const legacy = { pechugasenfiletes:'img/productos/pollo/pechugas-filetes.jpg', pechugasenteras:'img/productos/pollo/pechugas-enteras.jpg', muslosycontramuslos:'img/productos/pollo/muslos-contramuslos.jpg', contramuslodeshuesado:'img/productos/pollo/contramuslo-deshuesado.jpg', troceadoparaguisar:'img/productos/pollo/pollo-troceado.jpg', abiertoparaasar:'img/productos/pollo/pollo-entero.jpg' };
+      return legacy[key] || null;
+    }
+    return null;
   }
-
-  function restaurarFotoPrincipalPollo(cardEl) {
-    const imagen = cardEl?.querySelector('.card-img img');
-    if (!imagen) return;
-    imagen.onerror = null;
-    imagen.removeAttribute('srcset');
-    imagen.src = 'img/productos/pollo/pollo.jpg';
-    imagen.alt = 'Pollo Fresco';
+  function actualizarImagenTarjeta(cardEl, mostrarOpcion) {
+    const product = PRODUCTOS.find(item => String(item.id) === String(cardEl?.dataset.id));
+    const image = cardEl?.querySelector('.card-img img');
+    const option = cardEl?.querySelector('[data-field="opcion"]')?.value || '';
+    if (!product || !image) return;
+    const selected = mostrarOpcion ? imagenDeOpcion(product, option) : null;
+    image.onerror = () => { image.onerror = null; image.removeAttribute('srcset'); image.src = img(product.img, 600, 450); };
+    image.removeAttribute('srcset');
+    image.src = selected || imageForProduct(product);
+    image.alt = selected ? product.nombre + ': ' + option : product.nombre;
+    cardEl.dataset.selectedImage = selected || '';
   }
-
-  // El selector de Pollo Fresco usa el mismo desplegable nativo que el resto del catálogo.
-  document.addEventListener('pointerdown', (e) => {
-    const cardEl = document.querySelector('.card[data-id="pollo"]');
-    if (!cardEl) return;
-    if (!cardEl.contains(e.target)) {
-      restaurarFotoPrincipalPollo(cardEl);
-      return;
-    }
-    if (e.target.matches('[data-field="opcion"]')) {
-      mostrarFotoOpcionPollo(cardEl);
-    }
+  document.addEventListener('change', (event) => {
+    const option = event.target.closest('.card [data-field="opcion"]');
+    if (option) { actualizarImagenTarjeta(option.closest('.card'), false); return; }
+    const quantity = event.target.closest('.card [data-field="cantidad"]');
+    if (quantity) actualizarImagenTarjeta(quantity.closest('.card'), true);
   });
-
-  document.addEventListener('focusin', (e) => {
-    const cardEl = e.target.closest('.card[data-id="pollo"]');
-    if (cardEl && e.target.matches('[data-field="opcion"]')) {
-      mostrarFotoOpcionPollo(cardEl);
-    }
+  document.addEventListener('pointerdown', (event) => {
+    if (event.target.closest('.card')) return;
+    document.querySelectorAll('.card[data-selected-image]').forEach(cardEl => actualizarImagenTarjeta(cardEl, false));
   });
-
-  document.addEventListener('change', (e) => {
-    const cardEl = e.target.closest('.card[data-id="pollo"]');
-    if (cardEl && e.target.matches('[data-field="opcion"]')) {
-      mostrarFotoOpcionPollo(cardEl);
-    }
-  });
-
   // Actualiza precio y cantidades al cambiar cualquier opción del catálogo.
   document.addEventListener('change', (e) => {
     const select = e.target.closest('.card [data-field="opcion"]');
@@ -767,20 +749,9 @@
       const p = PRODUCTOS.find((x) => x.id === c.dataset.id);
       const cantidad = $('[data-field="cantidad"]', c).value;
       const opcion = $('[data-field="opcion"]', c).value;
-      const imagenSeleccionada = p.id === 'pollo'
-        ? ({
-            pechugasenfiletes: 'pollo/pechugas-filetes',
-            pechugasenteras: 'pollo/pechugas-enteras',
-            muslosycontramuslos: 'pollo/muslos-contramuslos',
-            contramuslodeshuesado: 'pollo/contramuslo-deshuesado',
-            troceadoparaguisar: 'pollo/pollo-troceado',
-            abiertoparaasar: 'pollo/pollo-entero'
-          })[normalizarClave(opcion)] || 'pollo/pollo'
-        : null;
+      const imagenSeleccionada = c.dataset.selectedImage || imageForProduct(p);
       addToCart(p.id, cantidad, opcion, imagenSeleccionada);
-      if (p.id === 'pollo') {
-        restaurarFotoPrincipalPollo(c);
-      }
+      actualizarImagenTarjeta(c, false);
       add.classList.add('added');
       setTimeout(() => add.classList.remove('added'), 900);
       toast(`Añadido: ${p.nombre} · ${cantidad}`);
@@ -878,7 +849,7 @@
 
   async function sincronizarPrecios() {
     try {
-      const response = await fetch('https://ugqiomoywgpkmogcdjqn.supabase.co/rest/v1/products?select=id,name,base_price_cents,active&apikey=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVncWlvbW95d2dwa21vZ2NkanFuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM2MDc0OTQsImV4cCI6MjEwOTE4MzQ5NH0.k--iBQrSD_raY-TQn01ZHPIkZJ5Xm_KrxEmwY08po3Q', {
+      const response = await fetch('https://ugqiomoywgpkmogcdjqn.supabase.co/rest/v1/products?select=id,name,base_price_cents,active,image&apikey=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVncWlvbW95d2dwa21vZ2NkanFuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM2MDc0OTQsImV4cCI6MjEwOTE4MzQ5NH0.k--iBQrSD_raY-TQn01ZHPIkZJ5Xm_KrxEmwY08po3Q', {
         method: 'GET',
         mode: 'cors',
         cache: 'no-store',
@@ -895,7 +866,9 @@
 
 const product = PRODUCTOS.find(p => String(p.id) === String(row.id))
   || PRODUCTOS.find(p => normalizar(p.nombre) === normalizar(row.name));
-        if (!product || !Number.isFinite(Number(row.base_price_cents))) return;
+        if (!product) return;
+        product.imageUrl = publicImageUrl(row.image) || '';
+        if (!Number.isFinite(Number(row.base_price_cents))) return;
         const unit = (product.precio && product.precio.match(/\/(kg|ud)/i) || [,'ud'])[1].toLowerCase();
         const basePrice = Number(row.base_price_cents) / 100;
         product.precio = basePrice.toFixed(2).replace('.', ',') + ' €/' + unit;
@@ -918,7 +891,7 @@ const product = PRODUCTOS.find(p => String(p.id) === String(row.id))
       const publicKey = response.url.split('apikey=')[1];
       if (publicKey) {
         const optionsResponse = await fetch(
-          'https://ugqiomoywgpkmogcdjqn.supabase.co/rest/v1/product_options?select=product_id,label,price_cents,active&apikey=' + publicKey,
+          'https://ugqiomoywgpkmogcdjqn.supabase.co/rest/v1/product_options?select=product_id,label,price_cents,active,image,show_image&apikey=' + publicKey,
           { method: 'GET', mode: 'cors', cache: 'no-store' }
         );
         if (optionsResponse.ok) {
@@ -940,6 +913,8 @@ const product = PRODUCTOS.find(p => String(p.id) === String(row.id))
 
               const label = String(row.label).trim();
               const key = normalizarClave(label);
+              product.optionImages = product.optionImages || {};
+              product.optionImages[key] = { url: publicImageUrl(row.image), showImage: row.show_image !== false };
 
               // Las opciones OFF se retiran de la tienda, aunque sigan guardadas en administración.
               if (row.active === false) {
