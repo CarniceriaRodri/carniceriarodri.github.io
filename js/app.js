@@ -118,7 +118,7 @@
           <div class="card-fields">
             <label>
               <span>${escapeHtml(p.opcionLabel)}</span>
-              ${<select data-field="opcion">${p.opciones.map((o) => `<option>${escapeHtml(o)}</option>`).join('')}</select>}
+              <select data-field="opcion">${p.opciones.map((o) => `<option>${escapeHtml(o)}</option>`).join('')}</select>
             </label>
             ${p.precio ? `<p class="card-precio" data-price>${escapeHtml(p.precio)} </p>` : ''}
             <label>
