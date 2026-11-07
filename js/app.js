@@ -703,7 +703,7 @@
   }
   document.addEventListener('change', (event) => {
     const option = event.target.closest('.card [data-field="opcion"]');
-    if (option) { actualizarImagenTarjeta(option.closest('.card'), false); return; }
+    if (option) { actualizarImagenTarjeta(option.closest('.card'), true); return; }
     const quantity = event.target.closest('.card [data-field="cantidad"]');
     if (quantity) actualizarImagenTarjeta(quantity.closest('.card'), true);
   });
