@@ -129,16 +129,14 @@
      pavo:{name:'Pavo',icon:'🦃',color:'#80612a',bg:'#f8f4e8'},
      bebidas:{name:'Refrescos y bebidas',icon:'🥤',color:'#356b83',bg:'#edf5f8'}
    };;
+   // Orden estable por categoría: cada categoría se crea una sola vez,
+   // usando la categoría del catálogo actual y no el texto histórico de Supabase.
+   const catalogueById=new Map(catalogue.map(item=>[String(item.id),item]));
    products.sort((a,b)=>{
-     const pa=catalogue.find(x=>String(x.id)===String(a.id));
-     const pb=catalogue.find(x=>String(x.id)===String(b.id));
-     const ca=pa?.cat||a.category||'', cb=pb?.cat||b.category||'';
-     const order=Object.keys(categoryMeta);
-     const diff=order.indexOf(ca)-order.indexOf(cb);
-     if(diff!==0)return diff;
-     const ia=catalogue.findIndex(x=>String(x.id)===String(a.id));
-     const ib=catalogue.findIndex(x=>String(x.id)===String(b.id));
-     return ia<0||ib<0?String(a.name).localeCompare(String(b.name),'es'):ia-ib;
+     const ca=Object.keys(categoryMeta).indexOf(catalogueById.get(String(a.id))?.cat||'');
+     const cb=Object.keys(categoryMeta).indexOf(catalogueById.get(String(b.id))?.cat||'');
+     if(ca!==cb)return ca-cb;
+     return catalogue.findIndex(x=>String(x.id)===String(a.id))-catalogue.findIndex(x=>String(x.id)===String(b.id));
    });
 
    const {data:options,error:optError}=await client.from('product_options').select('id,product_id,label,image,show_image,price_cents,active,sort_order').order('sort_order');
@@ -148,19 +146,11 @@
    const previousCategorySections=Array.from(document.querySelectorAll('.category-section'));
    const openCategoryPanels=new Set(previousCategorySections.filter(el=>el.open).map(el=>el.dataset.categorySection));
    const hadCategoryPanels=previousCategorySections.length>0;
-   const groupedProducts=[];
-
-   products.forEach(p=>{
-     const cp=catalogue.find(item=>String(item.id)===String(p.id));
-     const categoryKey=cp?.cat||p.category||'';
-     let group=groupedProducts[groupedProducts.length-1];
-     if(!group||group.key!==categoryKey){
-       const meta=categoryMeta[categoryKey]||{name:p.category||'Otros productos',icon:'📦',color:'#62564e',bg:'#f2efec'};
-       group={key:categoryKey,meta,items:[]};
-       groupedProducts.push(group);
-     }
-     group.items.push(p);
-   });
+   const groupedProducts=Object.keys(categoryMeta).map(categoryKey=>({
+     key:categoryKey,
+     meta:categoryMeta[categoryKey],
+     items:products.filter(p=>catalogueById.get(String(p.id))?.cat===categoryKey)
+   })).filter(group=>group.items.length>0);
 
    $('products').innerHTML=groupedProducts.map(group=>{
      const categoryProducts=group.items.map(p=>{
@@ -177,7 +167,7 @@
          '<div class="option" style="margin-top:14px;font-weight:700;color:var(--ink)">'+(group.key==='bebidas'?'Añadir variedad y formato':'Añadir preparación u opción')+'</div><div class="add-option-row"><label class="sr-only" for="new-label-'+p.id+'">Nombre opción</label><input id="new-label-'+p.id+'" placeholder="'+(group.key==='bebidas'?'Ej. Fanta naranja · botella 1,5 L':'Nombre de la opción')+'"><label class="sr-only" for="new-price-'+p.id+'">Precio (€)</label><input id="new-price-'+p.id+'" inputmode="decimal" placeholder="Precio (€)"><button class="icon-button" aria-label="Añadir opción" data-add-option="'+p.id+'">➕</button></div></div></details></article>';
      }).join('');
      const sectionOpen=hadCategoryPanels&&openCategoryPanels.has(String(group.key));
-     return '<details class="category-section" data-category-section="'+escapeHtml(group.key)+'"'+(sectionOpen?' open':'')+'><summary class="category-test" style="--cat-color:'+group.meta.color+';--cat-bg:'+group.meta.bg+'"><h2>'+group.meta.icon+' '+escapeHtml(group.meta.name)+'</h2><p>Gestiona aquí todos los productos y sus opciones</p></summary>'+categoryProducts+'<div class="category-close-row"><button type="button" class="secondary" data-close-category>Cerrar categoría</button></div></details>';
+     return '<details class="category-section" data-category-section="'+escapeHtml(group.key)+'"'+(sectionOpen?' open':'')+'><summary class="category-test" style="--cat-color:'+group.meta.color+';--cat-bg:'+group.meta.bg+'"><h2><span class="category-icon" aria-hidden="true">'+group.meta.icon+'</span> '+escapeHtml(group.meta.name)+'</h2><p>Gestiona aquí todos los productos y sus opciones</p></summary>'+categoryProducts+'<div class="category-close-row"><button type="button" class="secondary" data-close-category>Cerrar categoría</button></div></details>';
    }).join('');
    status('adminStatus',products.length+' productos cargados.');
  }
