@@ -282,12 +282,9 @@
   window.addEventListener('popstate', () => {
     salidaGuardada = false;
 
-    // No interferir con el envío ni con la confirmación del pedido.
-    // Si Android Atrás se pulsa durante el checkout, conservar la protección.
-    if (pedidoEnProceso) {
-      prepararHistorialSalida();
-      return;
-    }
+    // El flujo de pedido queda fuera de la protección del historial.
+    // No añadir entradas de salida mientras se está enviando o confirmando.
+    if (pedidoEnProceso) return;
 
     // Si el panel del carrito está abierto, Atrás lo cierra primero.
     if (drawer && drawer.classList.contains('open')) {
@@ -772,6 +769,8 @@
       if (modalBackdrop) modalBackdrop.setAttribute('hidden', '');
       document.body.classList.remove('no-scroll');
       pedidoEnProceso = false;
+      // Al volver a la tienda, rearmar la protección solo si sigue habiendo carrito.
+      if (cart.length) prepararHistorialSalida();
     };
   }
 
