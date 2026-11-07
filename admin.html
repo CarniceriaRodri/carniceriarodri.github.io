@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
 <meta name="referrer" content="strict-origin-when-cross-origin">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; connect-src 'self' https://ugqiomoywgpkmogcdjqn.supabase.co; img-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-src 'none';">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; connect-src 'self' https://ugqiomoywgpkmogcdjqn.supabase.co; img-src 'self' data: https://ugqiomoywgpkmogcdjqn.supabase.co; object-src 'none'; base-uri 'self'; form-action 'self'; frame-src 'none';">
 <title>Administración · Carnicería Rodri</title>
 <style>
 :root{color-scheme:light;--bg:#f5f2ed;--ink:#211a17;--muted:#766c65;--accent:#7b2e20;--line:#e4ddd5;--white:#fff}
@@ -28,6 +28,24 @@ button.secondary{background:#eee8e1;color:var(--ink)}button:disabled{opacity:.55
 .option{font-size:14px;color:var(--muted);margin-top:7px}
 [hidden]{display:none!important}
 @media(max-width:520px){.panel{padding:17px}.price-row{grid-template-columns:minmax(0,1fr) 92px 76px;gap:6px}.price-row label{grid-column:1/-1;margin:8px 0 0}.price-row input{grid-column:2;grid-row:2;padding:10px 7px}.price-row button{grid-column:3;grid-row:2;align-self:stretch;min-height:42px;width:100%;padding:8px 5px;font-size:13px}.price-row button.secondary{grid-column:auto}.add-option-row{grid-template-columns:minmax(0,1fr) 88px 42px;gap:5px}.add-option-row input{font-size:14px;padding:10px 6px}.product-head{display:block}.option{font-size:15px;color:var(--ink);font-weight:650;margin-top:14px}.product{padding:18px 0}}
+
+dialog#imageDialog{width:min(92vw,460px);max-height:88vh;border:1px solid var(--line);border-radius:16px;padding:20px;color:var(--ink);box-shadow:0 18px 60px #211a1740}
+dialog#imageDialog::backdrop{background:#211a1780}
+.image-dialog-head{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.image-dialog-head h2{margin:0}
+.image-dialog-head button{padding:5px 11px;background:#eee8e1;color:var(--ink);font-size:20px}
+.image-preview{display:block;width:100%;max-height:230px;object-fit:contain;background:#f5f2ed;border-radius:10px;margin:14px 0}
+.image-preview[hidden]{display:none}
+.image-file{margin:12px 0}
+.image-file input{margin-top:7px;padding:9px}
+.image-toggle{display:flex;align-items:center;gap:9px;margin:12px 0}
+.image-toggle input{width:20px;height:20px}
+.image-dialog-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
+.image-dialog-actions button{flex:1}
+#imageStatus{min-height:20px;font-size:13px;margin-top:12px}
+.image-action{background:#fff;color:#6b3a29;border:1px solid #d8c4b5;padding:6px 9px;font-size:17px;line-height:1}
+.product-image-action{white-space:nowrap}
+
 </style>
 </head>
 <body>
@@ -55,6 +73,29 @@ button.secondary{background:#eee8e1;color:var(--ink)}button:disabled{opacity:.55
 <div id="products"></div><p class="status" id="adminStatus" role="status"></p>
 </section>
 </main>
+
+<dialog id="imageDialog" aria-labelledby="imageDialogTitle">
+  <div class="image-dialog-head">
+    <h2 id="imageDialogTitle">Imagen del producto</h2>
+    <button type="button" id="imageClose" aria-label="Cerrar">×</button>
+  </div>
+  <img id="imagePreview" class="image-preview" alt="Previsualización de la imagen" hidden>
+  <p id="imageCurrent" class="muted">Selecciona una imagen JPG, PNG o WebP (máximo 5 MB).</p>
+  <label class="image-file" for="imageFile">Elegir fotografía
+    <input id="imageFile" type="file" accept="image/jpeg,image/png,image/webp">
+  </label>
+  <label id="imageToggleRow" class="image-toggle" hidden>
+    <input id="imageShowToggle" type="checkbox" checked>
+    Mostrar imagen específica de esta preparación
+  </label>
+  <div class="image-dialog-actions">
+    <button type="button" id="imageSave">Guardar imagen</button>
+    <button type="button" id="imageRemove" class="secondary">Quitar imagen</button>
+    <button type="button" id="imageCancel" class="secondary">Cancelar</button>
+  </div>
+  <p id="imageStatus" class="status" role="status"></p>
+</dialog>
+
 <script src="js/catalogo.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
 <script src="js/admin.js" defer></script>
