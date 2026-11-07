@@ -236,6 +236,7 @@
   }
 
   function addToCart(id, cantidad, opcion, imagenSeleccionada) {
+    const carritoEstabaVacio = cart.length === 0;
     const existing = cart.find((l) => l.id === id && l.cantidad === cantidad && l.opcion === opcion);
     if (existing) {
       existing.uds++;
@@ -244,6 +245,7 @@
       cart.push({ id, cantidad, opcion, uds: 1, ...(imagenSeleccionada ? { img: imagenSeleccionada } : {}) });
     }
     save();
+    if (carritoEstabaVacio) prepararHistorialSalida();
     renderCart();
     const btn = $('.cart-btn');
     btn.classList.remove('bump'); void btn.offsetWidth; btn.classList.add('bump');
@@ -257,12 +259,14 @@
   // El carrito se conserva en localStorage al navegar fuera y volver.
   let pedidoEnProceso = false;
   let salidaDialogo = null;
-  let salidaGuardada = false;
+  let cartHistoryEntry = false;
+  let cartClosePending = false;
+  let salidaConfirmada = false;
 
   function prepararHistorialSalida() {
-    if (salidaGuardada) return;
+    // Evitar duplicar la entrada de protección si ya estamos sobre ella.
+    if (history.state?.rodriExitGuard || history.state?.rodriCartOpen) return;
     history.pushState({ rodriExitGuard: true }, '', location.href);
-    salidaGuardada = true;
   }
 
   function mostrarAvisoSalida() {
@@ -284,8 +288,8 @@
     if (catalogo) catalogo.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
-  // Marcar la entrada real de la tienda. Los cambios de hash (#catalogo,
-  // #contacto, etc.) quedan por delante y se pueden recorrer con Atrás.
+  // La entrada inicial representa la parte superior de la tienda.
+  // Los enlaces internos conservan su historial natural por medio de sus hashes.
   history.replaceState({ rodriPageEntry: true }, '', location.href);
 
   let ultimoHash = location.hash;
@@ -297,34 +301,46 @@
     const hashActual = location.hash;
     const navegacionInterna = hashActual !== ultimoHash;
     ultimoHash = hashActual;
-    salidaGuardada = false;
 
-    // El carrito se cierra antes de procesar el movimiento de historial.
-    // Así Atrás no devuelve al cliente al encabezado de la página.
+    // Cerrar el carrito por un Atrás iniciado desde su botón o su fondo.
+    if (cartClosePending) {
+      cartClosePending = false;
+      cartHistoryEntry = false;
+      return;
+    }
+
+    // Si Atrás se pulsa con el carrito abierto, solo cierra ese panel.
+    // No consume ni vuelve a crear entradas artificiales del historial.
     if (drawer && drawer.classList.contains('open')) {
-      closeCart();
+      cartHistoryEntry = false;
+      closeCart(true);
       volverACategorias();
+      return;
+    }
+
+    // Los cambios entre secciones se recorren sin mostrar el aviso.
+    if (navegacionInterna) return;
+
+    // Durante la confirmación del pedido no se interpreta Atrás como salida.
+    // Se mantiene la protección para que el cliente no abandone accidentalmente.
+    if (pedidoEnProceso) {
       prepararHistorialSalida();
       return;
     }
 
-    // El movimiento entre secciones de la tienda es navegación interna.
-    if (navegacionInterna) return;
-
-    // El flujo de pedido queda fuera de la protección del historial.
-    if (pedidoEnProceso) return;
-
-    // Solo la entrada original de esta página representa un intento real de salir.
-    if (event.state && event.state.rodriPageEntry && cart.length) {
+    // Solo avisar al retroceder desde el inicio real de la web.
+    const estaEnInicio = !location.hash && window.scrollY <= 24;
+    if (event.state?.rodriPageEntry && estaEnInicio && cart.length) {
       mostrarAvisoSalida();
+      // Rearmar inmediatamente la protección: insistir con Atrás no la salta.
+      prepararHistorialSalida();
     }
   });
 
   prepararHistorialSalida();
 
   window.addEventListener('pageshow', (event) => {
-    if (event.persisted && !history.state?.rodriExitGuard) {
-      salidaGuardada = false;
+    if (event.persisted && !history.state?.rodriExitGuard && !history.state?.rodriCartOpen) {
       prepararHistorialSalida();
     }
   });
@@ -350,6 +366,10 @@
   }
 
   function openCart() {
+    if (!drawer.classList.contains('open')) {
+      history.pushState({ rodriCartOpen: true }, '', location.href);
+      cartHistoryEntry = true;
+    }
     inicializarTurnstile();
     backdrop.hidden = false;
     drawer.removeAttribute('inert');
@@ -361,7 +381,14 @@
     if (cartBtn) cartBtn.setAttribute('aria-expanded', 'true');
   }
 
-  function closeCart() {
+  function closeCart(fromHistory = false) {
+    // Al cerrar desde un control de la interfaz, retirar la entrada propia
+    // del carrito. El popstate resultante no debe confundirse con una salida.
+    if (!fromHistory && cartHistoryEntry && history.state?.rodriCartOpen) {
+      cartHistoryEntry = false;
+      cartClosePending = true;
+      history.back();
+    }
     drawer.classList.remove('open');
     backdrop.classList.remove('open');
     document.body.classList.remove('no-scroll');
@@ -380,13 +407,13 @@
     salidaDialogo.querySelector('[data-stay]')?.addEventListener('click', () => {
       ocultarAvisoSalida();
       volverACategorias();
-      prepararHistorialSalida();
+      // La entrada de protección ya está rearmada al mostrar el aviso.
     });
     salidaDialogo.querySelector('[data-exit]')?.addEventListener('click', () => {
       ocultarAvisoSalida();
-      // El primer Atrás ya consumió la entrada de protección; este segundo
-      // paso permite continuar hacia la página anterior del navegador.
-      history.back();
+      salidaConfirmada = true;
+      // Saltar la protección rearmada y la entrada inicial de la tienda.
+      history.go(-2);
     });
   }
 
