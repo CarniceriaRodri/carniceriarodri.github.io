@@ -279,8 +279,21 @@
     document.body.classList.remove('no-scroll');
   }
 
+  // Recordar el hash para no confundir la navegación interna (#catalogo, etc.)
+  // con una salida real de la tienda al pulsar Atrás.
+  let ultimoHash = location.hash;
+  window.addEventListener('hashchange', () => {
+    ultimoHash = location.hash;
+  });
+
   window.addEventListener('popstate', () => {
+    const hashActual = location.hash;
+    const navegacionInterna = hashActual !== ultimoHash;
+    ultimoHash = hashActual;
     salidaGuardada = false;
+
+    // Volver entre secciones de esta misma página no debe mostrar el aviso de salida.
+    if (navegacionInterna) return;
 
     // El flujo de pedido queda fuera de la protección del historial.
     // No añadir entradas de salida mientras se está enviando o confirmando.
