@@ -218,6 +218,7 @@
    imageTarget=target;
    selectedImageFile=null;
    $('imageFile').value='';
+   $('imageCamera').value='';
    $('imageStatus').textContent='';
    $('imageDialogTitle').textContent=target.kind==='product'?'Imagen principal · '+target.name:'Imagen · '+target.name;
    $('imageToggleRow').hidden=target.kind!=='option';
@@ -230,22 +231,24 @@
    $('imageRemove').hidden=!target.path;
    $('imageDialog').showModal();
  }
- $('imageFile').addEventListener('change',()=>{
-   const file=$('imageFile').files?.[0]||null;
-   selectedImageFile=file;
+ function handleSelectedImage(file,inputId){
    if(!file)return;
    if(!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size>5*1024*1024){
      selectedImageFile=null;
-     $('imageFile').value='';
+     $(inputId).value='';
      status('imageStatus','Formato no permitido o archivo superior a 5 MB.');
      return;
    }
+   if($('imagePreview').src.startsWith('blob:'))URL.revokeObjectURL($('imagePreview').src);
+   selectedImageFile=file;
    const preview=URL.createObjectURL(file);
    $('imagePreview').src=preview;
    $('imagePreview').hidden=false;
-   $('imageCurrent').textContent=file.name;
+   $('imageCurrent').textContent=file.name||'Fotografía seleccionada';
    status('imageStatus','Previsualización lista. Pulsa Guardar imagen para subirla.');
- });
+ }
+ $('imageFile').addEventListener('change',()=>handleSelectedImage($('imageFile').files?.[0]||null,'imageFile'));
+ $('imageCamera').addEventListener('change',()=>handleSelectedImage($('imageCamera').files?.[0]||null,'imageCamera'));
  function closeImageEditor(){
    if($('imagePreview').src.startsWith('blob:'))URL.revokeObjectURL($('imagePreview').src);
    $('imageDialog').close();
