@@ -78,8 +78,6 @@
   } catch { cart = []; }
   const save = () => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(cart));
-    if (cart.length) protegerSalidaConPedido();
-    else salidaProtegida = false;
   };
 
   // ——— Catálogo ———
@@ -256,33 +254,12 @@
   const cartBtn = $('.cart-btn');
   const checkoutForm = $('#checkout');
 
-  // Mantener al cliente en la tienda al usar Atrás de Chrome si tiene un pedido.
-  let salidaProtegida = false;
-  let permitirSalida = false;
-  function protegerSalidaConPedido() {
-    if (cart.length && !salidaProtegida && !permitirSalida) {
-      history.pushState({ rodriPedidoActivo: true }, '', location.href);
-      salidaProtegida = true;
-    }
-  }
-  window.addEventListener('popstate', () => {
-    if (permitirSalida) return;
-    salidaProtegida = false;
+  // Aviso nativo solo al abandonar realmente la página; no intercepta la navegación interna.
+  window.addEventListener('beforeunload', (event) => {
     if (!cart.length) return;
-    if (drawer.classList.contains('open')) {
-      closeCart();
-      protegerSalidaConPedido();
-      return;
-    }
-    const salir = window.confirm('¿Quieres salir de Carnicería Rodri? Tu pedido seguirá guardado si vuelves.');
-    if (salir) {
-      // El popstate ya ha regresado a la página anterior; no retroceder otra vez.
-      permitirSalida = true;
-    } else {
-      protegerSalidaConPedido();
-    }
+    event.preventDefault();
+    event.returnValue = '';
   });
-  protegerSalidaConPedido();
 
 
   // Verificación anti-bots de Cloudflare Turnstile
