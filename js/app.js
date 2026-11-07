@@ -707,13 +707,38 @@
     const quantity = event.target.closest('.card [data-field="cantidad"]');
     if (quantity) actualizarImagenTarjeta(quantity.closest('.card'), true);
   });
-  document.addEventListener('pointerdown', (event) => {
-    // Solo el desplegable de preparación mantiene/activa la foto de opción.
-    // Al tocar cualquier otro lugar, se restaura la imagen principal.
-    if (event.target.closest('.card [data-field="opcion"]')) return;
-    document.querySelectorAll('.card[data-selected-image]').forEach(cardEl => {
-      actualizarImagenTarjeta(cardEl, false);
+  function restaurarProductoInicial(cardEl) {
+    if (!cardEl) return;
+    const option = cardEl.querySelector('[data-field="opcion"]');
+    if (option && option.selectedIndex !== 0) {
+      option.selectedIndex = 0;
+      // Actualiza también el precio y las cantidades vinculadas a la opción inicial.
+      option.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+    actualizarImagenTarjeta(cardEl, false);
+  }
+
+  function restaurarProductosAlSalir(exceptoCard = null) {
+    document.querySelectorAll('.card').forEach(cardEl => {
+      if (cardEl !== exceptoCard) restaurarProductoInicial(cardEl);
     });
+  }
+
+  document.addEventListener('pointerdown', (event) => {
+    // Al salir de una tarjeta, se restaura su primera opción y su imagen principal.
+    // Si se interactúa dentro de otra tarjeta, esa tarjeta conserva la selección actual.
+    const cardActiva = event.target.closest('.card');
+    restaurarProductosAlSalir(cardActiva);
+  });
+
+  // También cubre la navegación con teclado: al sacar el foco de una tarjeta,
+  // vuelve a la primera opción del desplegable.
+  document.addEventListener('focusout', (event) => {
+    const cardAnterior = event.target.closest('.card');
+    const siguiente = event.relatedTarget;
+    if (cardAnterior && (!siguiente || !cardAnterior.contains(siguiente))) {
+      restaurarProductoInicial(cardAnterior);
+    }
   });
   // Actualiza precio y cantidades al cambiar cualquier opción del catálogo.
   document.addEventListener('change', (e) => {
