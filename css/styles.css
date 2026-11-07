@@ -438,3 +438,47 @@ textarea { resize: vertical; }
   outline-offset: 3px;
   border-radius: 5px;
 }
+
+
+/* ——— Confirmación de salida en Android/Chrome ——— */
+.exit-confirm {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background: rgba(18, 13, 11, .62);
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
+}
+.exit-confirm[hidden] { display: none; }
+.exit-confirm-card {
+  width: min(100%, 380px);
+  display: grid;
+  justify-items: center;
+  gap: .85rem;
+  padding: 1.6rem 1.35rem;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--paper);
+  color: var(--ink);
+  text-align: center;
+  box-shadow: 0 20px 55px rgba(0, 0, 0, .28);
+}
+.exit-confirm-icon { font-size: 2rem; line-height: 1; }
+.exit-confirm-card h2 {
+  font: 800 1.35rem/1.2 var(--display);
+  margin: 0;
+}
+.exit-confirm-card p { color: var(--muted); margin: 0 0 .2rem; }
+.exit-confirm-card [data-stay] { width: 100%; }
+.exit-confirm-leave {
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  padding: .55rem 1rem;
+  font: 500 .9rem var(--body);
+  text-decoration: underline;
+  cursor: pointer;
+}
