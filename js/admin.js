@@ -93,7 +93,7 @@
  async function loadProducts(){
    const openOptionPanels=new Set(Array.from(document.querySelectorAll('.options-details[open]')).map(el=>el.dataset.productOptions));
    status('adminStatus','Cargando productos…');
-   let {data:products,error}=await client.from('products').select('id,name,category,base_price_cents,active,sort_order').order('sort_order');
+   let {data:products,error}=await client.from('products').select('id,name,category,image,base_price_cents,active,sort_order').order('sort_order');
    if(products){
      const excludedCategories=['caza','casqueria','vaca-buey','vaca buey','vaca y buey'];
      const normalizeCategory=value=>String(value||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase('es').trim();
@@ -130,7 +130,7 @@
      return ia<0||ib<0?String(a.name).localeCompare(String(b.name),'es'):ia-ib;
    });
 
-   const {data:options,error:optError}=await client.from('product_options').select('id,product_id,label,price_cents,active,sort_order').order('sort_order');
+   const {data:options,error:optError}=await client.from('product_options').select('id,product_id,label,image,show_image,price_cents,active,sort_order').order('sort_order');
    if(optError){status('adminStatus','No se pudieron cargar las opciones: '+optError.message);return}
 
    const optionRows=options||[];
@@ -158,7 +158,7 @@
        const missing=(cp?.opciones||[]).filter(label=>!opts.some(o=>String(o.label).trim().toLocaleLowerCase('es')===String(label).trim().toLocaleLowerCase('es')));
        const saved=opts.map(o=>optionMarkup(o)).join('');
        const pending=missing.map(label=>'<div class="option-item pending-option"><div class="option-heading"><div class="option-name">'+escapeHtml(label)+'</div><span class="option-state">Pendiente</span></div><div class="add-option-row"><input inputmode="decimal" placeholder="Precio (€)" aria-label="Precio para '+escapeHtml(label)+'" data-pending-price="'+p.id+'" data-pending-label="'+escapeHtml(label)+'"><button class="icon-button" title="Añadir opción" aria-label="Añadir opción" data-add-catalogue-option="'+p.id+'" data-option-label="'+escapeHtml(label)+'">➕</button></div></div>').join('');
-       return '<article class="product product-unified"><div class="product-head"><div><div class="product-name">'+escapeHtml(p.name)+'</div><div class="category">'+escapeHtml(p.category||group.meta.name)+(p.active?'':' · Inactivo')+'</div></div></div>'+
+       return '<article class="product product-unified"><div class="product-head"><div><div class="product-name">'+escapeHtml(p.name)+'</div><div class="category">'+escapeHtml(p.category||group.meta.name)+(p.active?'':' · Inactivo')+'</div></div><button type="button" class="image-action product-image-action" data-image-product="'+escapeHtml(p.id)+'" data-image-path="'+escapeHtml(p.image||'')+'" title="Gestionar imagen principal" aria-label="Gestionar imagen principal de '+escapeHtml(p.name)+'">📷 Imagen</button></div>'+
          '<details class="options-details" data-product-options="'+p.id+'"'+(openOptionPanels.has(String(p.id))?' open':'')+'><summary>Opciones - Añadir <span class="muted">'+opts.length+' guardadas · '+missing.length+' pendientes</span></summary><div class="options-content">'+
          (saved||'')+(pending||'')+
          '<div class="option" style="margin-top:14px;font-weight:700;color:var(--ink)">Añadir otra opción</div><div class="add-option-row"><label class="sr-only" for="new-label-'+p.id+'">Nombre opción</label><input id="new-label-'+p.id+'" placeholder="Nombre opción"><label class="sr-only" for="new-price-'+p.id+'">Precio (€)</label><input id="new-price-'+p.id+'" inputmode="decimal" placeholder="Precio (€)"><button class="icon-button" aria-label="Añadir opción" data-add-option="'+p.id+'">➕</button></div></div></details></article>';
@@ -170,7 +170,7 @@
  }
 
  function optionMarkup(o){
-   return '<div class="option-item"><div class="option-heading"><div class="option-name">'+escapeHtml(o.label)+'</div><button class="option-toggle'+(o.active?'':' is-off')+'" data-toggle-option="'+o.id+'" data-next-active="'+(o.active?'false':'true')+'" title="'+(o.active?'Desactivar':'Activar')+'" aria-label="'+(o.active?'Desactivar':'Activar')+'">'+(o.active?'ON':'OFF')+'</button></div><div class="option-state">'+(o.active?'Activo':'Inactivo')+'</div><div class="price-row"><label class="sr-only" for="opt-'+o.id+'">Precio (€)</label><input id="opt-'+o.id+'" inputmode="decimal" value="'+(Number(o.price_cents||0)/100).toFixed(2)+'"><button class="save-icon" data-save-option="'+o.id+'" title="Guardar" aria-label="Guardar">💾</button><button class="secondary" data-delete-option="'+o.id+'" aria-label="Eliminar opción">×</button></div></div>';
+   return '<div class="option-item"><div class="option-heading"><div class="option-name">'+escapeHtml(o.label)+'</div><button type="button" class="image-action" data-image-option="'+escapeHtml(o.id)+'" data-image-path="'+escapeHtml(o.image||'')+'" data-show-image="'+(o.show_image!==false?'true':'false')+'" title="Gestionar imagen de '+escapeHtml(o.label)+'" aria-label="Gestionar imagen de '+escapeHtml(o.label)+'">📷</button><button class="option-toggle'+(o.active?'':' is-off')+'" data-toggle-option="'+o.id+'" data-next-active="'+(o.active?'false':'true')+'" title="'+(o.active?'Desactivar':'Activar')+'" aria-label="'+(o.active?'Desactivar':'Activar')+'">'+(o.active?'ON':'OFF')+'</button></div><div class="option-state">'+(o.active?'Activo':'Inactivo')+(o.image?' · Tiene imagen':' · Usa imagen principal')+'</div><div class="price-row"><label class="sr-only" for="opt-'+o.id+'">Precio (€)</label><input id="opt-'+o.id+'" inputmode="decimal" value="'+(Number(o.price_cents||0)/100).toFixed(2)+'"><button class="save-icon" data-save-option="'+o.id+'" title="Guardar" aria-label="Guardar">💾</button><button class="secondary" data-delete-option="'+o.id+'" aria-label="Eliminar opción">×</button></div></div>';
  }
 
  function escapeHtml(v){
@@ -198,11 +198,143 @@
    location.reload();
  });
 
+
+ let imageTarget=null;
+ let selectedImageFile=null;
+
+ function managedStoragePath(path){
+   return typeof path==='string' && /^(products|options)\//.test(path);
+ }
+ function imagePublicUrl(path){
+   if(!path)return '';
+   if(/^https?:\/\//i.test(path))return path;
+   if(managedStoragePath(path))return client.storage.from('product-images').getPublicUrl(path).data.publicUrl;
+   return 'img/productos/'+String(path).replace(/^\/+/, '')+'.jpg';
+ }
+ function openImageEditor(target){
+   imageTarget=target;
+   selectedImageFile=null;
+   $('imageFile').value='';
+   $('imageStatus').textContent='';
+   $('imageDialogTitle').textContent=target.kind==='product'?'Imagen principal · '+target.name:'Imagen · '+target.name;
+   $('imageToggleRow').hidden=target.kind!=='option';
+   $('imageShowToggle').checked=target.showImage!==false;
+   const previewUrl=imagePublicUrl(target.path);
+   $('imagePreview').hidden=!previewUrl;
+   if(previewUrl){$('imagePreview').src=previewUrl;}
+   else{$('imagePreview').removeAttribute('src');}
+   $('imageCurrent').textContent=target.path?'Imagen asignada. Puedes sustituirla o quitarla.':'Todavía no hay una imagen propia asignada.';
+   $('imageRemove').hidden=!target.path;
+   $('imageDialog').showModal();
+ }
+ $('imageFile').addEventListener('change',()=>{
+   const file=$('imageFile').files?.[0]||null;
+   selectedImageFile=file;
+   if(!file)return;
+   if(!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size>5*1024*1024){
+     selectedImageFile=null;
+     $('imageFile').value='';
+     status('imageStatus','Formato no permitido o archivo superior a 5 MB.');
+     return;
+   }
+   const preview=URL.createObjectURL(file);
+   $('imagePreview').src=preview;
+   $('imagePreview').hidden=false;
+   $('imageCurrent').textContent=file.name;
+   status('imageStatus','Previsualización lista. Pulsa Guardar imagen para subirla.');
+ });
+ function closeImageEditor(){
+   if($('imagePreview').src.startsWith('blob:'))URL.revokeObjectURL($('imagePreview').src);
+   $('imageDialog').close();
+   imageTarget=null;
+   selectedImageFile=null;
+ }
+ $('imageClose').addEventListener('click',closeImageEditor);
+ $('imageCancel').addEventListener('click',closeImageEditor);
+ $('imageDialog').addEventListener('click',e=>{
+   if(e.target===$('imageDialog'))closeImageEditor();
+ });
+ $('imageSave').addEventListener('click',async()=>{
+   if(!imageTarget)return;
+   const button=$('imageSave');
+   button.disabled=true;
+   $('imageRemove').disabled=true;
+   status('imageStatus','Guardando imagen…');
+   try{
+     const target=imageTarget;
+     const changes={};
+     let newPath=target.path||null;
+     if(selectedImageFile){
+       const extension=selectedImageFile.type==='image/png'?'png':selectedImageFile.type==='image/webp'?'webp':'jpg';
+       const folder=target.kind==='product'?'products':'options';
+       const objectPath=folder+'/'+target.id+'/'+(target.kind==='product'?'main':'image')+'.'+extension;
+       const {error:uploadError}=await client.storage.from('product-images').upload(objectPath,selectedImageFile,{upsert:true,contentType:selectedImageFile.type,cacheControl:'3600'});
+       if(uploadError)throw uploadError;
+       newPath=objectPath;
+       changes.image=newPath;
+     }
+     if(target.kind==='option')changes.show_image=$('imageShowToggle').checked;
+     const table=target.kind==='product'?'products':'product_options';
+     const {error:updateError}=await client.from(table).update(changes).eq('id',target.id);
+     if(updateError)throw updateError;
+     if(target.path&&target.path!==newPath&&managedStoragePath(target.path)){
+       const {error:removeError}=await client.storage.from('product-images').remove([target.path]);
+       if(removeError)console.warn('No se pudo retirar la imagen anterior:',removeError.message);
+     }
+     closeImageEditor();
+     status('adminStatus','Imagen guardada correctamente.');
+     await loadProducts();
+   }catch(error){
+     status('imageStatus','No se pudo guardar: '+(error?.message||String(error)));
+   }finally{
+     button.disabled=false;
+     $('imageRemove').disabled=false;
+   }
+ });
+ $('imageRemove').addEventListener('click',async()=>{
+   if(!imageTarget?.path)return;
+   if(!confirm('¿Quitar la imagen asignada?'))return;
+   const button=$('imageRemove');
+   button.disabled=true;
+   $('imageSave').disabled=true;
+   status('imageStatus','Quitando imagen…');
+   try{
+     const target=imageTarget;
+     const table=target.kind==='product'?'products':'product_options';
+     const changes=target.kind==='option'?{image:null,show_image:false}:{image:null};
+     const {error:updateError}=await client.from(table).update(changes).eq('id',target.id);
+     if(updateError)throw updateError;
+     if(managedStoragePath(target.path)){
+       const {error:removeError}=await client.storage.from('product-images').remove([target.path]);
+       if(removeError)console.warn('No se pudo borrar el archivo anterior:',removeError.message);
+     }
+     closeImageEditor();
+     status('adminStatus','Imagen quitada. Se utilizará la imagen principal cuando corresponda.');
+     await loadProducts();
+   }catch(error){
+     status('imageStatus','No se pudo quitar: '+(error?.message||String(error)));
+   }finally{
+     button.disabled=false;
+     $('imageSave').disabled=false;
+   }
+ });
+
  $('products').addEventListener('click',async e=>{
    const closeCategoryButton=e.target.closest('[data-close-category]');
    if(closeCategoryButton){
      const categorySection=closeCategoryButton.closest('.category-section');
      if(categorySection)categorySection.open=false;
+     return;
+   }
+
+   const imageProductButton=e.target.closest('[data-image-product]');
+   const imageOptionButton=e.target.closest('[data-image-option]');
+   if(imageProductButton){
+     openImageEditor({kind:'product',id:imageProductButton.dataset.imageProduct,name:imageProductButton.closest('.product')?.querySelector('.product-name')?.textContent||'Producto',path:imageProductButton.dataset.imagePath||null});
+     return;
+   }
+   if(imageOptionButton){
+     openImageEditor({kind:'option',id:imageOptionButton.dataset.imageOption,name:imageOptionButton.closest('.option-item')?.querySelector('.option-name')?.textContent||'Preparación',path:imageOptionButton.dataset.imagePath||null,showImage:imageOptionButton.dataset.showImage!=='false'});
      return;
    }
 
