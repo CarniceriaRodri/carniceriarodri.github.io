@@ -1,5 +1,24 @@
 (async function () {
 
+  // Protección temprana de salida: no esperar a la comprobación de mantenimiento.
+  // El script puede quedar pausado en el primer fetch; esta guardia cubre ese intervalo.
+  let intentoSalidaTemprano = false;
+  let hashTemprano = location.hash;
+  history.replaceState({ rodriPageEntry: true }, '', location.href);
+  history.pushState({ rodriExitGuard: true }, '', location.href);
+  window.addEventListener('popstate', () => {
+    const hashActual = location.hash;
+    if (hashActual !== hashTemprano) {
+      hashTemprano = hashActual;
+      return;
+    }
+    intentoSalidaTemprano = true;
+    if (!history.state?.rodriExitGuard && !history.state?.rodriCartOpen) {
+      history.pushState({ rodriExitGuard: true }, '', location.href);
+    }
+  });
+
+
   // Comprobar si la tienda está en mantenimiento
   try {
     const respuesta = await fetch(
@@ -289,8 +308,6 @@
 
   // La entrada inicial representa la parte superior de la tienda.
   // Los enlaces internos conservan su historial natural por medio de sus hashes.
-  history.replaceState({ rodriPageEntry: true }, '', location.href);
-
   let ultimoHash = location.hash;
   window.addEventListener('hashchange', () => {
     ultimoHash = location.hash;
@@ -403,6 +420,7 @@
 
   // Acciones del aviso de salida del navegador.
   salidaDialogo = document.getElementById('exitConfirm');
+  if (intentoSalidaTemprano) mostrarAvisoSalida();
   if (salidaDialogo) {
     salidaDialogo.querySelector('[data-stay]')?.addEventListener('click', () => {
       ocultarAvisoSalida();
