@@ -673,6 +673,16 @@
     const key = normalizarClave(optionLabel);
     const saved = product?.optionImages?.[key];
     if (saved?.showImage && saved.url) return saved.url;
+    // Respaldo fijo para las fotos de Filetes de Ternera subidas a GitHub,
+    // igual que el mapa de imágenes heredadas de Pollo.
+    if (product?.id === 'filetes-ternera') {
+      const legacy = {
+        muyfinosplancha: 'img/productos/vacuno/filetes-ternera/muy-finos-plancha-1794050096452.jpg',
+        grosornormal: 'img/productos/vacuno/filetes-ternera/grosor-normal-1794050110366.jpg',
+        paraempanar: 'img/productos/vacuno/filetes-ternera/para-empanar-1794050123721.jpg'
+      };
+      if (legacy[key]) return legacy[key];
+    }
     if (product?.id === 'pollo') {
       const legacy = { pechugasenfiletes:'img/productos/pollo/pechugas-filetes.jpg', pechugasenteras:'img/productos/pollo/pechugas-enteras.jpg', muslosycontramuslos:'img/productos/pollo/muslos-contramuslos.jpg', contramuslodeshuesado:'img/productos/pollo/contramuslo-deshuesado.jpg', troceadoparaguisar:'img/productos/pollo/pollo-troceado.jpg', abiertoparaasar:'img/productos/pollo/pollo-entero.jpg' };
       return legacy[key] || null;
