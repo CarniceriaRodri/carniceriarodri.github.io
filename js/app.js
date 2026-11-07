@@ -327,12 +327,14 @@
       return;
     }
 
-    // Solo avisar al retroceder desde el inicio real de la web.
-    const estaEnInicio = !location.hash && window.scrollY <= 24;
-    if (event.state?.rodriPageEntry && estaEnInicio && cart.length) {
-      mostrarAvisoSalida();
-      // Rearmar inmediatamente la protección: insistir con Atrás no la salta.
-      prepararHistorialSalida();
+    // La entrada pageEntry marca el momento en que Atrás va a abandonar la tienda.
+    // Rearmar siempre la protección; mostrar el diálogo solo si la página está arriba.
+    if (event.state?.rodriPageEntry && !location.hash) {
+      requestAnimationFrame(() => {
+        const estaEnInicio = !location.hash && window.scrollY <= 24;
+        if (estaEnInicio) mostrarAvisoSalida();
+        prepararHistorialSalida();
+      });
     }
   });
 
