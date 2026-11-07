@@ -663,6 +663,23 @@
     if (e.target.closest('[data-close-cart]')) return closeCart();
   });
 
+
+  // Volver dentro de la tienda sin enviar al cliente fuera por accidente.
+  document.addEventListener('click', (e) => {
+    const back = e.target.closest('[data-store-back]');
+    if (!back) return;
+    const catalogo = $('#catalogo');
+    const referrerEsTienda = (() => {
+      try { return document.referrer && new URL(document.referrer).origin === location.origin; }
+      catch { return false; }
+    })();
+    if (referrerEsTienda && history.length > 1) {
+      history.back();
+    } else if (catalogo) {
+      catalogo.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  });
+
   // Botón WhatsApp del modal
   const btnWhatsAppModal = document.getElementById('btnEnviarWhatsApp');
   if (btnWhatsAppModal) {
