@@ -78,7 +78,8 @@
   } catch { cart = []; }
   const save = () => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(cart));
-    if (typeof protegerSalidaConPedido === 'function') protegerSalidaConPedido();
+    if (cart.length) protegerSalidaConPedido();
+    else salidaProtegida = false;
   };
 
   // ——— Catálogo ———
@@ -275,8 +276,8 @@
     }
     const salir = window.confirm('¿Quieres salir de Carnicería Rodri? Tu pedido seguirá guardado si vuelves.');
     if (salir) {
+      // El popstate ya ha regresado a la página anterior; no retroceder otra vez.
       permitirSalida = true;
-      history.back();
     } else {
       protegerSalidaConPedido();
     }
