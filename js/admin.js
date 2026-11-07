@@ -214,7 +214,6 @@
  }
  function imageSlug(value){return String(value||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')||'imagen'}
  function fileBase64(file){return file.arrayBuffer().then(buffer=>{const bytes=new Uint8Array(buffer);let binary='';for(let i=0;i<bytes.length;i+=0x8000)binary+=String.fromCharCode(...bytes.subarray(i,i+0x8000));return btoa(binary)})}
- function storagePathFromImage(value){if(!value)return null;if(managedStoragePath(value))return value;const marker='/storage/v1/object/public/product-images/',i=String(value).indexOf(marker);return i<0?null:String(value).slice(i+marker.length).split('/').map(decodeURIComponent).join('/')}
  function openImageEditor(target){
    imageTarget=target;
    selectedImageFile=null;
@@ -269,7 +268,6 @@
      const changes={};
      let newPath=target.path||null;
      if(selectedImageFile){
-       const extension=selectedImageFile.type==='image/png'?'png':selectedImageFile.type==='image/webp'?'webp':'jpg';
        const {data:uploadData,error:uploadError}=await client.functions.invoke('github-images',{body:{action:'upload',kind:target.kind,id:target.id,category:target.category,productSlug:target.productSlug,optionSlug:target.optionSlug,contentType:selectedImageFile.type,contentBase64:await fileBase64(selectedImageFile)}});
        if(uploadError)throw uploadError;
        if(!uploadData?.path)throw new Error('GitHub no devolvió la ruta de la imagen.');
@@ -314,23 +312,6 @@
  });
 
 
- async function migrateExistingImages(){
-  const button=$('migrateImages');button.disabled=true;
-  try{
-   status('adminStatus','Buscando imágenes antiguas…');
-   const [{data:ps,error:pe},{data:os,error:oe}]=await Promise.all([client.from('products').select('id,name,category,image'),client.from('product_options').select('id,product_id,label,image')]);
-   if(pe)throw pe;if(oe)throw oe;
-   const cat=window.PRODUCTOS||[],byId=new Map((ps||[]).map(p=>[String(p.id),p])),tasks=[];
-   (ps||[]).forEach(p=>{const source=storagePathFromImage(p.image);if(!source)return;const cp=cat.find(x=>String(x.id)===String(p.id))||cat.find(x=>imageSlug(x.nombre)===imageSlug(p.name));const category=imageSlug(cp?.cat||p.category||'otros'),product=imageSlug(cp?.id||p.name||p.id),ext=(source.match(/\.(jpe?g|png|webp)$/i)||[])[1]?.toLowerCase()||'jpg';tasks.push({table:'products',id:p.id,source,target:'img/productos/'+category+'/'+product+'.'+ext})});
-   (os||[]).forEach(o=>{const source=storagePathFromImage(o.image),p=byId.get(String(o.product_id));if(!source||!p)return;const cp=cat.find(x=>String(x.id)===String(p.id))||cat.find(x=>imageSlug(x.nombre)===imageSlug(p.name));const category=imageSlug(cp?.cat||p.category||'otros'),product=imageSlug(cp?.id||p.name||p.id),ext=(source.match(/\.(jpe?g|png|webp)$/i)||[])[1]?.toLowerCase()||'jpg';tasks.push({table:'product_options',id:o.id,source,target:'img/productos/'+category+'/'+product+'/'+imageSlug(o.label)+'.'+ext})});
-   if(!tasks.length){status('adminStatus','No hay imágenes antiguas pendientes de migrar.');return}
-   let copied=0;const errors=[];
-   for(let i=0;i<tasks.length;i++){const t=tasks[i];status('adminStatus','Copiando imágenes '+(i+1)+' de '+tasks.length+'…');const {data,error}=await client.functions.invoke('github-images',{body:{action:'migrate',sourcePath:t.source,targetPath:t.target}});if(error||!data?.path){errors.push(t.id+': '+(error?.message||'sin ruta'));continue}const {error:updateError}=await client.from(t.table).update({image:data.path}).eq('id',t.id);if(updateError)errors.push(t.id+': '+updateError.message);else copied++}
-   status('adminStatus','Migración: '+copied+'/'+tasks.length+' imágenes. '+(errors.length?'Errores: '+errors.join(' · '):'Los originales de Supabase se conservan.'));
-   await loadProducts();
-  }catch(error){status('adminStatus','No se pudo migrar: '+(error?.message||String(error)))}finally{button.disabled=false}
- }
- $('migrateImages').addEventListener('click',()=>{if(confirm('Se copiarán las imágenes antiguas a GitHub. Los originales de Supabase no se borrarán. ¿Continuar?'))migrateExistingImages()});
  $('products').addEventListener('click',async e=>{
    const closeCategoryButton=e.target.closest('[data-close-category]');
    if(closeCategoryButton){
