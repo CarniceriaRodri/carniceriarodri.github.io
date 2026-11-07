@@ -76,7 +76,10 @@
           .slice(0, 50)
       : [];
   } catch { cart = []; }
-  const save = () => localStorage.setItem(STORAGE_KEY, JSON.stringify(cart));
+  const save = () => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(cart));
+    if (typeof protegerSalidaConPedido === 'function') protegerSalidaConPedido();
+  };
 
   // ——— Catálogo ———
   function renderCatalogo() {
@@ -192,6 +195,8 @@
     $('.float-bar').hidden = total === 0;
     $('#cartEmpty').hidden = cart.length > 0;
     $('#checkout').hidden = cart.length === 0;
+    const cartContinue = $('#cartContinue');
+    if (cartContinue) cartContinue.hidden = cart.length === 0;
 
     let totalEuros = 0;
 
@@ -249,6 +254,35 @@
   const backdrop = $('.drawer-backdrop');
   const cartBtn = $('.cart-btn');
   const checkoutForm = $('#checkout');
+
+  // Mantener al cliente en la tienda al usar Atrás de Chrome si tiene un pedido.
+  let salidaProtegida = false;
+  let permitirSalida = false;
+  function protegerSalidaConPedido() {
+    if (cart.length && !salidaProtegida && !permitirSalida) {
+      history.pushState({ rodriPedidoActivo: true }, '', location.href);
+      salidaProtegida = true;
+    }
+  }
+  window.addEventListener('popstate', () => {
+    if (permitirSalida) return;
+    salidaProtegida = false;
+    if (!cart.length) return;
+    if (drawer.classList.contains('open')) {
+      closeCart();
+      protegerSalidaConPedido();
+      return;
+    }
+    const salir = window.confirm('¿Quieres salir de Carnicería Rodri? Tu pedido seguirá guardado si vuelves.');
+    if (salir) {
+      permitirSalida = true;
+      history.back();
+    } else {
+      protegerSalidaConPedido();
+    }
+  });
+  protegerSalidaConPedido();
+
 
   // Verificación anti-bots de Cloudflare Turnstile
   let turnstileToken = '';
@@ -661,23 +695,6 @@
     }
     if (e.target.closest('[data-open-cart]')) return openCart();
     if (e.target.closest('[data-close-cart]')) return closeCart();
-  });
-
-
-  // Volver dentro de la tienda sin enviar al cliente fuera por accidente.
-  document.addEventListener('click', (e) => {
-    const back = e.target.closest('[data-store-back]');
-    if (!back) return;
-    const catalogo = $('#catalogo');
-    const referrerEsTienda = (() => {
-      try { return document.referrer && new URL(document.referrer).origin === location.origin; }
-      catch { return false; }
-    })();
-    if (referrerEsTienda && history.length > 1) {
-      history.back();
-    } else if (catalogo) {
-      catalogo.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
   });
 
   // Botón WhatsApp del modal
