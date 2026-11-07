@@ -254,8 +254,48 @@
   const cartBtn = $('.cart-btn');
   const checkoutForm = $('#checkout');
 
-  // No interceptar el botón Atrás de Android/Chrome.
   // El carrito se conserva en localStorage al navegar fuera y volver.
+  let pedidoEnProceso = false;
+  let salidaDialogo = null;
+  let salidaGuardada = false;
+
+  function prepararHistorialSalida() {
+    if (salidaGuardada) return;
+    history.pushState({ rodriExitGuard: true }, '', location.href);
+    salidaGuardada = true;
+  }
+
+  function mostrarAvisoSalida() {
+    if (!salidaDialogo) return;
+    salidaDialogo.hidden = false;
+    document.body.classList.add('no-scroll');
+    const seguir = salidaDialogo.querySelector('[data-stay]');
+    if (seguir) seguir.focus();
+  }
+
+  function ocultarAvisoSalida() {
+    if (!salidaDialogo) return;
+    salidaDialogo.hidden = true;
+    document.body.classList.remove('no-scroll');
+  }
+
+  window.addEventListener('popstate', () => {
+    salidaGuardada = false;
+
+    // No interferir con el envío ni con la confirmación del pedido.
+    if (pedidoEnProceso) return;
+
+    // Sin productos, el botón Atrás funciona de forma nativa.
+    if (!cart.length) return;
+
+    mostrarAvisoSalida();
+  });
+
+  prepararHistorialSalida();
+
+  window.addEventListener('pageshow', (event) => {
+    if (event.persisted) prepararHistorialSalida();
+  });
 
 
   // Verificación anti-bots de Cloudflare Turnstile
@@ -300,6 +340,21 @@
         drawer.setAttribute('inert', '');
       }
     }, 300);
+  }
+
+  // Acciones del aviso de salida del navegador.
+  salidaDialogo = document.getElementById('exitConfirm');
+  if (salidaDialogo) {
+    salidaDialogo.querySelector('[data-stay]')?.addEventListener('click', () => {
+      ocultarAvisoSalida();
+      prepararHistorialSalida();
+    });
+    salidaDialogo.querySelector('[data-exit]')?.addEventListener('click', () => {
+      ocultarAvisoSalida();
+      // El primer Atrás ya consumió la entrada de protección; este segundo
+      // paso permite continuar hacia la página anterior del navegador.
+      history.back();
+    });
   }
 
   let toastTimer;
@@ -420,6 +475,8 @@
       toast('Completa la verificación de seguridad antes de enviar el pedido.');
       return;
     }
+
+    pedidoEnProceso = true;
 
     const hoy = new Date();
     const dd = String(hoy.getDate()).padStart(2, '0');
@@ -696,6 +753,7 @@
       if (modal) modal.setAttribute('hidden', '');
       if (modalBackdrop) modalBackdrop.setAttribute('hidden', '');
       document.body.classList.remove('no-scroll');
+      pedidoEnProceso = false;
     };
   }
 
