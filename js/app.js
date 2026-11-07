@@ -919,7 +919,7 @@ const product = PRODUCTOS.find(p => String(p.id) === String(row.id))
         if (!product) return;
         catalogProductByDatabaseId.set(String(row.id), product);
         product.imageUrl = publicImageUrl(row.image) || '';
-        if (!Number.isFinite(Number(row.base_price_cents))) return;
+        if (row.base_price_cents === null || row.base_price_cents === undefined || !Number.isFinite(Number(row.base_price_cents))) return;
         const unit = (product.precio && product.precio.match(/\/(kg|ud)/i) || [,'ud'])[1].toLowerCase();
         const basePrice = Number(row.base_price_cents) / 100;
         product.precio = basePrice.toFixed(2).replace('.', ',') + ' €/' + unit;
