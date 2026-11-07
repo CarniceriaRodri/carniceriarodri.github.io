@@ -108,6 +108,16 @@
    }
    $('emptyNotice').hidden=true;
    const catalogue=(window.PRODUCTOS||[]);
+   // El panel solo administra el catálogo vigente; los productos históricos de Supabase
+   // se conservan en la base de datos, pero no deben crear categorías repetidas.
+   const catalogueIds=new Set(catalogue.map(item=>String(item.id)));
+   products=products.filter(product=>catalogueIds.has(String(product.id)));
+   if(!products.length){
+     $('emptyNotice').hidden=false;
+     $('products').innerHTML='';
+     status('adminStatus','No hay productos del catálogo actual para mostrar.');
+     return;
+   }
    const categoryMeta={
      salado:{name:'Salado',icon:'🧂',color:'#80612a',bg:'#f8f4e8'},
      precocinados:{name:'Precocinados',icon:'🍗',color:'#9a4b28',bg:'#fbf0e8'},
