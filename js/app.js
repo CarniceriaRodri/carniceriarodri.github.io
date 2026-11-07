@@ -279,43 +279,54 @@
     document.body.classList.remove('no-scroll');
   }
 
-  // Recordar el hash para no confundir la navegación interna (#catalogo, etc.)
-  // con una salida real de la tienda al pulsar Atrás.
+  function volverACategorias() {
+    const catalogo = document.getElementById('catalogo');
+    if (catalogo) catalogo.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  // Marcar la entrada real de la tienda. Los cambios de hash (#catalogo,
+  // #contacto, etc.) quedan por delante y se pueden recorrer con Atrás.
+  history.replaceState({ rodriPageEntry: true }, '', location.href);
+
   let ultimoHash = location.hash;
   window.addEventListener('hashchange', () => {
     ultimoHash = location.hash;
   });
 
-  window.addEventListener('popstate', () => {
+  window.addEventListener('popstate', (event) => {
     const hashActual = location.hash;
     const navegacionInterna = hashActual !== ultimoHash;
     ultimoHash = hashActual;
     salidaGuardada = false;
 
-    // Volver entre secciones de esta misma página no debe mostrar el aviso de salida.
-    if (navegacionInterna) return;
-
-    // El flujo de pedido queda fuera de la protección del historial.
-    // No añadir entradas de salida mientras se está enviando o confirmando.
-    if (pedidoEnProceso) return;
-
-    // Si el panel del carrito está abierto, Atrás lo cierra primero.
+    // El carrito se cierra antes de procesar el movimiento de historial.
+    // Así Atrás no devuelve al cliente al encabezado de la página.
     if (drawer && drawer.classList.contains('open')) {
       closeCart();
+      volverACategorias();
       prepararHistorialSalida();
       return;
     }
 
-    // Sin productos, el botón Atrás funciona de forma nativa.
-    if (!cart.length) return;
+    // El movimiento entre secciones de la tienda es navegación interna.
+    if (navegacionInterna) return;
 
-    mostrarAvisoSalida();
+    // El flujo de pedido queda fuera de la protección del historial.
+    if (pedidoEnProceso) return;
+
+    // Solo la entrada original de esta página representa un intento real de salir.
+    if (event.state && event.state.rodriPageEntry && cart.length) {
+      mostrarAvisoSalida();
+    }
   });
 
   prepararHistorialSalida();
 
   window.addEventListener('pageshow', (event) => {
-    if (event.persisted) prepararHistorialSalida();
+    if (event.persisted && !history.state?.rodriExitGuard) {
+      salidaGuardada = false;
+      prepararHistorialSalida();
+    }
   });
 
 
@@ -368,6 +379,7 @@
   if (salidaDialogo) {
     salidaDialogo.querySelector('[data-stay]')?.addEventListener('click', () => {
       ocultarAvisoSalida();
+      volverACategorias();
       prepararHistorialSalida();
     });
     salidaDialogo.querySelector('[data-exit]')?.addEventListener('click', () => {
@@ -752,7 +764,11 @@
       return;
     }
     if (e.target.closest('[data-open-cart]')) return openCart();
-    if (e.target.closest('[data-close-cart]')) return closeCart();
+    if (e.target.closest('[data-close-cart]')) {
+      closeCart();
+      volverACategorias();
+      return;
+    }
   });
 
   // Botón WhatsApp del modal
@@ -787,7 +803,12 @@
     };
   }
 
-  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeCart(); });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && drawer && drawer.classList.contains('open')) {
+      closeCart();
+      volverACategorias();
+    }
+  });
   $('#buscar').addEventListener('input', filtrar);
   if (checkoutForm) checkoutForm.addEventListener('submit', enviar);
   $('#dia').addEventListener('change', () => {
