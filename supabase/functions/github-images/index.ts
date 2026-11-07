@@ -1,12 +1,170 @@
-import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
-const allowedOrigin="https://carniceriarodri.github.io";
-const cors=(origin:string|null)=>({"Access-Control-Allow-Origin":origin===allowedOrigin?allowedOrigin:"null","Access-Control-Allow-Headers":"authorization, x-client-info, apikey, content-type","Access-Control-Allow-Methods":"POST, OPTIONS","Vary":"Origin"});
-const json=(body:unknown,status=200,origin:string|null=null)=>new Response(JSON.stringify(body),{status,headers:{...cors(origin),"Content-Type":"application/json"}});
-const secret=(name:string)=>{const v=Deno.env.get(name);if(!v)throw new Error("Falta configurar "+name);return v};
-const enc=(p:string)=>p.split("/").map(encodeURIComponent).join("/");
-const slug=(v:string)=>v.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
-async function verify(req:Request){const auth=req.headers.get("Authorization");if(!auth?.startsWith("Bearer "))throw new Error("Sesión no válida");const url=secret("SUPABASE_URL"),anon=secret("SUPABASE_ANON_KEY"),service=secret("SUPABASE_SERVICE_ROLE_KEY");const ur=await fetch(url+"/auth/v1/user",{headers:{Authorization:auth,apikey:anon}});if(!ur.ok)throw new Error("Sesión no válida");const u=await ur.json();if(!u?.id)throw new Error("Sesión no válida");const ar=await fetch(url+"/rest/v1/admin_users?select=user_id&user_id=eq."+encodeURIComponent(u.id)+"&limit=1",{headers:{Authorization:"Bearer "+service,apikey:service}});if(!ar.ok)throw new Error("No se pudo comprobar autorización");const admins=await ar.json();if(!Array.isArray(admins)||admins.length!==1)throw new Error("Usuario no autorizado");return{url,service}}
-const b64=(bytes:Uint8Array)=>{let s="";for(let i=0;i<bytes.length;i+=0x8000)s+=String.fromCharCode(...bytes.subarray(i,i+0x8000));return btoa(s)};
-function check(bytes:Uint8Array,type:string){if(!bytes.length||bytes.length>5*1024*1024)throw new Error("Imagen vacía o mayor de 5 MB");const jpg=bytes[0]===255&&bytes[1]===216&&bytes[2]===255,png=bytes[0]===137&&bytes[1]===80&&bytes[2]===78&&bytes[3]===71,webp=String.fromCharCode(...bytes.subarray(8,12))==="WEBP";if((type==="image/jpeg"&&!jpg)||(type==="image/png"&&!png)||(type==="image/webp"&&!webp))throw new Error("El contenido no coincide con el formato")}
-async function write(path:string,content:string){const owner=secret("GITHUB_OWNER"),repo=secret("GITHUB_REPO"),token=secret("GITHUB_TOKEN"),branch=Deno.env.get("GITHUB_BRANCH")||"main",url="https://api.github.com/repos/"+owner+"/"+repo+"/contents/"+enc(path),headers={Authorization:"Bearer "+token,Accept:"application/vnd.github+json","X-GitHub-Api-Version":"2022-11-28","Content-Type":"application/json"};let sha:string|undefined;const old=await fetch(url+"?ref="+encodeURIComponent(branch),{headers});if(old.ok)sha=(await old.json()).sha;else if(old.status!==404)throw new Error("No se pudo consultar GitHub");const body:Record<string,unknown>={message:"Actualizar fotografía de producto",content,branch};if(sha)body.sha=sha;const r=await fetch(url,{method:"PUT",headers,body:JSON.stringify(body)});if(!r.ok)throw new Error("GitHub rechazó la imagen ("+r.status+")")}
-serve(async req=>{const origin=req.headers.get("Origin");if(req.method==="OPTIONS")return new Response("ok",{headers:cors(origin)});if(req.method!=="POST")return json({error:"Método no permitido"},405,origin);if(origin!==allowedOrigin)return json({error:"Origen no permitido"},403,origin);try{const{url,service}=await verify(req),body=await req.json();let target="",content="";if(body.action==="upload"){if(!["product","option"].includes(body.kind))return json({error:"Tipo no válido"},400,origin);const type=String(body.contentType||"");if(!["image/jpeg","image/png","image/webp"].includes(type))return json({error:"Formato no permitido"},400,origin);const encoded=String(body.contentBase64||"");if(!encoded||encoded.length>7100000)return json({error:"Imagen mayor de 5 MB"},413,origin);const bytes=Uint8Array.from(atob(encoded),c=>c.charCodeAt(0));check(bytes,type);const category=slug(String(body.category||"otros")),product=slug(String(body.productSlug||body.id||""));if(!category||!product)return json({error:"Falta categoría/producto"},400,origin);const ext=type==="image/png"?"png":type==="image/webp"?"webp":"jpg";target=body.kind==="product"?"img/productos/"+category+"/"+product+"."+ext:"img/productos/"+category+"/"+product+"/"+(slug(String(body.optionSlug||"preparacion"))||"preparacion")+"."+ext;content=b64(bytes)}else if(body.action==="migrate"){const source=String(body.sourcePath||"");target=String(body.targetPath||"");if(!/^(products|options)\/[A-Za-z0-9/_-]+\.(jpg|jpeg|png|webp)$/i.test(source)||!/^img\/productos\/[a-z0-9-]+\/[a-z0-9-]+(?:\/[a-z0-9-]+)?\.(jpg|jpeg|png|webp)$/i.test(target))return json({error:"Ruta no válida"},400,origin);const r=await fetch(url+"/storage/v1/object/product-images/"+enc(source),{headers:{Authorization:"Bearer "+service,apikey:service}});if(!r.ok)throw new Error("No se pudo leer imagen antigua");const bytes=new Uint8Array(await r.arrayBuffer()),type=r.headers.get("content-type")||"image/jpeg";check(bytes,type);content=b64(bytes)}else return json({error:"Acción desconocida"},400,origin);if(!target.startsWith("img/productos/")||target.includes(".."))return json({error:"Destino no permitido"},400,origin);await write(target,content);return json({path:target},200,origin)}catch(e){const message=e instanceof Error?e.message:"Error inesperado";return json({error:message},/sesión|autorizado|autorización|origen/i.test(message)?403:400,origin)}});
+const allowedOrigin = "https://carniceriarodri.github.io";
+
+function cors(origin: string | null) {
+  return {
+    "Access-Control-Allow-Origin": origin === allowedOrigin ? allowedOrigin : "null",
+    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
+    "Vary": "Origin",
+  };
+}
+
+function json(body: unknown, status = 200, origin: string | null = null) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { ...cors(origin), "Content-Type": "application/json" },
+  });
+}
+
+function secret(name: string) {
+  const value = Deno.env.get(name);
+  if (!value) throw new Error("Falta configurar " + name);
+  return value;
+}
+
+function slug(value: string) {
+  return value.normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+}
+
+async function verifyAdmin(req: Request) {
+  const authorization = req.headers.get("Authorization");
+  if (!authorization?.startsWith("Bearer ")) throw new Error("Sesión no válida");
+
+  const supabaseUrl = secret("SUPABASE_URL");
+  const anonKey = secret("SUPABASE_ANON_KEY");
+  const serviceKey = secret("SUPABASE_SERVICE_ROLE_KEY");
+
+  const userResponse = await fetch(supabaseUrl + "/auth/v1/user", {
+    headers: { Authorization: authorization, apikey: anonKey },
+  });
+  if (!userResponse.ok) throw new Error("Sesión no válida");
+
+  const user = await userResponse.json();
+  if (!user?.id) throw new Error("Sesión no válida");
+
+  const params = new URLSearchParams({
+    select: "user_id",
+    user_id: "eq." + user.id,
+    limit: "1",
+  });
+  const adminResponse = await fetch(supabaseUrl + "/rest/v1/admin_users?" + params, {
+    headers: { Authorization: "Bearer " + serviceKey, apikey: serviceKey },
+  });
+  if (!adminResponse.ok) throw new Error("No se pudo comprobar la autorización");
+  const admins = await adminResponse.json();
+  if (!Array.isArray(admins) || admins.length !== 1) throw new Error("Usuario no autorizado");
+
+  return true;
+}
+
+function validateImage(bytes: Uint8Array, type: string) {
+  if (!bytes.length || bytes.length > 5 * 1024 * 1024) {
+    throw new Error("Imagen vacía o superior a 5 MB");
+  }
+  const jpeg = bytes.length >= 3 && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff;
+  const png = bytes.length >= 8 && bytes[0] === 0x89 && bytes[1] === 0x50 &&
+    bytes[2] === 0x4e && bytes[3] === 0x47 && bytes[4] === 0x0d &&
+    bytes[5] === 0x0a && bytes[6] === 0x1a && bytes[7] === 0x0a;
+  const webp = bytes.length >= 12 &&
+    String.fromCharCode(...bytes.subarray(8, 12)) === "WEBP";
+  if ((type === "image/jpeg" && !jpeg) || (type === "image/png" && !png) ||
+      (type === "image/webp" && !webp)) {
+    throw new Error("El contenido no coincide con el formato de imagen");
+  }
+}
+
+function toBase64(bytes: Uint8Array) {
+  let binary = "";
+  for (let i = 0; i < bytes.length; i += 0x8000) {
+    binary += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+  }
+  return btoa(binary);
+}
+
+async function saveToGitHub(path: string, content: string) {
+  const owner = secret("GITHUB_OWNER");
+  const repo = secret("GITHUB_REPO");
+  const token = secret("GITHUB_TOKEN");
+  const branch = Deno.env.get("GITHUB_BRANCH") || "main";
+  const encodedPath = path.split("/").map(encodeURIComponent).join("/");
+  const url = "https://api.github.com/repos/" + owner + "/" + repo + "/contents/" + encodedPath;
+  const headers = {
+    Authorization: "Bearer " + token,
+    Accept: "application/vnd.github+json",
+    "X-GitHub-Api-Version": "2022-11-28",
+    "Content-Type": "application/json",
+  };
+
+  const existing = await fetch(url + "?ref=" + encodeURIComponent(branch), { headers });
+  let sha: string | undefined;
+  if (existing.ok) {
+    sha = (await existing.json()).sha;
+  } else if (existing.status !== 404) {
+    throw new Error("No se pudo consultar el repositorio de GitHub (" + existing.status + ")");
+  }
+
+  const payload: Record<string, unknown> = {
+    message: "Subir fotografía desde el panel de Carnicería Rodri",
+    content,
+    branch,
+  };
+  if (sha) payload.sha = sha;
+
+  const response = await fetch(url, {
+    method: "PUT",
+    headers,
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) {
+    throw new Error("GitHub no pudo guardar la imagen (" + response.status + ")");
+  }
+}
+
+Deno.serve(async (req: Request) => {
+  const origin = req.headers.get("Origin");
+  if (req.method === "OPTIONS") return new Response("ok", { headers: cors(origin) });
+  if (req.method !== "POST") return json({ error: "Método no permitido" }, 405, origin);
+  if (origin !== allowedOrigin) return json({ error: "Origen no permitido" }, 403, origin);
+
+  try {
+    await verifyAdmin(req);
+    const body = await req.json();
+    if (body.action !== "upload") return json({ error: "Acción no permitida" }, 400, origin);
+    if (!["product", "option"].includes(body.kind)) return json({ error: "Tipo no válido" }, 400, origin);
+
+    const type = String(body.contentType || "");
+    if (!["image/jpeg", "image/png", "image/webp"].includes(type)) {
+      return json({ error: "Formato no permitido" }, 400, origin);
+    }
+
+    const encoded = String(body.contentBase64 || "");
+    if (!encoded || encoded.length > 7100000) return json({ error: "Imagen superior a 5 MB" }, 413, origin);
+    const bytes = Uint8Array.from(atob(encoded), (character) => character.charCodeAt(0));
+    validateImage(bytes, type);
+
+    const category = slug(String(body.category || "otros"));
+    const product = slug(String(body.productSlug || ""));
+    if (!category || !product || category.length > 80 || product.length > 100) {
+      return json({ error: "Categoría o producto no válido" }, 400, origin);
+    }
+
+    const extension = type === "image/png" ? "png" : type === "image/webp" ? "webp" : "jpg";
+    const version = Date.now();
+    let path = "img/productos/" + category + "/" + product + "/";
+    if (body.kind === "product") {
+      path += "principal-" + version + "." + extension;
+    } else {
+      const option = slug(String(body.optionSlug || "preparacion"));
+      if (!option || option.length > 100) return json({ error: "Preparación no válida" }, 400, origin);
+      path += option + "-" + version + "." + extension;
+    }
+
+    await saveToGitHub(path, toBase64(bytes));
+    return json({ path }, 200, origin);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Error inesperado";
+    const denied = /sesión|autorizado|autorización|origen/i.test(message);
+    return json({ error: message }, denied ? 403 : 400, origin);
+  }
+});
