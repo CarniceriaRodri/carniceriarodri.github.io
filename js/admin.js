@@ -109,15 +109,16 @@
    $('emptyNotice').hidden=true;
    const catalogue=(window.PRODUCTOS||[]);
    const categoryMeta={
-     vacuno:{name:'Vacuno y Ternera',icon:'🥩',color:'#7b2e20',bg:'#f8f0e9'},
-     cerdo:{name:'Cerdo e Ibérico',icon:'🐖',color:'#8a4d36',bg:'#fbf1ed'},
-     aves:{name:'Pollo, aves',icon:'🐔',color:'#8a6b20',bg:'#fbf7e9'},
-     cordero:{name:'Cordero',icon:'🐑',color:'#766044',bg:'#f5f1e9'},
-     elaborados:{name:'Elaborados de la Casa',icon:'🍖',color:'#9a4b28',bg:'#fbf0e8'},
-     charcuteria:{name:'Charcutería',icon:'🧀',color:'#80612a',bg:'#f8f4e8'},
-     bebidas:{name:'Refrescos y Bebidas',icon:'🥤',color:'#356b83',bg:'#edf5f8'},
-     despensa:{name:'Despensa y Barbacoa',icon:'🫒',color:'#527044',bg:'#f0f5ec'}
-   };
+     salado:{name:'Salado',icon:'🧂',color:'#80612a',bg:'#f8f4e8'},
+     precocinados:{name:'Precocinados',icon:'🍗',color:'#9a4b28',bg:'#fbf0e8'},
+     cerdo:{name:'Cerdo',icon:'🐖',color:'#8a4d36',bg:'#fbf1ed'},
+     ternera:{name:'Ternera',icon:'🥩',color:'#7b2e20',bg:'#f8f0e9'},
+     iberico:{name:'Cerdo ibérico',icon:'🐖',color:'#70402f',bg:'#f8efeb'},
+     pollo:{name:'Pollo',icon:'🐔',color:'#8a6b20',bg:'#fbf7e9'},
+     gallina:{name:'Gallina',icon:'🐓',color:'#766044',bg:'#f5f1e9'},
+     pavo:{name:'Pavo',icon:'🦃',color:'#80612a',bg:'#f8f4e8'},
+     bebidas:{name:'Refrescos y bebidas',icon:'🥤',color:'#356b83',bg:'#edf5f8'}
+   };;
    products.sort((a,b)=>{
      const pa=catalogue.find(x=>String(x.id)===String(a.id));
      const pb=catalogue.find(x=>String(x.id)===String(b.id));
