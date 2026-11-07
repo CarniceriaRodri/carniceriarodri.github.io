@@ -206,7 +206,7 @@
         : '';
       return `
         <li class="line">
-          <img src="${img(p.img, 120, 120)}" alt="" width="60" height="60" loading="lazy" decoding="async">
+          <img src="${img(l.img || p.img, 120, 120)}" alt="" width="60" height="60" loading="lazy" decoding="async">
           <div class="line-info">
             <strong>${escapeHtml(p.nombre)}</strong>
             <span>${escapeHtml(l.cantidad)} · ${escapeHtml(l.opcion)}</span>
@@ -231,10 +231,14 @@
     }
   }
 
-  function addToCart(id, cantidad, opcion) {
+  function addToCart(id, cantidad, opcion, imagenSeleccionada) {
     const existing = cart.find((l) => l.id === id && l.cantidad === cantidad && l.opcion === opcion);
-    if (existing) existing.uds++;
-    else cart.push({ id, cantidad, opcion, uds: 1 });
+    if (existing) {
+      existing.uds++;
+      if (imagenSeleccionada) existing.img = imagenSeleccionada;
+    } else {
+      cart.push({ id, cantidad, opcion, uds: 1, ...(imagenSeleccionada ? { img: imagenSeleccionada } : {}) });
+    }
     save();
     renderCart();
     const btn = $('.cart-btn');
@@ -610,7 +614,17 @@
       const p = PRODUCTOS.find((x) => x.id === c.dataset.id);
       const cantidad = $('[data-field="cantidad"]', c).value;
       const opcion = $('[data-field="opcion"]', c).value;
-      addToCart(p.id, cantidad, opcion);
+      const imagenSeleccionada = p.id === 'pollo'
+        ? ({
+            pechugasenfiletes: 'pollo/pechugas-filetes',
+            pechugasenteras: 'pollo/pechugas-enteras',
+            muslosycontramuslos: 'pollo/muslos-contramuslos',
+            contramuslodeshuesado: 'pollo/contramuslo-deshuesado',
+            troceadoparaguisar: 'pollo/pollo-troceado',
+            abiertoparaasar: 'pollo/pollo-entero'
+          })[normalizarClave(opcion)] || 'pollo/pollo'
+        : null;
+      addToCart(p.id, cantidad, opcion, imagenSeleccionada);
       if (p.id === 'pollo') {
         restaurarFotoPrincipalPollo(c);
       }
