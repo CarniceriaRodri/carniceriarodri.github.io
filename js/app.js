@@ -153,6 +153,7 @@
               <select data-field="opcion">${p.opciones.map((o) => `<option>${escapeHtml(o)}</option>`).join('')}</select>
             </label>
             <p class="card-precio" data-price>${escapeHtml(p.precio || 'Selecciona una opción para ver el precio')} </p>
+            ${p.preparations && p.preparations.length ? '<label><span>Preparación</span><select data-field="preparacion"><option value="">Sin preparación</option>'+p.preparations.map(x => '<option>'+escapeHtml(x)+'</option>').join('')+'</select></label>' : ''}
             <label>
               <span>Cantidad</span>
               <select data-field="cantidad">${p.cantidades.map((o) => `<option>${escapeHtml(o)}</option>`).join('')}</select>
@@ -243,7 +244,7 @@
           <img src="${l.img ? publicImageUrl(l.img) : imageForProduct(p)}" alt="" width="60" height="60" loading="lazy" decoding="async">
           <div class="line-info">
             <strong>${escapeHtml(p.nombre)}</strong>
-            <span>${escapeHtml(l.cantidad)} · ${escapeHtml(l.opcion)}</span>
+            <span>${escapeHtml(l.cantidad)} · ${escapeHtml(l.opcion)}${l.preparacion ? ' · ' + escapeHtml(l.preparacion) : ''}</span>
             ${precioTexto}
           </div>
           <div class="stepper" aria-label="Unidades">
@@ -265,14 +266,14 @@
     }
   }
 
-  function addToCart(id, cantidad, opcion, imagenSeleccionada) {
+  function addToCart(id, cantidad, opcion, imagenSeleccionada, preparacion = '') {
     const carritoEstabaVacio = cart.length === 0;
-    const existing = cart.find((l) => l.id === id && l.cantidad === cantidad && l.opcion === opcion);
+    const existing = cart.find((l) => l.id === id && l.cantidad === cantidad && l.opcion === opcion && (l.preparacion || '') === preparacion);
     if (existing) {
       existing.uds++;
       if (imagenSeleccionada) existing.img = imagenSeleccionada;
     } else {
-      cart.push({ id, cantidad, opcion, uds: 1, ...(imagenSeleccionada ? { img: imagenSeleccionada } : {}) });
+      cart.push({ id, cantidad, opcion, preparacion, uds: 1, ...(imagenSeleccionada ? { img: imagenSeleccionada } : {}) });
     }
     save();
     if (carritoEstabaVacio) prepararHistorialSalida();
@@ -798,8 +799,9 @@
       const p = PRODUCTOS.find((x) => x.id === c.dataset.id);
       const cantidad = $('[data-field="cantidad"]', c).value;
       const opcion = $('[data-field="opcion"]', c).value;
+      const preparacion = c.querySelector('[data-field="preparacion"]')?.value || '';
       const imagenSeleccionada = c.dataset.selectedImage || imageForProduct(p);
-      addToCart(p.id, cantidad, opcion, imagenSeleccionada);
+      addToCart(p.id, cantidad, opcion, imagenSeleccionada, preparacion);
       actualizarImagenTarjeta(c, false);
       add.classList.add('added');
       setTimeout(() => add.classList.remove('added'), 900);
@@ -919,6 +921,12 @@ const product = PRODUCTOS.find(p => String(p.id) === String(row.id))
         if (!product) return;
         catalogProductByDatabaseId.set(String(row.id), product);
         product.imageUrl = publicImageUrl(row.image) || '';
+        product.saleUnit = row.sale_unit || null;
+        product.preparations = Array.isArray(row.preparations) ? row.preparations : [];
+        if (product.saleUnit) {
+          product.precio = product.precio ? product.precio.replace(/\/(kg|ud)/i, '/' + product.saleUnit) : product.precio;
+          product.cantidades = product.saleUnit === 'kg' ? ['250 gr','500 gr','750 gr','1 kg'] : ['1 unidad','2 unidades','4 unidades','6 unidades'];
+        }
         if (row.base_price_cents === null || row.base_price_cents === undefined || !Number.isFinite(Number(row.base_price_cents))) return;
         const unit = (product.precio && product.precio.match(/\/(kg|ud)/i) || [,'ud'])[1].toLowerCase();
         const basePrice = Number(row.base_price_cents) / 100;
