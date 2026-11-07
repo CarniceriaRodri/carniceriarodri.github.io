@@ -708,12 +708,11 @@
     if (quantity) actualizarImagenTarjeta(quantity.closest('.card'), true);
   });
   document.addEventListener('pointerdown', (event) => {
-    const tarjetaActiva = event.target.closest('.card');
-    // Al interactuar con otra tarjeta (o fuera del catálogo), las anteriores
-    // vuelven a su fotografía principal. La tarjeta que se está usando conserva
-    // la foto de la opción elegida hasta que se cambie de producto.
+    // Solo el desplegable de preparación mantiene/activa la foto de opción.
+    // Al tocar cualquier otro lugar, se restaura la imagen principal.
+    if (event.target.closest('.card [data-field="opcion"]')) return;
     document.querySelectorAll('.card[data-selected-image]').forEach(cardEl => {
-      if (cardEl !== tarjetaActiva) actualizarImagenTarjeta(cardEl, false);
+      actualizarImagenTarjeta(cardEl, false);
     });
   });
   // Actualiza precio y cantidades al cambiar cualquier opción del catálogo.
