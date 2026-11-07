@@ -6,7 +6,7 @@
   let hashTemprano = location.hash;
   history.replaceState({ rodriPageEntry: true }, '', location.href);
   history.pushState({ rodriExitGuard: true }, '', location.href);
-  window.addEventListener('popstate', () => {
+  function protegerSalidaDuranteCarga() {
     const hashActual = location.hash;
     if (hashActual !== hashTemprano) {
       hashTemprano = hashActual;
@@ -16,7 +16,8 @@
     if (!history.state?.rodriExitGuard && !history.state?.rodriCartOpen) {
       history.pushState({ rodriExitGuard: true }, '', location.href);
     }
-  });
+  }
+  window.addEventListener('popstate', protegerSalidaDuranteCarga);
 
 
   // Comprobar si la tienda está en mantenimiento
@@ -349,6 +350,10 @@
       prepararHistorialSalida();
     }));
   });
+
+  // La protección temprana solo es necesaria mientras se comprueba mantenimiento.
+  // Desde aquí, el listener normal gestiona carrito y navegación interna.
+  window.removeEventListener('popstate', protegerSalidaDuranteCarga);
 
   // Crear la guardia también en una carga directa desde marcador/acceso directo.
   prepararHistorialSalida();
