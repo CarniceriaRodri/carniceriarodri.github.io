@@ -261,7 +261,6 @@
   let salidaDialogo = null;
   let cartHistoryEntry = false;
   let cartClosePending = false;
-  let salidaConfirmada = false;
 
   function prepararHistorialSalida() {
     // Evitar duplicar la entrada de protección si ya estamos sobre ella.
@@ -411,7 +410,6 @@
     });
     salidaDialogo.querySelector('[data-exit]')?.addEventListener('click', () => {
       ocultarAvisoSalida();
-      salidaConfirmada = true;
       // Saltar la protección rearmada y la entrada inicial de la tienda.
       history.go(-2);
     });
