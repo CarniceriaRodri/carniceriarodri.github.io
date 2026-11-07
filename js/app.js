@@ -283,7 +283,11 @@
     salidaGuardada = false;
 
     // No interferir con el envío ni con la confirmación del pedido.
-    if (pedidoEnProceso) return;
+    // Si Android Atrás se pulsa durante el checkout, conservar la protección.
+    if (pedidoEnProceso) {
+      prepararHistorialSalida();
+      return;
+    }
 
     // Si el panel del carrito está abierto, Atrás lo cierra primero.
     if (drawer && drawer.classList.contains('open')) {
