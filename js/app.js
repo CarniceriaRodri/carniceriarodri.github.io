@@ -301,14 +301,12 @@
     const navegacionInterna = hashActual !== ultimoHash;
     ultimoHash = hashActual;
 
-    // Cerrar el carrito por un Atrás iniciado desde su botón o su fondo.
+    // Atrás con el carrito abierto solo cierra el carrito.
     if (cartClosePending) {
       cartClosePending = false;
       cartHistoryEntry = false;
       return;
     }
-
-    // Si Atrás se pulsa con el carrito abierto, solo cierra ese panel.
     if (drawer && drawer.classList.contains('open')) {
       cartHistoryEntry = false;
       closeCart(true);
@@ -316,41 +314,34 @@
       return;
     }
 
-    // Los cambios reales de hash siguen siendo navegación interna normal.
+    // Los cambios de sección por hash nunca son intentos de abandonar la tienda.
     if (navegacionInterna) return;
 
-    // Durante el pedido no se muestra la confirmación de salida.
     if (pedidoEnProceso) {
-      if (history.state?.rodriExitGuard) {
-        history.replaceState({ rodriPageEntry: true }, '', location.href);
-      }
       prepararHistorialSalida();
       return;
     }
 
-    // No dependemos de una marca concreta del historial: Chrome puede
-    // restaurar entradas con estados distintos. Si Atrás no cambió de sección
-    // y la página está arriba, interpretamos que se intenta abandonar la tienda.
-    requestAnimationFrame(() => {
+    // Chrome puede terminar de restaurar el scroll después de popstate.
+    requestAnimationFrame(() => requestAnimationFrame(() => {
       if (window.scrollY <= 24) mostrarAvisoSalida();
 
-      // Si hemos aterrizado sobre una guardia antigua, convertirla en entrada
-      // base y crear una guardia nueva para el siguiente intento de salida.
       if (history.state?.rodriExitGuard) {
         history.replaceState({ rodriPageEntry: true }, '', location.href);
       }
       prepararHistorialSalida();
-    });
+    }));
   });
 
+  // Crear la guardia también en una carga directa desde marcador/acceso directo.
   prepararHistorialSalida();
 
-  window.addEventListener('pageshow', (event) => {
-    // Al volver desde otra página (incluida una restauración bfcache),
-    // reconstruir la protección incluso si Chrome conserva un hash.
-    if (!event.persisted || drawer?.classList.contains('open')) return;
-    history.replaceState({ rodriPageEntry: true }, '', location.href);
-    prepararHistorialSalida();
+  window.addEventListener('pageshow', () => {
+    if (drawer?.classList.contains('open')) return;
+    // pageshow ocurre tanto en la carga inicial como al restaurar desde bfcache.
+    if (!history.state?.rodriExitGuard && !history.state?.rodriCartOpen) {
+      prepararHistorialSalida();
+    }
     ultimoHash = location.hash;
   });
 
