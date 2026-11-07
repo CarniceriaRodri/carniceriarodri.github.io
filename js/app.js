@@ -947,9 +947,7 @@ const product = PRODUCTOS.find(p => String(p.id) === String(row.id))
         );
         if (optionsResponse.ok) {
           const optionRows = await optionsResponse.json();
-          const picada = PRODUCTOS.find(p => p.id === 'picada');
-          if (picada) {
-            PRODUCTOS.forEach(product => {
+          PRODUCTOS.forEach(product => {
               product.cantidadesOriginales = product.cantidades.slice();
               product.factoresOpciones = {};
               const configured = window.FACTORES_OPCIONES && window.FACTORES_OPCIONES[product.id];
@@ -981,7 +979,6 @@ const product = PRODUCTOS.find(p => String(p.id) === String(row.id))
                 product.preciosOpciones[key] = Number(row.price_cents) / 100;
               }
             });
-          }
         }
       }
     } catch (error) {
