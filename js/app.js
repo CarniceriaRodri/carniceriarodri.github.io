@@ -449,6 +449,10 @@
   async function enviar(e) {
     e.preventDefault();
 
+    // Marcar el flujo de pedido desde el primer instante del submit para que
+    // ningún popstate generado durante el checkout muestre el aviso de salida.
+    pedidoEnProceso = true;
+
     const nombre = $('#nombre').value.trim().replace(/\s+/g, ' ');
     const telefono = $('#telefono').value.trim();
     const hora = $('#hora').value;
@@ -476,14 +480,16 @@
      errorHora.textContent = 'La recogida debe ser entre las 08:00 y las 20:00.';
     errorHora.classList.toggle('show', !horaValida);
 
-    if (!nombreValido || !telefonoValido || !horaValida) return;
-
-    if (!turnstileToken) {
-      toast('Completa la verificación de seguridad antes de enviar el pedido.');
+    if (!nombreValido || !telefonoValido || !horaValida) {
+      pedidoEnProceso = false;
       return;
     }
 
-    pedidoEnProceso = true;
+    if (!turnstileToken) {
+      pedidoEnProceso = false;
+      toast('Completa la verificación de seguridad antes de enviar el pedido.');
+      return;
+    }
 
     const hoy = new Date();
     const dd = String(hoy.getDate()).padStart(2, '0');
