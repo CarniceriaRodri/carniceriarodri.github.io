@@ -25,7 +25,7 @@ window.PRODUCTOS = [
   { id: 'filetes-empanados', cat: 'precocinados', nombre: 'Filetes empanados', desc: '', opcionLabel: 'Preparación', opciones: ['Sin especificar'], cantidades: ["1 unidad","2 unidades","4 unidades","6 unidades"], img: '' },
   { id: 'lagrimitas-de-pollo', cat: 'precocinados', nombre: 'Lagrimitas de pollo', desc: '', opcionLabel: 'Preparación', opciones: ['Sin especificar'], cantidades: ["1 unidad","2 unidades","4 unidades","6 unidades"], img: '' },
   { id: 'aneto-jamon-y-queso', cat: 'precocinados', nombre: 'Aneto jamón y queso', desc: '', opcionLabel: 'Preparación', opciones: ['Sin especificar'], cantidades: ["250 gr","500 gr","750 gr","1 kg"], img: '' },
-  { id: 'albondigas', cat: 'precocinados', nombre: 'Albóndigas', desc: '', opcionLabel: 'Preparación', opciones: ['Sin especificar'], cantidades: ["1 unidad","2 unidades","4 unidades","6 unidades"], img: '' },
+  { id: 'albondigas-clasicas', cat: 'precocinados', nombre: 'Albóndigas', desc: '', opcionLabel: 'Preparación', opciones: ['Sin especificar'], cantidades: ["1 unidad","2 unidades","4 unidades","6 unidades"], img: '' },
   { id: 'albondigas-de-pollo', cat: 'precocinados', nombre: 'Albóndigas de pollo', desc: '', opcionLabel: 'Preparación', opciones: ['Sin especificar'], cantidades: ["1 unidad","2 unidades","4 unidades","6 unidades"], img: '' },
   { id: 'albondigas-mixtas', cat: 'precocinados', nombre: 'Albóndigas mixtas', desc: '', opcionLabel: 'Preparación', opciones: ['Sin especificar'], cantidades: ["1 unidad","2 unidades","4 unidades","6 unidades"], img: '' },
   { id: 'san-jacobo', cat: 'precocinados', nombre: 'San Jacobo', desc: '', opcionLabel: 'Preparación', opciones: ['Sin especificar'], cantidades: ["1 unidad","2 unidades","4 unidades","6 unidades"], img: '' },
@@ -49,8 +49,8 @@ window.PRODUCTOS = [
   { id: 'filete-de-jamon-de-cerdo', cat: 'cerdo', nombre: 'Filete de jamón de cerdo', desc: '', opcionLabel: 'Preparación', opciones: ['Sin especificar'], cantidades: ["250 gr","500 gr","750 gr","1 kg"], img: '' },
   { id: 'jamon-entero-de-cerdo', cat: 'cerdo', nombre: 'Jamón entero de cerdo', desc: '', opcionLabel: 'Preparación', opciones: ['Sin especificar'], cantidades: ["250 gr","500 gr","750 gr","1 kg"], img: '' },
   { id: 'paleta-entera-de-cerdo', cat: 'cerdo', nombre: 'Paleta entera de cerdo', desc: '', opcionLabel: 'Preparación', opciones: ['Sin especificar'], cantidades: ["250 gr","500 gr","750 gr","1 kg"], img: '' },
-  { id: 'morcilla', cat: 'cerdo', nombre: 'Morcilla', desc: '', opcionLabel: 'Preparación', opciones: ['Sin especificar'], cantidades: ["250 gr","500 gr","750 gr","1 kg"], img: '' },
-  { id: 'chorizo', cat: 'cerdo', nombre: 'Chorizo', desc: '', opcionLabel: 'Preparación', opciones: ['Sin especificar'], cantidades: ["250 gr","500 gr","750 gr","1 kg"], img: '' },
+  { id: 'morcilla-cerdo', cat: 'cerdo', nombre: 'Morcilla', desc: '', opcionLabel: 'Preparación', opciones: ['Sin especificar'], cantidades: ["250 gr","500 gr","750 gr","1 kg"], img: '' },
+  { id: 'chorizo-cerdo', cat: 'cerdo', nombre: 'Chorizo', desc: '', opcionLabel: 'Preparación', opciones: ['Sin especificar'], cantidades: ["250 gr","500 gr","750 gr","1 kg"], img: '' },
   { id: 'tiras-de-costilla', cat: 'cerdo', nombre: 'Tiras de costilla', desc: '', opcionLabel: 'Preparación', opciones: ['Sin especificar'], cantidades: ["250 gr","500 gr","750 gr","1 kg"], img: '' },
   { id: 'costilla-carnosa', cat: 'cerdo', nombre: 'Costilla carnosa', desc: '', opcionLabel: 'Preparación', opciones: ['Sin especificar'], cantidades: ["250 gr","500 gr","750 gr","1 kg"], img: '' },
   { id: 'jarrete-de-cerdo', cat: 'cerdo', nombre: 'Jarrete de cerdo', desc: '', opcionLabel: 'Preparación', opciones: ['Sin especificar'], cantidades: ["250 gr","500 gr","750 gr","1 kg"], img: '' },
@@ -78,8 +78,8 @@ window.PRODUCTOS = [
   { id: 'solomillo-iberico', cat: 'iberico', nombre: 'Solomillo ibérico', desc: '', opcionLabel: 'Preparación', opciones: ['Sin especificar'], cantidades: ["250 gr","500 gr","750 gr","1 kg"], img: '' },
   { id: 'costilla-iberica', cat: 'iberico', nombre: 'Costilla ibérica', desc: '', opcionLabel: 'Preparación', opciones: ['Sin especificar'], cantidades: ["250 gr","500 gr","750 gr","1 kg"], img: '' },
   { id: 'refrescos', cat: 'bebidas', nombre: 'Refrescos', desc: '', opcionLabel: 'Preparación', opciones: ['Sin especificar'], cantidades: ["1 unidad","2 unidades","4 unidades","6 unidades"], img: '' },
-  { id: 'cervezas-y-vinos', cat: 'bebidas', nombre: 'Cervezas y vinos', desc: '', opcionLabel: 'Preparación', opciones: ['Sin especificar'], cantidades: ["1 unidad","2 unidades","4 unidades","6 unidades"], img: '' },
-  { id: 'agua-y-zumos', cat: 'bebidas', nombre: 'Agua y zumos', desc: '', opcionLabel: 'Preparación', opciones: ['Sin especificar'], cantidades: ["1 unidad","2 unidades","4 unidades","6 unidades"], img: '' },
+  { id: 'cervezas-vinos', cat: 'bebidas', nombre: 'Cervezas y vinos', desc: '', opcionLabel: 'Preparación', opciones: ['Sin especificar'], cantidades: ["1 unidad","2 unidades","4 unidades","6 unidades"], img: '' },
+  { id: 'agua-zumos', cat: 'bebidas', nombre: 'Agua y zumos', desc: '', opcionLabel: 'Preparación', opciones: ['Sin especificar'], cantidades: ["1 unidad","2 unidades","4 unidades","6 unidades"], img: '' },
 ];
 
 window.FACTORES_OPCIONES = {};
