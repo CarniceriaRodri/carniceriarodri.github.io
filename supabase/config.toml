@@ -1,0 +1,4 @@
+project_id = "ugqiomoywgpkmogcdjqn"
+
+[functions.github-images]
+verify_jwt = true

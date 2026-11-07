@@ -153,12 +153,12 @@
 
    $('products').innerHTML=groupedProducts.map(group=>{
      const categoryProducts=group.items.map(p=>{
-       const cp=catalogue.find(item=>String(item.id)===String(p.id));
+       const cp=catalogue.find(item=>String(item.id)===String(p.id))||catalogue.find(item=>imageSlug(item.nombre)===imageSlug(p.name));
        const opts=optionRows.filter(o=>String(o.product_id)===String(p.id));
        const missing=(cp?.opciones||[]).filter(label=>!opts.some(o=>String(o.label).trim().toLocaleLowerCase('es')===String(label).trim().toLocaleLowerCase('es')));
-       const saved=opts.map(o=>optionMarkup(o)).join('');
+       const saved=opts.map(o=>optionMarkup(o,p)).join('');
        const pending=missing.map(label=>'<div class="option-item pending-option"><div class="option-heading"><div class="option-name">'+escapeHtml(label)+'</div><span class="option-state">Pendiente</span></div><div class="add-option-row"><input inputmode="decimal" placeholder="Precio (€)" aria-label="Precio para '+escapeHtml(label)+'" data-pending-price="'+p.id+'" data-pending-label="'+escapeHtml(label)+'"><button class="icon-button" title="Añadir opción" aria-label="Añadir opción" data-add-catalogue-option="'+p.id+'" data-option-label="'+escapeHtml(label)+'">➕</button></div></div>').join('');
-       return '<article class="product product-unified"><div class="product-head"><div><div class="product-name">'+escapeHtml(p.name)+'</div><div class="category">'+escapeHtml(p.category||group.meta.name)+(p.active?'':' · Inactivo')+'</div></div><button type="button" class="image-action product-image-action" data-image-product="'+escapeHtml(p.id)+'" data-image-path="'+escapeHtml(p.image||'')+'" title="Gestionar imagen principal" aria-label="Gestionar imagen principal de '+escapeHtml(p.name)+'">📷 Imagen</button></div>'+
+       return '<article class="product product-unified"><div class="product-head"><div><div class="product-name">'+escapeHtml(p.name)+'</div><div class="category">'+escapeHtml(p.category||group.meta.name)+(p.active?'':' · Inactivo')+'</div></div><button type="button" class="image-action product-image-action" data-image-product="'+escapeHtml(p.id)+'" data-image-category="'+escapeHtml(cp?.cat||p.category||'otros')+'" data-image-product-slug="'+escapeHtml(cp?.id||p.name||p.id)+'" data-image-path="'+escapeHtml(p.image||'')+'" title="Gestionar imagen principal" aria-label="Gestionar imagen principal de '+escapeHtml(p.name)+'">📷 Imagen</button></div>'+
          '<details class="options-details" data-product-options="'+p.id+'"'+(openOptionPanels.has(String(p.id))?' open':'')+'><summary>Opciones - Añadir <span class="muted">'+opts.length+' guardadas · '+missing.length+' pendientes</span></summary><div class="options-content">'+
          (saved||'')+(pending||'')+
          '<div class="option" style="margin-top:14px;font-weight:700;color:var(--ink)">Añadir otra opción</div><div class="add-option-row"><label class="sr-only" for="new-label-'+p.id+'">Nombre opción</label><input id="new-label-'+p.id+'" placeholder="Nombre opción"><label class="sr-only" for="new-price-'+p.id+'">Precio (€)</label><input id="new-price-'+p.id+'" inputmode="decimal" placeholder="Precio (€)"><button class="icon-button" aria-label="Añadir opción" data-add-option="'+p.id+'">➕</button></div></div></details></article>';
@@ -169,8 +169,8 @@
    status('adminStatus',products.length+' productos cargados.');
  }
 
- function optionMarkup(o){
-   return '<div class="option-item"><div class="option-heading"><div class="option-name">'+escapeHtml(o.label)+'</div><button type="button" class="image-action" data-image-option="'+escapeHtml(o.id)+'" data-image-path="'+escapeHtml(o.image||'')+'" data-show-image="'+(o.show_image!==false?'true':'false')+'" title="Gestionar imagen de '+escapeHtml(o.label)+'" aria-label="Gestionar imagen de '+escapeHtml(o.label)+'">📷</button><button class="option-toggle'+(o.active?'':' is-off')+'" data-toggle-option="'+o.id+'" data-next-active="'+(o.active?'false':'true')+'" title="'+(o.active?'Desactivar':'Activar')+'" aria-label="'+(o.active?'Desactivar':'Activar')+'">'+(o.active?'ON':'OFF')+'</button></div><div class="option-state">'+(o.active?'Activo':'Inactivo')+(o.image?' · Tiene imagen':' · Usa imagen principal')+'</div><div class="price-row"><label class="sr-only" for="opt-'+o.id+'">Precio (€)</label><input id="opt-'+o.id+'" inputmode="decimal" value="'+(Number(o.price_cents||0)/100).toFixed(2)+'"><button class="save-icon" data-save-option="'+o.id+'" title="Guardar" aria-label="Guardar">💾</button><button class="secondary" data-delete-option="'+o.id+'" aria-label="Eliminar opción">×</button></div></div>';
+ function optionMarkup(o,p){
+   return '<div class="option-item"><div class="option-heading"><div class="option-name">'+escapeHtml(o.label)+'</div><button type="button" class="image-action" data-image-option="'+escapeHtml(o.id)+'" data-image-category="'+escapeHtml((window.PRODUCTOS||[]).find(x=>String(x.id)===String(p.id))?.cat||p.category||'otros')+'" data-image-product-slug="'+escapeHtml((window.PRODUCTOS||[]).find(x=>String(x.id)===String(p.id))?.id||p.name||p.id)+'" data-image-option-slug="'+escapeHtml(o.label)+'" data-image-path="'+escapeHtml(o.image||'')+'" data-show-image="'+(o.show_image!==false?'true':'false')+'" title="Gestionar imagen de '+escapeHtml(o.label)+'" aria-label="Gestionar imagen de '+escapeHtml(o.label)+'">📷</button><button class="option-toggle'+(o.active?'':' is-off')+'" data-toggle-option="'+o.id+'" data-next-active="'+(o.active?'false':'true')+'" title="'+(o.active?'Desactivar':'Activar')+'" aria-label="'+(o.active?'Desactivar':'Activar')+'">'+(o.active?'ON':'OFF')+'</button></div><div class="option-state">'+(o.active?'Activo':'Inactivo')+(o.image?' · Tiene imagen':' · Usa imagen principal')+'</div><div class="price-row"><label class="sr-only" for="opt-'+o.id+'">Precio (€)</label><input id="opt-'+o.id+'" inputmode="decimal" value="'+(Number(o.price_cents||0)/100).toFixed(2)+'"><button class="save-icon" data-save-option="'+o.id+'" title="Guardar" aria-label="Guardar">💾</button><button class="secondary" data-delete-option="'+o.id+'" aria-label="Eliminar opción">×</button></div></div>';
  }
 
  function escapeHtml(v){
@@ -208,9 +208,13 @@
  function imagePublicUrl(path){
    if(!path)return '';
    if(/^https?:\/\//i.test(path))return path;
+   if(String(path).startsWith('img/'))return path;
    if(managedStoragePath(path))return client.storage.from('product-images').getPublicUrl(path).data.publicUrl;
    return 'img/productos/'+String(path).replace(/^\/+/, '')+'.jpg';
  }
+ function imageSlug(value){return String(value||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')||'imagen'}
+ function fileBase64(file){return file.arrayBuffer().then(buffer=>{const bytes=new Uint8Array(buffer);let binary='';for(let i=0;i<bytes.length;i+=0x8000)binary+=String.fromCharCode(...bytes.subarray(i,i+0x8000));return btoa(binary)})}
+ function storagePathFromImage(value){if(!value)return null;if(managedStoragePath(value))return value;const marker='/storage/v1/object/public/product-images/',i=String(value).indexOf(marker);return i<0?null:String(value).slice(i+marker.length).split('/').map(decodeURIComponent).join('/')}
  function openImageEditor(target){
    imageTarget=target;
    selectedImageFile=null;
@@ -266,21 +270,15 @@
      let newPath=target.path||null;
      if(selectedImageFile){
        const extension=selectedImageFile.type==='image/png'?'png':selectedImageFile.type==='image/webp'?'webp':'jpg';
-       const folder=target.kind==='product'?'products':'options';
-       const objectPath=folder+'/'+target.id+'/'+(target.kind==='product'?'main':'image')+'.'+extension;
-       const {error:uploadError}=await client.storage.from('product-images').upload(objectPath,selectedImageFile,{upsert:true,contentType:selectedImageFile.type,cacheControl:'3600'});
+       const {data:uploadData,error:uploadError}=await client.functions.invoke('github-images',{body:{action:'upload',kind:target.kind,id:target.id,category:target.category,productSlug:target.productSlug,optionSlug:target.optionSlug,contentType:selectedImageFile.type,contentBase64:await fileBase64(selectedImageFile)}});
        if(uploadError)throw uploadError;
-       newPath=objectPath;
-       changes.image=newPath;
+       if(!uploadData?.path)throw new Error('GitHub no devolvió la ruta de la imagen.');
+       newPath=uploadData.path;changes.image=newPath;
      }
      if(target.kind==='option')changes.show_image=$('imageShowToggle').checked;
      const table=target.kind==='product'?'products':'product_options';
      const {error:updateError}=await client.from(table).update(changes).eq('id',target.id);
      if(updateError)throw updateError;
-     if(target.path&&target.path!==newPath&&managedStoragePath(target.path)){
-       const {error:removeError}=await client.storage.from('product-images').remove([target.path]);
-       if(removeError)console.warn('No se pudo retirar la imagen anterior:',removeError.message);
-     }
      closeImageEditor();
      status('adminStatus','Imagen guardada correctamente.');
      await loadProducts();
@@ -304,10 +302,6 @@
      const changes=target.kind==='option'?{image:null,show_image:false}:{image:null};
      const {error:updateError}=await client.from(table).update(changes).eq('id',target.id);
      if(updateError)throw updateError;
-     if(managedStoragePath(target.path)){
-       const {error:removeError}=await client.storage.from('product-images').remove([target.path]);
-       if(removeError)console.warn('No se pudo borrar el archivo anterior:',removeError.message);
-     }
      closeImageEditor();
      status('adminStatus','Imagen quitada. Se utilizará la imagen principal cuando corresponda.');
      await loadProducts();
@@ -319,6 +313,24 @@
    }
  });
 
+
+ async function migrateExistingImages(){
+  const button=$('migrateImages');button.disabled=true;
+  try{
+   status('adminStatus','Buscando imágenes antiguas…');
+   const [{data:ps,error:pe},{data:os,error:oe}]=await Promise.all([client.from('products').select('id,name,category,image'),client.from('product_options').select('id,product_id,label,image')]);
+   if(pe)throw pe;if(oe)throw oe;
+   const cat=window.PRODUCTOS||[],byId=new Map((ps||[]).map(p=>[String(p.id),p])),tasks=[];
+   (ps||[]).forEach(p=>{const source=storagePathFromImage(p.image);if(!source)return;const cp=cat.find(x=>String(x.id)===String(p.id))||cat.find(x=>imageSlug(x.nombre)===imageSlug(p.name));const category=imageSlug(cp?.cat||p.category||'otros'),product=imageSlug(cp?.id||p.name||p.id),ext=(source.match(/\.(jpe?g|png|webp)$/i)||[])[1]?.toLowerCase()||'jpg';tasks.push({table:'products',id:p.id,source,target:'img/productos/'+category+'/'+product+'.'+ext})});
+   (os||[]).forEach(o=>{const source=storagePathFromImage(o.image),p=byId.get(String(o.product_id));if(!source||!p)return;const cp=cat.find(x=>String(x.id)===String(p.id))||cat.find(x=>imageSlug(x.nombre)===imageSlug(p.name));const category=imageSlug(cp?.cat||p.category||'otros'),product=imageSlug(cp?.id||p.name||p.id),ext=(source.match(/\.(jpe?g|png|webp)$/i)||[])[1]?.toLowerCase()||'jpg';tasks.push({table:'product_options',id:o.id,source,target:'img/productos/'+category+'/'+product+'/'+imageSlug(o.label)+'.'+ext})});
+   if(!tasks.length){status('adminStatus','No hay imágenes antiguas pendientes de migrar.');return}
+   let copied=0;const errors=[];
+   for(let i=0;i<tasks.length;i++){const t=tasks[i];status('adminStatus','Copiando imágenes '+(i+1)+' de '+tasks.length+'…');const {data,error}=await client.functions.invoke('github-images',{body:{action:'migrate',sourcePath:t.source,targetPath:t.target}});if(error||!data?.path){errors.push(t.id+': '+(error?.message||'sin ruta'));continue}const {error:updateError}=await client.from(t.table).update({image:data.path}).eq('id',t.id);if(updateError)errors.push(t.id+': '+updateError.message);else copied++}
+   status('adminStatus','Migración: '+copied+'/'+tasks.length+' imágenes. '+(errors.length?'Errores: '+errors.join(' · '):'Los originales de Supabase se conservan.'));
+   await loadProducts();
+  }catch(error){status('adminStatus','No se pudo migrar: '+(error?.message||String(error)))}finally{button.disabled=false}
+ }
+ $('migrateImages').addEventListener('click',()=>{if(confirm('Se copiarán las imágenes antiguas a GitHub. Los originales de Supabase no se borrarán. ¿Continuar?'))migrateExistingImages()});
  $('products').addEventListener('click',async e=>{
    const closeCategoryButton=e.target.closest('[data-close-category]');
    if(closeCategoryButton){
@@ -330,11 +342,11 @@
    const imageProductButton=e.target.closest('[data-image-product]');
    const imageOptionButton=e.target.closest('[data-image-option]');
    if(imageProductButton){
-     openImageEditor({kind:'product',id:imageProductButton.dataset.imageProduct,name:imageProductButton.closest('.product')?.querySelector('.product-name')?.textContent||'Producto',path:imageProductButton.dataset.imagePath||null});
+     openImageEditor({kind:'product',id:imageProductButton.dataset.imageProduct,name:imageProductButton.closest('.product')?.querySelector('.product-name')?.textContent||'Producto',category:imageProductButton.dataset.imageCategory,productSlug:imageProductButton.dataset.imageProductSlug,path:imageProductButton.dataset.imagePath||null});
      return;
    }
    if(imageOptionButton){
-     openImageEditor({kind:'option',id:imageOptionButton.dataset.imageOption,name:imageOptionButton.closest('.option-item')?.querySelector('.option-name')?.textContent||'Preparación',path:imageOptionButton.dataset.imagePath||null,showImage:imageOptionButton.dataset.showImage!=='false'});
+     openImageEditor({kind:'option',id:imageOptionButton.dataset.imageOption,name:imageOptionButton.closest('.option-item')?.querySelector('.option-name')?.textContent||'Preparación',category:imageOptionButton.dataset.imageCategory,productSlug:imageOptionButton.dataset.imageProductSlug,optionSlug:imageOptionButton.dataset.imageOptionSlug,path:imageOptionButton.dataset.imagePath||null,showImage:imageOptionButton.dataset.showImage!=='false'});
      return;
    }
 
