@@ -341,9 +341,13 @@
   prepararHistorialSalida();
 
   window.addEventListener('pageshow', (event) => {
-    if (event.persisted && !history.state?.rodriExitGuard && !history.state?.rodriCartOpen) {
-      prepararHistorialSalida();
-    }
+    // Chrome puede restaurar la página desde bfcache con un historial cuyo
+    // estado anterior ya no es la entrada interna de la tienda. Al regresar
+    // desde otra página, reconstruimos la pareja pageEntry + exitGuard.
+    if (!event.persisted || location.hash || drawer?.classList.contains('open')) return;
+    history.replaceState({ rodriPageEntry: true }, '', location.href);
+    prepararHistorialSalida();
+    ultimoHash = location.hash;
   });
 
 
