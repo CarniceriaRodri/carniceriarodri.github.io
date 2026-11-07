@@ -467,7 +467,17 @@
       submitBtn.disabled = false;
       submitBtn.textContent = "Enviar pedido por WhatsApp";
     }
-    closeCart();
+    // Al confirmar un pedido, cerrar el carrito sin hacer history.back().
+    // Ese popstate podía confundirse con un intento de abandonar la tienda
+    // y mostrar el aviso "Salir / Seguir comprando" encima de la confirmación.
+    if (drawer?.classList.contains('open')) {
+      cartHistoryEntry = false;
+      cartClosePending = false;
+      if (history.state?.rodriCartOpen) {
+        history.replaceState({ rodriExitGuard: true }, '', location.href);
+      }
+      closeCart(true);
+    }
     const modal = document.getElementById('modalConfirmacion');
     const modalBackdrop = document.getElementById('modalBackdrop');
     const modalId = document.getElementById('confirmacionIdPedido');
