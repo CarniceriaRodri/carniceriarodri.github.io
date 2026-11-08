@@ -101,10 +101,11 @@ async function githubRequest(path: string, method = "GET", body?: Record<string,
     ...(body ? { body: JSON.stringify(body) } : {}),
   });
   const payload = await response.json().catch(() => ({}));
+  if (response.status === 404) return null;
   if (!response.ok) {
     const detail = typeof payload?.message === "string" ? payload.message : "sin detalle";
     throw new Error("GitHub API " + response.status + ": " + detail +
-      (response.status === 403 ? ". Comprueba que GITHUB_TOKEN tenga permisos Contents: read y write para este repositorio." : ""));
+      (response.status === 403 ? ". Revisa que GITHUB_TOKEN sea válido y tenga permisos Contents: read y write en el repositorio." : ""));
   }
   return payload;
 }
@@ -112,6 +113,7 @@ async function githubRequest(path: string, method = "GET", body?: Record<string,
 async function listGitHubFolder(folder: string) {
   const path = "img/productos/biblioteca/" + folder;
   const result = await githubRequest(path);
+  if (result === null) return [];
   if (!Array.isArray(result)) throw new Error("La ruta indicada no es una carpeta de GitHub.");
   return result.filter((item: any) => item && ["file", "dir"].includes(item.type))
     .map((item: any) => ({ name: item.name, path: item.path, type: item.type, sha: item.sha }));
@@ -136,7 +138,9 @@ async function saveToGitHub(path: string, content: string) {
   if (existing.ok) {
     sha = (await existing.json()).sha;
   } else if (existing.status !== 404) {
-    throw new Error("No se pudo consultar el repositorio de GitHub (" + existing.status + ")");
+    const detail = await existing.json().catch(() => ({}));
+    throw new Error("No se pudo consultar el repositorio de GitHub (" + existing.status + "): " + (detail?.message || "sin detalle") +
+      (existing.status === 403 ? ". Comprueba permisos Contents: read/write del token." : ""));
   }
 
   const payload: Record<string, unknown> = {
@@ -152,7 +156,9 @@ async function saveToGitHub(path: string, content: string) {
     body: JSON.stringify(payload),
   });
   if (!response.ok) {
-    throw new Error("GitHub no pudo guardar la imagen (" + response.status + ")");
+    const detail = await response.json().catch(() => ({}));
+    throw new Error("GitHub no pudo guardar el archivo (" + response.status + "): " + (detail?.message || "sin detalle") +
+      (response.status === 403 ? ". El token debe tener permisos Contents: write en el repositorio." : ""));
   }
 }
 
