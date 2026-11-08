@@ -227,8 +227,11 @@
 
       <label class="field">
         <span>Hora de recogida *</span>
-        <input type="time" id="hora" min="08:00" max="20:00" step="1800" required>
-       <small class="err" data-err="hora">Elige una hora entre las 08:00 y las 20:00, en intervalos de 30 minutos, con una hora de antelación.</small> 
+        <select id="hora" aria-describedby="horaAyuda" required>
+          <option value="">Selecciona primero el día</option>
+        </select>
+        <small id="horaAyuda" class="hora-ayuda" aria-live="polite">Horarios de 08:00 a 20:00, cada 30 minutos y con una hora de antelación.</small>
+        <small class="err" data-err="hora">Selecciona una hora disponible.</small> 
       </label>
             <div id="turnstile-container" class="field" aria-label="Verificación de seguridad"></div>
       <p class="muted" style="font-size:12px;line-height:1.5">Tus datos se usan para preparar y gestionar el encargo. Consulta la <a href="privacidad.html">información sobre privacidad y pedidos</a> antes de enviarlo.</p>
@@ -274,6 +277,6 @@
 
 <script src="js/catalogo.js?v=3.8"></script>
 <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" defer></script>
-<script src="js/app.js?v=4.31" defer></script>
+<script src="js/app.js?v=4.32" defer></script>
 </body>
 </html>
