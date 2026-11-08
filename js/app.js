@@ -137,7 +137,7 @@
   function card(p) {
     const keywords = [p.nombre, p.desc, ...p.opciones].join(' ').toLowerCase();
     return `
-      <article class="card" data-id="${escapeHtml(p.id)}" data-search="${escapeHtml(normalize(keywords))}">
+      <article class="card${p.cat === 'bebidas' ? ' card--bebidas' : ''}" data-id="${escapeHtml(p.id)}" data-search="${escapeHtml(normalize(keywords))}">
         <div class="card-img">
           <img src="${imageForProduct(p)}" ${p.imageUrl ? "" : `srcset="${img(p.img, 400, 300)} 400w, ${img(p.img, 800, 600)} 800w`}
                sizes="(max-width: 640px) 100vw, 360px" alt="${escapeHtml(p.nombre)}" loading="lazy" width="600" height="450" decoding="async"
