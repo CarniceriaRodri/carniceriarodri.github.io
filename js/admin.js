@@ -256,7 +256,7 @@
    try{
      sourceUrl=originalImageFile?URL.createObjectURL(originalImageFile):originalImageUrl;
      const source=new Image();
-     if(!originalImageFile&&/^https?:\\/\\//i.test(sourceUrl))source.crossOrigin='anonymous';
+     if(!originalImageFile&&/^https?:\/\//i.test(sourceUrl))source.crossOrigin='anonymous';
      source.src=sourceUrl;
      await new Promise((resolve,reject)=>{source.onload=resolve;source.onerror=()=>reject(new Error('No se puede abrir la imagen. Comprueba que la dirección sea accesible.'));});
      if(version!==imagePreviewVersion)return;
