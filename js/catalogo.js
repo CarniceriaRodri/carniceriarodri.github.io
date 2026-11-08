@@ -758,6 +758,13 @@ window.RODRI_PRECIOS_DEMO = {
     ]
   }
 };
+// Mantener también limpio el catálogo local de respaldo.
+const categoriaRetirada = texto => /\b(conejo|conejos|cordero|corderos|caza|cabrito|cabritos|cabrita|cabritas)\b/.test(
+  String(texto || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[_-]/g, ' ')
+);
+window.CATEGORIAS = window.CATEGORIAS.filter(c => !categoriaRetirada(c.id) && !categoriaRetirada(c.nombre));
+window.PRODUCTOS = window.PRODUCTOS.filter(p => !categoriaRetirada(p.cat) && !categoriaRetirada(p.nombre));
+
 window.PRODUCTOS.forEach(producto => {
   const demo = window.RODRI_PRECIOS_DEMO[producto.id];
   if (!demo) return;
