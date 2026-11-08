@@ -132,13 +132,14 @@ Deno.serve(async (req: Request) => {
     const body = await req.json();
     if (body.action === "create-folder") {
       const rawFolder = String(body.folder || "").trim();
-      const folder = slug(rawFolder);
-      if (!rawFolder || !folder || folder.length > 80 || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(folder)) {
+      const parts = rawFolder.split("/").map((part) => slug(part));
+      if (!rawFolder || parts.some((part) => !part || part.length > 80 || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(part))) {
         return json({ error: "Nombre de carpeta no válido" }, 400, origin);
       }
-      const path = "img/productos/biblioteca/" + folder + "/.gitkeep";
+      const folderPath = parts.join("/");
+      const path = "img/productos/biblioteca/" + folderPath + "/.gitkeep";
       await saveToGitHub(path, btoa("Carpeta de biblioteca creada desde el panel de administración.\n"));
-      return json({ path: "img/productos/biblioteca/" + folder + "/" }, 200, origin);
+      return json({ path: "img/productos/biblioteca/" + folderPath + "/" }, 200, origin);
     }
     if (body.action !== "upload") return json({ error: "Acción no permitida" }, 400, origin);
     if (!["product", "option"].includes(body.kind)) return json({ error: "Tipo no válido" }, 400, origin);
@@ -154,14 +155,17 @@ Deno.serve(async (req: Request) => {
     validateImage(bytes, type);
 
     const category = slug(String(body.category || "otros"));
-    const product = slug(String(body.productSlug || ""));
-    if (!category || !product || category.length > 80 || product.length > 100) {
+    const rawProduct = String(body.productSlug || "");
+    const productParts = category === "biblioteca"
+      ? (rawProduct ? rawProduct.split("/").map((part) => slug(part)) : [])
+      : [slug(rawProduct)];
+    if (!category || category.length > 80 || productParts.some((part) => !part || part.length > 100 || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(part)) || (category !== "biblioteca" && !productParts.length)) {
       return json({ error: "Categoría o producto no válido" }, 400, origin);
     }
 
     const extension = type === "image/png" ? "png" : type === "image/webp" ? "webp" : "jpg";
     const version = Date.now();
-    let path = "img/productos/" + category + "/" + product + "/";
+    let path = "img/productos/" + category + "/" + (productParts.length ? productParts.join("/") + "/" : "");
     if (body.kind === "product") {
       path += "principal-" + version + "." + extension;
     } else {
