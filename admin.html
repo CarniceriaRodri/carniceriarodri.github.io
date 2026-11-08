@@ -82,6 +82,7 @@ dialog#imageDialog::backdrop{background:#211a1780}
 </div>
 <p class="muted">Introduce el precio en euros. Pulsa Guardar en cada cambio.</p>
 <div class="notice" id="emptyNotice" hidden>La conexión está lista, pero todavía no hay productos cargados en la base de datos. Hay que importar el catálogo antes de editar precios.</div>
+<section id="categoryManagement" style="padding:16px;margin:16px 0;background:#faf7f3;border:1px solid #e3d6c9;border-radius:12px"><h2>Gestionar categorías</h2><p class="muted">Crea, renombra, ordena o activa categorías sin tocar código.</p><div id="categoryRows"></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px"><input id="newCategoryId" placeholder="ID (ej. ofertas)"><input id="newCategoryName" placeholder="Nombre de categoría"><input id="newCategoryTagline" placeholder="Descripción breve"><input id="newCategoryOrder" type="number" placeholder="Orden"></div><button type="button" id="createCategory" style="margin-top:10px">Crear categoría</button><p class="status" id="categoryStatus"></p></section>
 <div id="products"></div><p class="status" id="adminStatus" role="status"></p>
 <div class="notice" style="margin:24px 0 8px"><strong>Descarga de imágenes</strong><p class="muted">Guarda una copia de todas las fotografías del catálogo en tu dispositivo.</p><a class="button" href="backup-images.html" style="display:inline-block;text-decoration:none">Descargar imágenes</a></div>
 <div class="notice" style="margin:12px 0 20px">
@@ -149,6 +150,6 @@ dialog#imageDialog::backdrop{background:#211a1780}
 <script src="js/catalogo.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js" defer></script>
-<script src="js/admin.js?v=3.1" defer></script>
+<script src="js/admin.js?v=3.2" defer></script>
 </body>
 </html>
