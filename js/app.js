@@ -67,10 +67,19 @@
     if (value.toLowerCase().endsWith('.jpg')) value = value.slice(0, -4);
     return img(value, 600, 450);
   };
-  const imageForProduct = (product) => publicImageUrl(product?.imageUrl || product?.imagenBiblioteca || product?.img) || img('', 600, 450);
+  const imageForProduct = (product) => publicImageUrl(product?.imageUrl || product?.imagenBiblioteca || product?.img) || 'img/logo.jpg';
 
   const escapeHtml = (s) =>
     String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+
+  // Sustituir imágenes no disponibles; los eventos inline quedan prohibidos por CSP.
+  document.addEventListener('error', event => {
+    const image = event.target;
+    if (!(image instanceof HTMLImageElement) || image.dataset.fallbackApplied) return;
+    image.dataset.fallbackApplied = 'true';
+    image.removeAttribute('srcset');
+    image.src = 'img/logo.jpg';
+  }, true);
 
   // ——— Estado del encargo ———
   let cart = [];
@@ -125,9 +134,7 @@
     return `
       <article class="card${p.cat === 'bebidas' ? ' card--bebidas' : ''}" data-id="${escapeHtml(p.id)}" data-search="${escapeHtml(normalize(keywords))}">
         <div class="card-img">
-          <img src="${escapeHtml(imageForProduct(p))}" ${p.imageUrl || p.imagenBiblioteca ? "" : `srcset="${img(p.img, 400, 300)} 400w, ${img(p.img, 800, 600)} 800w`}
-               sizes="(max-width: 640px) 100vw, 360px" alt="${escapeHtml(p.nombre)}" loading="lazy" width="600" height="450" decoding="async"
-               onerror="this.onerror=null;this.removeAttribute('srcset');this.src='${escapeHtml(p.imagenBiblioteca || img(p.img, 600, 450))}'">
+          <img src="${escapeHtml(imageForProduct(p))}" alt="${escapeHtml(p.nombre)}" loading="lazy" width="600" height="450" decoding="async">
           ${p.etiqueta ? `<span class="tag">${escapeHtml(p.etiqueta)}</span>` : ''}
           ${p.precioDemo ? '<span class="tag">Precio de prueba</span>' : ''}
         </div>
