@@ -273,7 +273,7 @@
      const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/webp',0.9));
      if(version!==imagePreviewVersion)return;
      if(!blob)throw new Error('El navegador no pudo procesar la imagen.');
-     selectedImageFile=new File([blob],((originalImageFile?.name||'imagen-actual').replace(/\\.[^.]+$/,'')+'.webp'),{type:blob.type||'image/webp'});
+     selectedImageFile=new File([blob],((originalImageFile?.name||'imagen-actual').replace(/\.[^.]+$/,'')+'.webp'),{type:blob.type||'image/webp'});
      if($('imagePreview').src.startsWith('blob:'))URL.revokeObjectURL($('imagePreview').src);
      $('imagePreview').src=URL.createObjectURL(blob);$('imagePreview').hidden=false;
      $('imageCurrent').textContent='';status('imageStatus','');
@@ -300,7 +300,7 @@
  const GITHUB_PAGES_BASE='https://carniceriarodri.github.io/';
  let currentLibraryFolder='';
  let uploadLibraryFolder='';
- function folderSlug(value){return String(value||'').normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').toLowerCase().replace(/[^a-z0-9-]+/g,'-').replace(/^-+|-+$/g,'');}
+ function folderSlug(value){return String(value||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9-]+/g,'-').replace(/^-+|-+$/g,'');}
  function libraryPath(folder=currentLibraryFolder){return 'img/productos/biblioteca/'+(folder?folder+'/':'');}
  function libraryImageUrl(path){return GITHUB_PAGES_BASE+path.split('/').map(encodeURIComponent).join('/');}
  function updateLibraryPaths(){
@@ -320,7 +320,7 @@
    try{
      const entries=await listLibraryFolder(folder);
      const folders=entries.filter(entry=>entry.type==='dir');
-     const images=entries.filter(file=>file.type==='file'&&/\\.(jpe?g|png|webp)$/i.test(file.name));
+     const images=entries.filter(file=>file.type==='file'&&/\.(jpe?g|png|webp)$/i.test(file.name));
      folders.sort((a,b)=>a.name.localeCompare(b.name,'es'));images.sort((a,b)=>b.name.localeCompare(a.name));
      if(folder){
        const up=document.createElement('button');up.type='button';up.className='secondary';up.textContent='↑ Subir un nivel';
