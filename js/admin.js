@@ -204,6 +204,7 @@
 
  let imageTarget=null;
  let selectedImageFile=null;
+ let originalImageFile=null;
 
  function managedStoragePath(path){
    return typeof path==='string' && /^(products|options)\//.test(path);
@@ -220,6 +221,8 @@
  function openImageEditor(target){
    imageTarget=target;
    selectedImageFile=null;
+   originalImageFile=null;
+   document.querySelector('input[name="imageFit"][value="contain"]').checked=true;
    $('imageFile').value='';
    $('imageCamera').value='';
    $('imageStatus').textContent='';
@@ -234,22 +237,44 @@
    $('imageRemove').hidden=!target.path;
    $('imageDialog').showModal();
  }
+ async function renderSelectedImage(){
+   if(!originalImageFile)return;
+   const mode=document.querySelector('input[name="imageFit"]:checked')?.value||'contain';
+   status('imageStatus','Preparando imagen…');
+   try{
+     const bitmap=await createImageBitmap(originalImageFile);
+     const size=1200,canvas=document.createElement('canvas');
+     canvas.width=size;canvas.height=size;
+     const ctx=canvas.getContext('2d');
+     ctx.fillStyle='#fff';ctx.fillRect(0,0,size,size);
+     const scale=mode==='cover'?Math.max(size/bitmap.width,size/bitmap.height):Math.min(size/bitmap.width,size/bitmap.height)*(mode==='padded'?0.84:1);
+     const width=bitmap.width*scale,height=bitmap.height*scale;
+     ctx.drawImage(bitmap,(size-width)/2,(size-height)/2,width,height);
+     bitmap.close?.();
+     const blob=await new Promise((resolve,reject)=>canvas.toBlob(result=>result?resolve(result):reject(new Error('No se pudo preparar la imagen.')),'image/webp',0.88));
+     selectedImageFile=new File([blob],(originalImageFile.name||'producto').replace(/\.[^.]+$/,'')+'.webp',{type:'image/webp'});
+     if($('imagePreview').src.startsWith('blob:'))URL.revokeObjectURL($('imagePreview').src);
+     $('imagePreview').src=URL.createObjectURL(blob);
+     $('imagePreview').hidden=false;
+     $('imageCurrent').textContent='Vista previa · 1200 × 1200 px · WebP';
+     status('imageStatus','Así se verá la foto. Pulsa Guardar imagen para subirla.');
+   }catch(error){
+     selectedImageFile=null;
+     status('imageStatus','No se pudo preparar la foto: '+(error?.message||String(error)));
+   }
+ }
  function handleSelectedImage(file,inputId){
    if(!file)return;
    if(!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size>5*1024*1024){
-     selectedImageFile=null;
+     selectedImageFile=null;originalImageFile=null;
      $(inputId).value='';
      status('imageStatus','Formato no permitido o archivo superior a 5 MB.');
      return;
    }
-   if($('imagePreview').src.startsWith('blob:'))URL.revokeObjectURL($('imagePreview').src);
-   selectedImageFile=file;
-   const preview=URL.createObjectURL(file);
-   $('imagePreview').src=preview;
-   $('imagePreview').hidden=false;
-   $('imageCurrent').textContent=file.name||'Fotografía seleccionada';
-   status('imageStatus','Previsualización lista. Pulsa Guardar imagen para subirla.');
+   originalImageFile=file;
+   renderSelectedImage();
  }
+ document.querySelectorAll('input[name="imageFit"]').forEach(input=>input.addEventListener('change',renderSelectedImage));
  $('imageFile').addEventListener('change',()=>handleSelectedImage($('imageFile').files?.[0]||null,'imageFile'));
  $('imageCamera').addEventListener('change',()=>handleSelectedImage($('imageCamera').files?.[0]||null,'imageCamera'));
  function closeImageEditor(){
@@ -257,6 +282,7 @@
    $('imageDialog').close();
    imageTarget=null;
    selectedImageFile=null;
+   originalImageFile=null;
  }
  $('imageClose').addEventListener('click',closeImageEditor);
  $('imageCancel').addEventListener('click',closeImageEditor);
