@@ -90,6 +90,46 @@
    await loadProducts();
  }
 
+ async function loadCategoriesEditor(){
+   const container=$('categoryRows');
+   if(!container)return;
+   const {data,error}=await client.from('categories').select('id,name,tagline,sort_order,active').order('sort_order');
+   if(error){status('categoryStatus','No se pudieron cargar las categorías: '+error.message);return}
+   container.innerHTML=(data||[]).map(c=>
+     '<div class="category-editor-row" data-category-id="'+escapeHtml(c.id)+'">'+
+     '<strong>'+escapeHtml(c.name)+'</strong><div class="muted">Identificador: '+escapeHtml(c.id)+'</div>'+
+     '<label>Nombre de la categoría<input data-cat-name value="'+escapeHtml(c.name)+'"></label>'+
+     '<label>Descripción<input data-cat-tagline value="'+escapeHtml(c.tagline||'')+'"></label>'+
+     '<div class="category-row-fields"><label>Orden de aparición<input data-cat-order type="number" value="'+Number(c.sort_order||0)+'"></label></div>'+
+     '<div class="category-row-actions"><label><input data-cat-active type="checkbox"'+(c.active?' checked':'')+'> Visible en la tienda</label><button type="button" class="secondary" data-save-category>Guardar cambios</button></div></div>'
+   ).join('');
+ }
+ $('categoryRows').addEventListener('click',async e=>{
+   const button=e.target.closest('[data-save-category]');if(!button)return;
+   const row=button.closest('[data-category-id]');
+   const name=row.querySelector('[data-cat-name]').value.trim();
+   if(!name){status('categoryStatus','Escribe el nombre de la categoría.');return}
+   button.disabled=true;
+   const {error}=await client.from('categories').update({
+     name,tagline:row.querySelector('[data-cat-tagline]').value.trim(),
+     sort_order:Number(row.querySelector('[data-cat-order]').value)||0,
+     active:row.querySelector('[data-cat-active]').checked
+   }).eq('id',row.dataset.categoryId);
+   button.disabled=false;
+   status('categoryStatus',error?'No se pudo guardar: '+error.message:'Categoría guardada correctamente.');
+   if(!error)await loadProducts();
+ });
+ $('createCategory').addEventListener('click',async()=>{
+   const id=$('newCategoryId').value.trim().toLowerCase().replace(/[^a-z0-9-]/g,'-');
+   const name=$('newCategoryName').value.trim();
+   if(!id||!name){status('categoryStatus','Indica identificador y nombre.');return}
+   const button=$('createCategory');button.disabled=true;
+   const {error}=await client.from('categories').insert({id,name,tagline:$('newCategoryTagline').value.trim(),sort_order:Number($('newCategoryOrder').value)||0,active:true});
+   button.disabled=false;
+   status('categoryStatus',error?'No se pudo crear: '+error.message:'Categoría creada correctamente.');
+   if(!error){$('newCategoryId').value='';$('newCategoryName').value='';$('newCategoryTagline').value='';await loadProducts();}
+ });
+
  async function loadProducts(){
    const openOptionPanels=new Set(Array.from(document.querySelectorAll('.options-details[open]')).map(el=>el.dataset.productOptions));
    status('adminStatus','Cargando productos…');
@@ -175,6 +215,7 @@
      return '<details class="category-section" data-category-section="'+escapeHtml(group.key)+'"'+(sectionOpen?' open':'')+'><summary class="category-test" style="--cat-color:'+group.meta.color+';--cat-bg:'+group.meta.bg+'"><h2><span class="category-icon" aria-hidden="true">'+group.meta.icon+'</span> '+escapeHtml(group.meta.name)+'</h2><p>Gestiona aquí todos los productos y sus opciones</p></summary>'+categoryProducts+'<div class="category-close-row"><button type="button" class="secondary" data-close-category>Cerrar categoría</button></div></details>';
    }).join('');
    status('adminStatus',products.length+' productos cargados.');
+   await loadCategoriesEditor();
 
  }
 
