@@ -866,7 +866,7 @@
      $('products').innerHTML='';
    }
  });
-})();  $('syncVerifiedCatalog').addEventListener('click',async()=>{
+})()  $('syncVerifiedCatalog').addEventListener('click',async()=>{
     const button=$('syncVerifiedCatalog');
     button.disabled=true;
     status('syncVerifiedStatus','Comprobando catálogo y base de datos…');
@@ -908,3 +908,5 @@
   });
 
 
+
+;
