@@ -162,6 +162,145 @@ async function saveToGitHub(path: string, content: string) {
   }
 }
 
+
+const LIBRARY_ROOT = "img/productos/biblioteca/";
+function libraryPathFromInput(raw: unknown) {
+  const value = String(raw || "");
+  if (!value.startsWith(LIBRARY_ROOT)) throw new Error("Solo se pueden gestionar elementos dentro de la biblioteca.");
+  const relative = value.slice(LIBRARY_ROOT.length);
+  const parts = relative.split("/");
+  if (!relative || parts.some((part) => !part || !/^[a-z0-9]+(?:-[a-z0-9]+)*(?:\\.[a-z0-9]+)?$/i.test(part))) {
+    throw new Error("Ruta de biblioteca no válida.");
+  }
+  return relative;
+}
+function libraryFullPath(relative: string) {
+  return LIBRARY_ROOT + relative;
+}
+function safeLibraryName(raw: unknown, isFolder: boolean) {
+  const value = String(raw || "").trim();
+  if (!value || value.includes("/") || value.includes("\\\\") || value === "." || value === "..") {
+    throw new Error("Nombre no válido.");
+  }
+  if (isFolder) {
+    const name = slug(value);
+    if (!name || name.length > 80) throw new Error("Nombre de carpeta no válido.");
+    return name;
+  }
+  const match = value.match(/^(.*)\\.(jpe?g|png|webp)$/i);
+  if (!match) throw new Error("El archivo debe ser JPG, PNG o WebP e incluir su extensión.");
+  const base = slug(match[1]);
+  if (!base || base.length > 100) throw new Error("Nombre de archivo no válido.");
+  return base + "." + match[2].toLowerCase();
+}
+async function listLibraryFilesRecursively(relative: string): Promise<Array<{path:string;sha:string;name:string}>> {
+  const result = await githubRequest(libraryFullPath(relative));
+  if (result === null) return [];
+  if (!Array.isArray(result)) throw new Error("La ruta indicada no es una carpeta.");
+  const files: Array<{path:string;sha:string;name:string}> = [];
+  for (const item of result) {
+    if (item.type === "dir") {
+      const child = relative + "/" + item.name;
+      files.push(...await listLibraryFilesRecursively(child));
+    } else if (item.type === "file") {
+      files.push({path:item.path,sha:item.sha,name:item.name});
+    }
+  }
+  return files;
+}
+async function readGitHubFile(path: string) {
+  const item = await githubRequest(path);
+  if (!item || item.type !== "file" || typeof item.content !== "string") {
+    throw new Error("No se pudo leer el archivo " + path);
+  }
+  return {content:item.content.replace(/\\s/g,""),sha:item.sha};
+}
+async function deleteGitHubFile(path: string, sha: string) {
+  const branch = Deno.env.get("GITHUB_BRANCH") || "main";
+  await githubRequest(path,"DELETE",{
+    message:"Gestionar biblioteca de imágenes desde el panel",
+    sha,
+    branch,
+  });
+}
+async function updateImageReferences(oldPath: string, newPath: string | null) {
+  const supabaseUrl = secret("SUPABASE_URL");
+  const serviceKey = secret("SUPABASE_SERVICE_ROLE_KEY");
+  const updates = [
+    {table:"products",body:{image:newPath}},
+    {table:"product_options",body:newPath ? {image:newPath} : {image:null,show_image:false}},
+  ];
+  for (const update of updates) {
+    const params = new URLSearchParams({image:"eq."+oldPath});
+    const response = await fetch(supabaseUrl+"/rest/v1/"+update.table+"?"+params,{
+      method:"PATCH",
+      headers:{
+        Authorization:"Bearer "+serviceKey,
+        apikey:serviceKey,
+        "Content-Type":"application/json",
+        Prefer:"return=minimal",
+      },
+      body:JSON.stringify(update.body),
+    });
+    if (!response.ok) throw new Error("No se pudieron actualizar las referencias de imagen en "+update.table+" ("+response.status+").");
+  }
+}
+async function deleteLibraryItem(relative: string) {
+  const fullPath = libraryFullPath(relative);
+  const item = await githubRequest(fullPath);
+  if (!item) throw new Error("El elemento ya no existe.");
+  const files = item.type === "dir"
+    ? await listLibraryFilesRecursively(relative)
+    : [{path:fullPath,sha:item.sha,name:item.name}];
+  if (item.type !== "dir" && !/\\.(jpe?g|png|webp)$/i.test(item.name)) {
+    throw new Error("Solo se pueden borrar imágenes de la biblioteca.");
+  }
+  for (const file of files) {
+    if (/\\.(jpe?g|png|webp)$/i.test(file.name)) {
+      const relativeFile = file.path.slice(LIBRARY_ROOT.length);
+      await updateImageReferences(libraryFullPath(relativeFile),null);
+    }
+  }
+  for (const file of files) await deleteGitHubFile(file.path,file.sha);
+  return {deleted:files.length};
+}
+async function renameLibraryItem(relative: string, newNameRaw: unknown) {
+  const fullPath = libraryFullPath(relative);
+  const item = await githubRequest(fullPath);
+  if (!item) throw new Error("El elemento ya no existe.");
+  const isFolder = item.type === "dir";
+  const newName = safeLibraryName(newNameRaw,isFolder);
+  if (!isFolder && !/\\.(jpe?g|png|webp)$/i.test(item.name)) {
+    throw new Error("Solo se pueden renombrar imágenes de la biblioteca.");
+  }
+  const parent = relative.includes("/") ? relative.slice(0,relative.lastIndexOf("/")) : "";
+  const destinationRelative = (parent ? parent+"/" : "") + newName;
+  const destinationFull = libraryFullPath(destinationRelative);
+  if (await githubRequest(destinationFull)) throw new Error("Ya existe un archivo o carpeta con ese nombre.");
+  if (!isFolder) {
+    const source = await readGitHubFile(fullPath);
+    await saveToGitHub(destinationFull,source.content);
+    await updateImageReferences(fullPath,destinationFull);
+    await deleteGitHubFile(fullPath,source.sha);
+    return {path:destinationFull};
+  }
+  const files = await listLibraryFilesRecursively(relative);
+  if (!files.length) throw new Error("La carpeta no contiene archivos que se puedan mover.");
+  const moved: Array<{oldPath:string;newPath:string;sha:string;name:string}> = [];
+  for (const file of files) {
+    const suffix = file.path.slice(fullPath.length);
+    const newPath = destinationFull + suffix;
+    const source = await readGitHubFile(file.path);
+    await saveToGitHub(newPath,source.content);
+    moved.push({oldPath:file.path,newPath,sha:source.sha,name:file.name});
+  }
+  for (const file of moved) {
+    if (/\\.(jpe?g|png|webp)$/i.test(file.name)) await updateImageReferences(file.oldPath,file.newPath);
+  }
+  for (const file of moved) await deleteGitHubFile(file.oldPath,file.sha);
+  return {path:destinationFull,moved:moved.length};
+}
+
 Deno.serve(async (req: Request) => {
   const origin = req.headers.get("Origin");
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors(origin) });
@@ -190,6 +329,16 @@ Deno.serve(async (req: Request) => {
       const path = "img/productos/biblioteca/" + folderPath + "/.gitkeep";
       await saveToGitHub(path, btoa("Carpeta de biblioteca creada desde el panel de administración.\n"));
       return json({ path: "img/productos/biblioteca/" + folderPath + "/" }, 200, origin);
+    }
+    if (body.action === "delete-item") {
+      const relative = libraryPathFromInput(body.path);
+      const result = await deleteLibraryItem(relative);
+      return json(result, 200, origin);
+    }
+    if (body.action === "rename-item") {
+      const relative = libraryPathFromInput(body.path);
+      const result = await renameLibraryItem(relative,body.newName);
+      return json(result, 200, origin);
     }
     if (body.action !== "upload") return json({ error: "Acción no permitida" }, 400, origin);
     if (!["product", "option"].includes(body.kind)) return json({ error: "Tipo no válido" }, 400, origin);
