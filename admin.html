@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
 <meta name="referrer" content="strict-origin-when-cross-origin">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; connect-src 'self' https://ugqiomoywgpkmogcdjqn.supabase.co; img-src 'self' data: blob: https://ugqiomoywgpkmogcdjqn.supabase.co; object-src 'none'; base-uri 'self'; form-action 'self'; frame-src 'none';">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; connect-src 'self' https://ugqiomoywgpkmogcdjqn.supabase.co https://api.github.com; img-src 'self' data: blob: https://ugqiomoywgpkmogcdjqn.supabase.co; object-src 'none'; base-uri 'self'; form-action 'self'; frame-src 'none';">
 <title>Administración · Carnicería Rodri</title>
 <style>
 :root{color-scheme:light;--bg:#f5f2ed;--ink:#211a17;--muted:#766c65;--accent:#7b2e20;--line:#e4ddd5;--white:#fff}
@@ -98,10 +98,25 @@ dialog#imageDialog::backdrop{background:#211a1780}
     <label class="image-choice camera-only" for="imageCamera" title="Hacer una foto" aria-label="Hacer una foto">📷
       <input id="imageCamera" type="file" accept="image/*" capture="environment">
     </label>
-    <label class="image-choice secondary" for="imageFile">🖼️ Elegir
+    <label class="image-choice secondary" for="imageFile">🖼️ Dispositivo
       <input id="imageFile" type="file" accept="image/jpeg,image/png,image/webp">
     </label>
+    <button type="button" id="openImageLibrary" class="image-choice secondary">▦ Biblioteca</button>
   </div>
+  <section id="imageLibraryPicker" hidden style="border:1px solid var(--line);border-radius:12px;padding:12px;margin:12px 0">
+    <div class="image-dialog-head"><strong>Biblioteca de imágenes</strong><button type="button" id="refreshImageLibrary" class="secondary">↻</button></div>
+    <p class="muted">Selecciona una imagen ya guardada en GitHub.</p>
+    <div id="imageLibraryGrid" style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px"></div>
+    <p id="imageLibraryStatus" class="status" role="status"></p>
+  </section>
+  <details style="margin:12px 0">
+    <summary style="cursor:pointer;font-weight:700">＋ Subir varias imágenes a la biblioteca</summary>
+    <p class="muted">Puedes elegir muchas fotos del móvil o del ordenador. Se guardarán para reutilizarlas en cualquier producto. Máximo 5 MB por imagen.</p>
+    <label class="image-choice secondary" for="libraryUploadFiles" style="width:auto">🖼️ Seleccionar varias imágenes
+      <input id="libraryUploadFiles" type="file" accept="image/jpeg,image/png,image/webp" multiple>
+    </label>
+    <p id="libraryUploadStatus" class="status" role="status"></p>
+  </details>
   <fieldset class="image-fit-choices" aria-label="Encuadre de la imagen" style="border:0;padding:0">
     <label class="image-fit-choice" title="Mostrar el producto completo" aria-label="Mostrar el producto completo"><input type="radio" name="imageFit" value="contain" checked><span class="image-fit-icon" aria-hidden="true">⛶</span><strong>Completa</strong></label>
     <label class="image-fit-choice" title="Rellenar el cuadro; puede recortar" aria-label="Rellenar el cuadro"><input type="radio" name="imageFit" value="cover"><span class="image-fit-icon" aria-hidden="true">⌗</span><strong>Rellenar</strong></label>
@@ -120,6 +135,6 @@ dialog#imageDialog::backdrop{background:#211a1780}
 
 <script src="js/catalogo.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-<script src="js/admin.js?v=2.1" defer></script>
+<script src="js/admin.js?v=2.2" defer></script>
 </body>
 </html>
