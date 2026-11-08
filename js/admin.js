@@ -35,12 +35,12 @@
    const nuevoEstado=toggle.checked;
    toggle.disabled=true;
    status('maintenanceStatus','Guardando cambio…');
-   const {error}=await client.from('site_settings')
-     .update({maintenance_enabled:nuevoEstado}).eq('id',1);
+   const {data,error}=await client.from('site_settings')
+     .update({maintenance_enabled:nuevoEstado}).eq('id',1).select('id');
    toggle.disabled=false;
-   if(error){
+   if(error || !data?.length){
      toggle.checked=!nuevoEstado;
-     status('maintenanceStatus','No se pudo guardar: '+error.message);
+     status('maintenanceStatus','No se pudo guardar: '+(error?.message || 'sin filas modificadas.'));
      return;
    }
    status('maintenanceStatus',nuevoEstado?'Mantenimiento ACTIVADO.':'Mantenimiento desactivado.');
@@ -272,7 +272,7 @@
        const prepValues=Array.isArray(p.preparations)?p.preparations:[];
        const prepEditor='<div class="options-content" style="padding:10px 0"><label>Tipo de venta<select data-sale-unit="'+p.id+'"><option value="">Sin definir</option><option value="kg"'+(p.sale_unit==='kg'?' selected':'')+'>Por kilo</option><option value="ud"'+(p.sale_unit==='ud'?' selected':'')+'>Por unidad</option></select></label><label style="display:block;margin-top:8px">Preparaciones gratuitas (una por línea)<textarea rows="3" data-preparations="'+p.id+'" placeholder="Filetes finos&#10;Filetes gruesos&#10;En dados">'+escapeHtml(prepValues.join('\n'))+'</textarea></label><button type="button" class="secondary" data-save-product-settings="'+p.id+'">Guardar venta y preparaciones</button></div>';
        return '<article class="product product-unified"><div class="product-head"><div style="display:flex;align-items:center;gap:12px;min-width:0"><div class="admin-product-thumb" style="width:86px;height:86px;flex:0 0 86px;border-radius:10px;background:#f2eee9;overflow:hidden;display:grid;place-items:center">'+(imagePublicUrl(p.image||cp?.imagenBiblioteca)?'<img loading="lazy" src="'+escapeHtml(imagePublicUrl(p.image||cp?.imagenBiblioteca))+'" alt="Foto de '+escapeHtml(p.name)+'" style="width:100%;height:100%;object-fit:contain">':'<span style="font-size:11px;text-align:center;padding:5px">Sin imagen</span>')+'</div><div><div class="product-name">'+escapeHtml(p.name)+'</div><div class="category">'+escapeHtml(p.category||group.meta.name)+(p.active?'':' · Inactivo')+'</div></div></div><button type="button" class="image-action product-image-action" data-image-product="'+escapeHtml(p.id)+'" data-image-category="'+escapeHtml(cp?.cat||p.category||'otros')+'" data-image-product-slug="'+escapeHtml(cp?.id||p.name||p.id)+'" data-image-path="'+escapeHtml(p.image||cp?.imagenBiblioteca||'')+'" title="Gestionar imagen principal" aria-label="Gestionar imagen principal de '+escapeHtml(p.name)+'">📷 Imagen</button></div>'+
-         '<details class="product-settings"><summary>Editar ficha del producto</summary><div class="options-content"><label>Nombre<input data-product-name="'+escapeHtml(p.id)+'" value="'+escapeHtml(p.name)+'"></label><label>Descripción<textarea rows="2" data-product-description="'+escapeHtml(p.id)+'">'+escapeHtml(p.description||'')+'</textarea></label><label>Categoría<select data-product-category="'+escapeHtml(p.id)+'">'+categoryOptions.replace('value="'+escapeHtml(p.category)+'"','value="'+escapeHtml(p.category)+'" selected')+'</select></label><label>Precio base (€)<input inputmode="decimal" data-product-base="'+escapeHtml(p.id)+'" value="'+(p.base_price_cents==null?'':(Number(p.base_price_cents)/100).toFixed(2))+'"></label><label>Orden<input type="number" data-product-order="'+escapeHtml(p.id)+'" value="'+Number(p.sort_order||0)+'"></label><label><input type="checkbox" data-product-active="'+escapeHtml(p.id)+'"'+(p.active?' checked':'')+'> Activo</label><button type="button" class="secondary" data-save-product-details="'+escapeHtml(p.id)+'">Guardar ficha</button><button type="button" data-delete-product="'+escapeHtml(p.id)+'" style="background:#9c2929;margin-left:8px">Eliminar producto</button></div></details>'+ 
+         '<details class="product-settings"><summary>Editar ficha del producto</summary><div class="options-content"><label>Nombre<input data-product-name="'+escapeHtml(p.id)+'" value="'+escapeHtml(p.name)+'"></label><label>Descripción<textarea rows="2" data-product-description="'+escapeHtml(p.id)+'">'+escapeHtml(p.description||'')+'</textarea></label><label>Categoría<select data-product-category="'+escapeHtml(p.id)+'">'+categoryOptions.replace('value="'+escapeHtml(p.category)+'"','value="'+escapeHtml(p.category)+'" selected')+'</select></label><label>Precio base (€)<input inputmode="decimal" data-product-base="'+escapeHtml(p.id)+'" value="'+(p.base_price_cents==null?'':(Number(p.base_price_cents)/100).toFixed(2))+'"></label><label>Orden<input type="number" data-product-order="'+escapeHtml(p.id)+'" value="'+Number(p.sort_order||0)+'"></label><label class="product-active-label"><input type="checkbox" data-product-active="'+escapeHtml(p.id)+'"'+(p.active?' checked':'')+'> Activo</label><button type="button" class="secondary" data-save-product-details="'+escapeHtml(p.id)+'">Guardar ficha</button><button type="button" data-delete-product="'+escapeHtml(p.id)+'" style="background:#9c2929;margin-left:8px">Eliminar producto</button></div></details>'+ 
          '<details class="options-details" data-product-options="'+p.id+'"'+(openOptionPanels.has(String(p.id))?' open':'')+'><summary>'+(group.key==='bebidas'?'Variedades y formatos':'Preparaciones y opciones')+' <span class="muted">'+opts.length+' guardadas · '+missing.length+' pendientes</span></summary><div class="options-content">'+
          '<details class="product-settings"><summary>Venta y preparaciones gratuitas</summary>'+prepEditor+'</details>'+(saved||'')+(pending||'')+
          '<div class="option" style="margin-top:14px;font-weight:700;color:var(--ink)">'+(group.key==='bebidas'?'Añadir variedad y formato':'Añadir preparación u opción')+'</div><div class="add-option-row"><label class="sr-only" for="new-label-'+p.id+'">Nombre opción</label><input id="new-label-'+p.id+'" placeholder="'+(group.key==='bebidas'?'Ej. Fanta naranja · botella 1,5 L':'Nombre de la opción')+'"><label class="sr-only" for="new-price-'+p.id+'">Precio (€)</label><input id="new-price-'+p.id+'" inputmode="decimal" placeholder="Precio (€)"><button class="icon-button" aria-label="Añadir opción" data-add-option="'+p.id+'">➕</button></div></div></details></article>';
@@ -760,9 +760,9 @@
      const active=document.querySelector('[data-product-active="'+CSS.escape(id)+'"]').checked;
      if(!name||!category||!Number.isFinite(order)|| (base!==''&&(!Number.isFinite(centsFromInput(base))||centsFromInput(base)<0))){status('adminStatus','Revisa los datos de la ficha.');return}
      detailsButton.disabled=true;
-     const {error}=await client.from('products').update({name,description,category,base_price_cents:base===''?null:centsFromInput(base),sort_order:order,active}).eq('id',id);
+     const {data,error}=await client.from('products').update({name,description,category,base_price_cents:base===''?null:centsFromInput(base),sort_order:order,active}).eq('id',id).select('id');
      detailsButton.disabled=false;
-     if(error){status('adminStatus','Error al guardar ficha: '+error.message);return}
+     if(error || !data?.length){status('adminStatus','No se guardó la ficha: '+(error?.message || 'sin filas modificadas; comprueba los permisos.'));return}
      status('adminStatus','Ficha guardada en Supabase.');await loadProducts();return;
    }
 
@@ -773,9 +773,9 @@
      const preparations=$('[data-preparations="'+id+'"]').value.split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
      settingsButton.disabled=true;
      status('adminStatus','Guardando configuración…');
-     const {error}=await client.from('products').update({sale_unit:unit,preparations}).eq('id',id);
+     const {data,error}=await client.from('products').update({sale_unit:unit,preparations}).eq('id',id).select('id');
      settingsButton.disabled=false;
-     if(error){status('adminStatus','No se pudo guardar: '+error.message);return}
+     if(error || !data?.length){status('adminStatus','No se pudo guardar: '+(error?.message || 'sin filas modificadas.'));return}
      status('adminStatus','Tipo de venta y preparaciones guardados.');
      await loadProducts();
      return;
@@ -841,9 +841,9 @@
      if(!toggleButton)return;
      toggleButton.disabled=true;
      status('adminStatus',nextActive?'Activando opción…':'Desactivando opción…');
-     const {error}=await client.from('product_options').update({active:nextActive}).eq('id',toggleOptionId);
+     const {data,error}=await client.from('product_options').update({active:nextActive}).eq('id',toggleOptionId).select('id');
      toggleButton.disabled=false;
-     if(error){status('adminStatus','No se pudo cambiar el estado: '+error.message);return}
+     if(error || !data?.length){status('adminStatus','No se pudo cambiar el estado: '+(error?.message || 'sin filas modificadas.'));return}
      toggleButton.dataset.nextActive=nextActive?'false':'true';
      toggleButton.textContent=nextActive?'ON':'OFF';
      toggleButton.classList.toggle('is-off',!nextActive);
@@ -890,7 +890,7 @@
        e.target.disabled=false;
        return;
      }
-     result=await client.from('products').update({base_price_cents:cents}).eq('id',productId);
+     result=await client.from('products').update({base_price_cents:cents}).eq('id',productId).select('id');
    } else {
      const cents=centsFromInput($('opt-'+optionId).value);
      if(!Number.isFinite(cents)||cents<0){
@@ -898,11 +898,11 @@
        e.target.disabled=false;
        return;
      }
-     result=await client.from('product_options').update({price_cents:cents}).eq('id',optionId);
+     result=await client.from('product_options').update({price_cents:cents}).eq('id',optionId).select('id');
    }
 
    e.target.disabled=false;
-   if(result.error){status('adminStatus','Error al guardar: '+result.error.message);return}
+   if(result.error || !result.data?.length){status('adminStatus','No se guardó el precio: '+(result.error?.message || 'sin filas modificadas.'));return}
    status('adminStatus','Precio guardado correctamente.');
  });
 
