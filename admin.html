@@ -54,7 +54,7 @@ dialog#imageDialog::backdrop{background:#211a1780}
 .image-toggle input{width:20px;height:20px}
 .image-dialog-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
 .image-dialog-actions button{flex:1}
-#imageStatus{min-height:20px;font-size:13px;margin-top:12px}
+#imageStatus{min-height:20px;font-size:13px;margin-top:12px}#libraryUploadStatus{white-space:pre-line;overflow-wrap:anywhere}
 .image-action{background:#fff;color:#6b3a29;border:1px solid #d8c4b5;padding:6px 9px;font-size:17px;line-height:1}
 .product-image-action{white-space:nowrap}.library-items{min-width:0}.library-item{display:flex;align-items:center;gap:8px;min-width:0;padding:8px;background:#fff;border:1px solid #e3d9d0;border-radius:9px}.library-item-open{flex:1;min-width:0;display:flex;align-items:center;gap:8px;text-align:left;padding:7px;background:#f5f1ec;color:var(--ink);overflow:hidden}.library-item-name{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px}.library-item-actions{display:flex;gap:5px;flex:0 0 auto}.library-item-actions button{padding:7px 9px;min-width:36px;background:#eee8e1;color:var(--ink)}.library-item-thumb{width:38px;height:38px;object-fit:contain;background:#f5f2ed;border-radius:5px;flex:0 0 auto}@media(max-width:380px){.library-item{gap:5px;padding:6px}.library-item-actions{gap:3px}.library-item-actions button{min-width:32px;padding:6px 7px}}
 
@@ -118,7 +118,7 @@ dialog#imageDialog::backdrop{background:#211a1780}
 <details class="library-management" id="libraryManagement"><summary>📚 Biblioteca de imágenes</summary>
 <div class="notice" style="margin:12px 0 20px">
   <strong>Subir imágenes a la biblioteca</strong>
-  <p class="muted">Selecciona fotos del ordenador o del móvil. Máximo 5 MB por imagen.</p>
+  <p class="muted">Selecciona fotos del ordenador o del móvil. Se convierten automáticamente a JPG y se optimizan antes de subirlas (hasta 30 MB por foto original).</p>
   <p class="muted">Destino de las próximas subidas: <strong id="libraryUploadPath">img/productos/biblioteca/</strong></p>
   <div class="actions" style="margin-top:8px">
     <button type="button" id="libraryUploadUp" class="secondary" title="Subir un nivel" aria-label="Subir un nivel">⬆️</button>
@@ -127,8 +127,8 @@ dialog#imageDialog::backdrop{background:#211a1780}
   </div>
   <div id="libraryUploadFolders" class="library-items" style="display:grid;gap:8px;margin-top:10px"></div>
   <p id="libraryUploadNavStatus" class="muted" role="status"></p>
-  <input id="libraryUploadFiles" type="file" accept="image/jpeg,image/png,image/webp" multiple hidden>
-  <input id="libraryUploadFolder" type="file" accept="image/jpeg,image/png,image/webp" webkitdirectory directory multiple hidden>
+  <input id="libraryUploadFiles" type="file" accept="image/*,.heic,.heif,.avif" multiple hidden>
+  <input id="libraryUploadFolder" type="file" accept="image/*,.heic,.heif,.avif" webkitdirectory directory multiple hidden>
   <input id="libraryUploadZip" type="file" accept=".zip,application/zip" hidden>
   <div class="actions" style="margin-top:10px">
     <button type="button" id="libraryUploadButton" title="Subir imágenes sueltas">📤 Subir imágenes</button>
@@ -147,13 +147,13 @@ dialog#imageDialog::backdrop{background:#211a1780}
     <button type="button" id="imageClose" aria-label="Cerrar">×</button>
   </div>
   <img id="imagePreview" class="image-preview" alt="Previsualización de la imagen" hidden>
-  <p id="imageCurrent" class="muted">Selecciona una imagen JPG, PNG o WebP (máximo 5 MB).</p>
+  <p id="imageCurrent" class="muted">Selecciona una fotografía del móvil o del ordenador. Se convertirá automáticamente a JPG.</p>
   <div class="image-choices">
     <label class="image-choice camera-only" for="imageCamera" title="Hacer una foto" aria-label="Hacer una foto">📷
       <input id="imageCamera" type="file" accept="image/*" capture="environment">
     </label>
     <label class="image-choice secondary device-choice" for="imageFile" title="Elegir desde móvil u ordenador" aria-label="Elegir desde móvil u ordenador"><span aria-hidden="true">📱</span><span aria-hidden="true">💻</span>
-      <input id="imageFile" type="file" accept="image/jpeg,image/png,image/webp">
+      <input id="imageFile" type="file" accept="image/*,.heic,.heif,.avif">
     </label>
     <button type="button" id="openImageLibrary" class="image-choice secondary" title="Elegir de la biblioteca" aria-label="Elegir de la biblioteca">📚</button>
   </div>
@@ -182,6 +182,8 @@ dialog#imageDialog::backdrop{background:#211a1780}
 <script src="js/catalogo.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js" defer></script>
-<script src="js/admin.js?v=3.9" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js" defer></script>
+<script src="js/image-utils.js?v=1.0" defer></script>
+<script src="js/admin.js?v=4.0" defer></script>
 </body>
 </html>
