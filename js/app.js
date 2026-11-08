@@ -128,6 +128,7 @@
                sizes="(max-width: 640px) 100vw, 360px" alt="${escapeHtml(p.nombre)}" loading="lazy" width="600" height="450" decoding="async"
                onerror="this.onerror=null;this.removeAttribute('srcset');this.src='${escapeHtml(p.imagenBiblioteca || img(p.img, 600, 450))}'">
           ${p.etiqueta ? `<span class="tag">${escapeHtml(p.etiqueta)}</span>` : ''}
+          ${p.precioDemo ? '<span class="tag">Precio de prueba</span>' : ''}
         </div>
         <div class="card-body">
           <h4>${escapeHtml(p.nombre)}</h4>
@@ -837,6 +838,7 @@ const product = PRODUCTOS.find(p => String(p.id) === String(row.id))
         if (!product) return;
         catalogProductByDatabaseId.set(String(row.id), product);
         product.imageUrl = publicImageUrl(row.image) || '';
+        if (row.base_price_cents !== null && row.base_price_cents !== undefined && Number.isFinite(Number(row.base_price_cents))) product.precioDemo = false;
         product.saleUnit = row.sale_unit || null;
         product.preparations = Array.isArray(row.preparations) ? row.preparations : [];
         if (product.saleUnit) {
