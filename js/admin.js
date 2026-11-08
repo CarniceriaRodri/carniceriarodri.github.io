@@ -204,6 +204,7 @@
 
  let imageTarget=null;
  let selectedImageFile=null;
+ let selectedLibraryPath='';
  let originalImageFile=null;
  let originalImageUrl='';
  let imagePreviewVersion=0;
@@ -229,6 +230,7 @@
  function openImageEditor(target){
    imageTarget=target;
    selectedImageFile=null;
+   selectedLibraryPath='';
    originalImageFile=null;
    originalImageUrl='';
    imagePreviewVersion++;
@@ -293,6 +295,104 @@
    originalImageFile=file;
    renderSelectedImage();
  }
+
+ const GITHUB_LIBRARY_API='https://api.github.com/repos/CarniceriaRodri/carniceriarodri.github.io/contents/img/productos/biblioteca/biblioteca?ref=main';
+ const GITHUB_PAGES_BASE='https://carniceriarodri.github.io/';
+ function libraryImageUrl(path){return GITHUB_PAGES_BASE+path.split('/').map(encodeURIComponent).join('/');}
+ async function loadImageLibrary(){
+   const grid=$('imageLibraryGrid');
+   grid.innerHTML='';
+   status('imageLibraryStatus','Cargando biblioteca…');
+   try{
+     const response=await fetch(GITHUB_LIBRARY_API,{headers:{Accept:'application/vnd.github+json'}});
+     if(response.status===404){
+       status('imageLibraryStatus','La biblioteca todavía está vacía. Puedes subir varias imágenes aquí mismo.');
+       return [];
+     }
+     if(!response.ok)throw new Error('GitHub respondió '+response.status+'.');
+     const files=await response.json();
+     const images=Array.isArray(files)?files.filter(file=>file.type==='file'&&/\\.(jpe?g|png|webp)$/i.test(file.name)):[];
+     images.sort((a,b)=>b.name.localeCompare(a.name));
+     if(!images.length){
+       status('imageLibraryStatus','Todavía no hay imágenes guardadas en la biblioteca.');
+       return [];
+     }
+     for(const file of images){
+       const card=document.createElement('button');
+       card.type='button';
+       card.className='secondary';
+       card.style.cssText='padding:6px;min-width:0;background:#f8f6f2;color:var(--ink);border:1px solid var(--line)';
+       const img=document.createElement('img');
+       img.src=libraryImageUrl(file.path);
+       img.alt=file.name;
+       img.loading='lazy';
+       img.style.cssText='display:block;width:100%;height:86px;object-fit:contain;background:white;border-radius:6px';
+       const name=document.createElement('span');
+       name.textContent=file.name.replace(/-\\d+\\.(?:jpe?g|png|webp)$/i,'');
+       name.style.cssText='display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;margin-top:4px';
+       card.append(img,name);
+       card.addEventListener('click',()=>{
+         selectedLibraryPath=file.path;
+         selectedImageFile=null;
+         originalImageFile=null;
+         originalImageUrl=libraryImageUrl(file.path);
+         $('imagePreview').src=originalImageUrl;
+         $('imagePreview').hidden=false;
+         $('imageCurrent').textContent='Imagen seleccionada de la biblioteca. Pulsa «Guardar imagen» para asignarla.';
+         status('imageStatus','Imagen de la biblioteca seleccionada.');
+         $('imageLibraryPicker').hidden=true;
+       });
+       grid.append(card);
+     }
+     status('imageLibraryStatus',images.length+' imágenes disponibles.');
+     return images;
+   }catch(error){
+     status('imageLibraryStatus','No se pudo cargar la biblioteca: '+(error?.message||String(error)));
+     return [];
+   }
+ }
+ $('openImageLibrary').addEventListener('click',async()=>{
+   $('imageLibraryPicker').hidden=!$('imageLibraryPicker').hidden;
+   if(!$('imageLibraryPicker').hidden)await loadImageLibrary();
+ });
+ $('refreshImageLibrary').addEventListener('click',loadImageLibrary);
+ $('libraryUploadFiles').addEventListener('change',async()=>{
+   const files=Array.from($('libraryUploadFiles').files||[]);
+   if(!files.length)return;
+   const input=$('libraryUploadFiles');
+   const statusEl=$('libraryUploadStatus');
+   const valid=files.filter(file=>['image/jpeg','image/png','image/webp'].includes(file.type)&&file.size>0&&file.size<=5*1024*1024);
+   const invalid=files.length-valid.length;
+   if(!valid.length){
+     statusEl.textContent='No hay imágenes válidas. Usa JPG, PNG o WebP de hasta 5 MB cada una.';
+     input.value='';
+     return;
+   }
+   input.disabled=true;
+   let uploaded=0,failed=0;
+   statusEl.textContent='Preparando '+valid.length+' imágenes…';
+   for(let i=0;i<valid.length;i++){
+     const file=valid[i];
+     statusEl.textContent='Subiendo '+(i+1)+' de '+valid.length+': '+file.name;
+     try{
+       const {data,error}=await client.functions.invoke('github-images',{body:{
+         action:'upload',kind:'product',category:'biblioteca',productSlug:'biblioteca',
+         contentType:file.type,contentBase64:await fileBase64(file)
+       }});
+       if(error)throw error;
+       if(!data?.path)throw new Error('GitHub no devolvió la ruta.');
+       uploaded++;
+     }catch(error){
+       failed++;
+       statusEl.textContent='Subiendo '+(i+1)+' de '+valid.length+' · Error con '+file.name+': '+(error?.message||String(error));
+     }
+   }
+   input.disabled=false;
+   input.value='';
+   statusEl.textContent='Proceso terminado: '+uploaded+' imágenes guardadas'+(failed?', '+failed+' errores':'')+(invalid?', '+invalid+' archivos omitidos por formato o tamaño':'')+'.';
+   await loadImageLibrary();
+ });
+
  $('imageShowToggle').addEventListener('change',updateImageToggleText);
  document.querySelectorAll('input[name="imageFit"]').forEach(input=>input.addEventListener('change',()=>{if(originalImageFile||originalImageUrl)renderSelectedImage();}));
  $('imageFile').addEventListener('change',()=>handleSelectedImage($('imageFile').files?.[0]||null,'imageFile'));
@@ -304,6 +404,7 @@
    selectedImageFile=null;
    originalImageFile=null;
    originalImageUrl='';
+   selectedLibraryPath='';
    imagePreviewVersion++;
  }
  $('imageClose').addEventListener('click',closeImageEditor);
@@ -326,6 +427,9 @@
        if(uploadError)throw uploadError;
        if(!uploadData?.path)throw new Error('GitHub no devolvió la ruta de la imagen.');
        newPath=uploadData.path;changes.image=newPath;
+     } else if(selectedLibraryPath){
+       newPath=selectedLibraryPath;
+       changes.image=newPath;
      }
      if(target.kind==='option')changes.show_image=$('imageShowToggle').checked;
      const table=target.kind==='product'?'products':'product_options';
