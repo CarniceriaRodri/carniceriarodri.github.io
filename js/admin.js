@@ -300,21 +300,21 @@
  const GITHUB_PAGES_BASE='https://carniceriarodri.github.io/';
  let currentLibraryFolder='biblioteca';
  function folderSlug(value){return String(value||'biblioteca').normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').toLowerCase().replace(/[^a-z0-9-]+/g,'-').replace(/^-+|-+$/g,'')||'biblioteca';}
- function libraryPath(folder=currentLibraryFolder){return 'img/productos/biblioteca/'+folder+'/';}
+ function libraryPath(folder=currentLibraryFolder){return 'img/productos/biblioteca/'+(folder?folder+'/':'');}
  function libraryImageUrl(path){return GITHUB_PAGES_BASE+path.split('/').map(encodeURIComponent).join('/');}
  function updateLibraryPaths(){const path=libraryPath();$('imageLibraryPath').textContent=path;$('libraryUploadPath').textContent=path;}
  async function loadImageLibrary(folder=currentLibraryFolder){
    currentLibraryFolder=folder;updateLibraryPaths();
    const grid=$('imageLibraryGrid');grid.innerHTML='';status('imageLibraryStatus','Cargando biblioteca…');
    try{
-     const response=await fetch(GITHUB_CONTENTS_BASE+folder.split('/').map(encodeURIComponent).join('/')+'?ref=main&v='+Date.now(),{headers:{Accept:'application/vnd.github+json'},cache:'no-store'});
+     const response=await fetch(GITHUB_CONTENTS_BASE+(folder?folder.split('/').map(encodeURIComponent).join('/'):'')+'?ref=main&v='+Date.now(),{headers:{Accept:'application/vnd.github+json'},cache:'no-store'});
      if(response.status===404){status('imageLibraryStatus','Esta carpeta está vacía. Puedes subir imágenes aquí desde el panel principal.');return [];}
      if(!response.ok)throw new Error('GitHub respondió '+response.status+'.');
      const entries=await response.json();
      const folders=Array.isArray(entries)?entries.filter(entry=>entry.type==='dir'):[];
      const images=Array.isArray(entries)?entries.filter(file=>file.type==='file'&&/\\.(jpe?g|png|webp)$/i.test(file.name)):[];
      folders.sort((a,b)=>a.name.localeCompare(b.name,'es'));images.sort((a,b)=>b.name.localeCompare(a.name));
-     if(folder!=='biblioteca'){const up=document.createElement('button');up.type='button';up.className='secondary';up.textContent='↩ Volver a biblioteca';up.addEventListener('click',()=>loadImageLibrary('biblioteca'));grid.append(up);}
+     if(folder!=='biblioteca'){const up=document.createElement('button');up.type='button';up.className='secondary';up.textContent='↩ Volver a biblioteca';up.addEventListener('click',()=>loadImageLibrary(''));grid.append(up);}
      folders.forEach(dir=>{const button=document.createElement('button');button.type='button';button.className='secondary';button.textContent='📁 '+dir.name;button.style.cssText='padding:10px;min-width:0;text-align:left';button.addEventListener('click',()=>loadImageLibrary(folder+'/'+folderSlug(dir.name)));grid.append(button);});
      for(const file of images){
        const card=document.createElement('button');card.type='button';card.className='secondary';card.style.cssText='padding:6px;min-width:0;background:#f8f6f2;color:var(--ink);border:1px solid var(--line)';
@@ -326,9 +326,9 @@
      status('imageLibraryStatus',images.length+' imágenes y '+folders.length+' carpetas disponibles.');return images;
    }catch(error){status('imageLibraryStatus','No se pudo cargar la biblioteca: '+(error?.message||String(error)));return [];}
  }
- $('openImageLibrary').addEventListener('click',async()=>{$('imageLibraryPicker').hidden=!$('imageLibraryPicker').hidden;if(!$('imageLibraryPicker').hidden)await loadImageLibrary('biblioteca');});
+ $('openImageLibrary').addEventListener('click',async()=>{$('imageLibraryPicker').hidden=!$('imageLibraryPicker').hidden;if(!$('imageLibraryPicker').hidden)await loadImageLibrary('');});
  $('refreshImageLibrary').addEventListener('click',()=>loadImageLibrary(currentLibraryFolder));
- $('libraryGoRoot').addEventListener('click',()=>loadImageLibrary('biblioteca'));
+ $('libraryGoRoot').addEventListener('click',()=>loadImageLibrary(''));
  $('libraryFolder').addEventListener('input',()=>{$('libraryUploadPath').textContent=libraryPath(folderSlug($('libraryFolder').value));});
  $('libraryUploadButton').addEventListener('click',()=>$('libraryUploadFiles').click());
  $('libraryUploadFiles').addEventListener('change',async()=>{
