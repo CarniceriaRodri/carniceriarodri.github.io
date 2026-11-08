@@ -893,6 +893,10 @@
 
   // Supabase es la fuente única de precios, categorías y productos publicados.
   // Si falla la sincronización, no se publican precios de demostración.
+  const categoryRetired = value => /\b(conejo|conejos|cordero|corderos|caza|cabrito|cabritos|cabrita|cabritas)\b/.test(
+    String(value || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[_-]/g, ' ')
+  );
+
   async function sincronizarPrecios() {
     const supabaseUrl = 'https://ugqiomoywgpkmogcdjqn.supabase.co/rest/v1/';
     const publicKey = 'sb_publishable_FU3fmq19uyZ4jUmF_uhFgg_ywVmFPrL';
@@ -912,8 +916,9 @@
         getRows('product_options', 'select=product_id,label,price_cents,active,image,show_image,sort_order&order=sort_order.asc')
       ]);
 
-      const activeCategories = categoryRows.filter(c => c.active === true);
+      const activeCategories = categoryRows.filter(c => c.active === true && !categoryRetired(c.id) && !categoryRetired(c.name));
       const allowedCategories = new Set(activeCategories.map(c => String(c.id)));
+      const categoryNames = new Map(categoryRows.map(c => [String(c.id), String(c.name || '')]));
       const original = new Map(PRODUCTOS.map(p => [String(p.id), p]));
       const optionsByProduct = new Map();
       for (const option of optionRows) {
@@ -925,7 +930,7 @@
 
       const published = [];
       for (const row of rows) {
-        if (row.active !== true || !allowedCategories.has(String(row.category))) continue;
+        if (row.active !== true || !allowedCategories.has(String(row.category)) || categoryRetired(row.category) || categoryRetired(categoryNames.get(String(row.category))) || categoryRetired(row.name)) continue;
         const options = optionsByProduct.get(String(row.id)) || [];
         if (!options.length) continue;
         const baseCents = Number(row.base_price_cents);
