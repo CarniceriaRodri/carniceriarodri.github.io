@@ -743,6 +743,62 @@
    status('adminStatus',requested?'Producto activado. Será visible si tiene opciones y precio.':'Producto desactivado y oculto en la tienda.');
  });
 
+ $('removeRetiredCategories').addEventListener('click',async()=>{
+   const button=$('removeRetiredCategories');
+   button.disabled=true;
+   status('adminStatus','Comprobando categorías retiradas…');
+   try{
+     const [catResult,productResult,optionResult]=await Promise.all([
+       client.from('categories').select('id,name,tagline,sort_order,active'),
+       client.from('products').select('id,name,description,category,image,base_price_cents,active,sort_order,sale_unit,preparations'),
+       client.from('product_options').select('*')
+     ]);
+     if(catResult.error||productResult.error||optionResult.error)throw catResult.error||productResult.error||optionResult.error;
+     const cats=catResult.data||[],products=productResult.data||[],options=optionResult.data||[];
+     const names=new Map(cats.map(c=>[String(c.id),c.name]));
+     const removedCategories=cats.filter(c=>isRetiredCategory(c.id)||isRetiredCategory(c.name));
+     const removedProducts=products.filter(p=>isRetiredProduct(p,names));
+     const ids=new Set(removedProducts.map(p=>String(p.id)));
+     const removedOptions=options.filter(o=>ids.has(String(o.product_id)));
+     if(!removedCategories.length&&!removedProducts.length){
+       status('adminStatus','No quedan categorías ni productos retirados en Supabase.');return;
+     }
+     const lines='Se borrarán DEFINITIVAMENTE '+removedCategories.length+' categorías, '+removedProducts.length+
+       ' productos y '+removedOptions.length+' opciones de venta. Se descargará antes un respaldo JSON.\n\n¿Continuar?';
+     if(!confirm(lines)){status('adminStatus','Limpieza cancelada: no se ha eliminado nada.');return}
+     const backup={created_at:new Date().toISOString(),categories:removedCategories,products:removedProducts,options:removedOptions};
+     const url=URL.createObjectURL(new Blob([JSON.stringify(backup,null,2)],{type:'application/json'}));
+     const link=document.createElement('a');link.href=url;
+     link.download='respaldo-categorias-retiradas-'+new Date().toISOString().slice(0,10)+'.json';
+     document.body.appendChild(link);link.click();link.remove();
+     setTimeout(()=>URL.revokeObjectURL(url),10000);
+     if(!confirm('Confirma que el navegador ha descargado la copia JSON. ¿Eliminar ahora los registros en Supabase?')){
+       status('adminStatus','No se han borrado registros. Respaldo descargado.');return;
+     }
+     let deletedOptions=0,deletedProducts=0,deletedCategories=0;
+     for(const o of removedOptions){
+       const {data,error}=await client.from('product_options').delete().eq('id',o.id).select('id');
+       if(error||!data?.length)throw Error('Opción '+o.id+': '+(error?.message||'Borrado no permitido'));
+       deletedOptions++;
+     }
+     for(const p of removedProducts){
+       const {data,error}=await client.from('products').delete().eq('id',p.id).select('id');
+       if(error||!data?.length)throw Error('Producto '+p.id+': '+(error?.message||'Borrado no permitido'));
+       deletedProducts++;
+     }
+     for(const c of removedCategories){
+       const {data,error}=await client.from('categories').delete().eq('id',c.id).select('id');
+       if(error||!data?.length)throw Error('Categoría '+c.id+': '+(error?.message||'Borrado no permitido'));
+       deletedCategories++;
+     }
+     status('adminStatus','Limpieza completada: '+deletedCategories+' categorías, '+deletedProducts+
+       ' productos y '+deletedOptions+' opciones eliminados. Las fotos de GitHub se conservan.');
+     await loadProducts();
+   }catch(error){status('adminStatus','Limpieza detenida: '+error.message+
+       '. Si se borraron registros antes del error, consulta el JSON de respaldo descargado.');}
+   finally{button.disabled=false}
+ });
+
  $('activateAllProducts').addEventListener('click',async()=>{
    const button=$('activateAllProducts');
    if(!confirm('¿Activar todos los productos permitidos? También se activarán los que anteriormente desactivaste.'))return;
