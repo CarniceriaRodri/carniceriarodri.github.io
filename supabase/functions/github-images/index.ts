@@ -137,7 +137,7 @@ Deno.serve(async (req: Request) => {
         return json({ error: "Nombre de carpeta no válido" }, 400, origin);
       }
       const path = "img/productos/biblioteca/" + folder + "/.gitkeep";
-      await saveToGitHub(path, "");
+      await saveToGitHub(path, btoa("Carpeta de biblioteca creada desde el panel de administración.\n"));
       return json({ path: "img/productos/biblioteca/" + folder + "/" }, 200, origin);
     }
     if (body.action !== "upload") return json({ error: "Acción no permitida" }, 400, origin);
