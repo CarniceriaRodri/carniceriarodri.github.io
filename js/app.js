@@ -125,7 +125,7 @@
     return `
       <article class="card${p.cat === 'bebidas' ? ' card--bebidas' : ''}" data-id="${escapeHtml(p.id)}" data-search="${escapeHtml(normalize(keywords))}">
         <div class="card-img">
-          <img src="${imageForProduct(p)}" ${p.imageUrl || p.imagenBiblioteca ? "" : `srcset="${img(p.img, 400, 300)} 400w, ${img(p.img, 800, 600)} 800w`}
+          <img src="${escapeHtml(imageForProduct(p))}" ${p.imageUrl || p.imagenBiblioteca ? "" : `srcset="${img(p.img, 400, 300)} 400w, ${img(p.img, 800, 600)} 800w`}
                sizes="(max-width: 640px) 100vw, 360px" alt="${escapeHtml(p.nombre)}" loading="lazy" width="600" height="450" decoding="async"
                onerror="this.onerror=null;this.removeAttribute('srcset');this.src='${escapeHtml(p.imagenBiblioteca || img(p.img, 600, 450))}'">
           ${p.etiqueta ? `<span class="tag">${escapeHtml(p.etiqueta)}</span>` : ''}
@@ -228,7 +228,7 @@
         : '';
       return `
         <li class="line">
-          <img src="${l.img ? publicImageUrl(l.img) : imageForProduct(p)}" alt="" width="60" height="60" loading="lazy" decoding="async">
+          <img src="${escapeHtml(l.img ? publicImageUrl(l.img) : imageForProduct(p))}" alt="" width="60" height="60" loading="lazy" decoding="async">
           <div class="line-info">
             <strong>${escapeHtml(p.nombre)}</strong>
             <span>${escapeHtml(l.cantidad)} · ${escapeHtml(l.opcion)}${l.preparacion ? ' · ' + escapeHtml(l.preparacion) : ''}</span>
@@ -848,128 +848,90 @@
       if (err) err.classList.remove('show');
     }));
 
+  // Supabase es la fuente única de precios, categorías y productos publicados.
+  // Si falla la sincronización, no se publican precios de demostración.
   async function sincronizarPrecios() {
+    const supabaseUrl = 'https://ugqiomoywgpkmogcdjqn.supabase.co/rest/v1/';
+    const publicKey = 'sb_publishable_FU3fmq19uyZ4jUmF_uhFgg_ywVmFPrL';
+    const headers = { apikey: publicKey };
+    const getRows = async (table, query) => {
+      const response = await fetch(supabaseUrl + table + '?' + query, { headers, cache: 'no-store' });
+      if (!response.ok) throw new Error(table + ': HTTP ' + response.status);
+      const data = await response.json();
+      if (!Array.isArray(data)) throw new Error(table + ': respuesta incorrecta');
+      return data;
+    };
+
     try {
-      const response = await fetch('https://ugqiomoywgpkmogcdjqn.supabase.co/rest/v1/products?select=id,name,description,category,base_price_cents,active,image,sale_unit,preparations&apikey=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVncWlvbW95d2dwa21vZ2NkanFuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM2MDc0OTQsImV4cCI6MjEwOTE4MzQ5NH0.k--iBQrSD_raY-TQn01ZHPIkZJ5Xm_KrxEmwY08po3Q', {
-        method: 'GET',
-        mode: 'cors',
-        cache: 'no-store',
-        
-      });
-      if (!response.ok) throw new Error('Supabase respondió ' + response.status);
-      const rows = await response.json();
-      // Las categorías creadas en administración deben aparecer en la tienda.
-      // Respetar el indicador active y el orden configurado en Supabase.
-      try {
-        const key = new URL(response.url).searchParams.get('apikey');
-        const categoriesResponse = await fetch(
-          'https://ugqiomoywgpkmogcdjqn.supabase.co/rest/v1/categories?select=id,name,tagline,sort_order,active&order=sort_order.asc&apikey=' + encodeURIComponent(key),
-          {cache:'no-store'}
-        );
-        if (!categoriesResponse.ok) throw new Error('HTTP ' + categoriesResponse.status);
-        const categoryRows = await categoriesResponse.json();
-        if (Array.isArray(categoryRows)) {
-          const visible = categoryRows.filter(c => c.active === true);
-          CATEGORIAS.splice(0,CATEGORIAS.length,...visible.map(c => ({
-            id:String(c.id),nombre:String(c.name||c.id),lema:String(c.tagline||'')
-          })));
-        }
-      } catch (categoryError) {
-        console.warn('No se pudieron cargar las categorías de Supabase:',categoryError);
+      const [rows, categoryRows, optionRows] = await Promise.all([
+        getRows('products', 'select=id,name,description,category,base_price_cents,active,image,sale_unit,preparations,sort_order&order=sort_order.asc'),
+        getRows('categories', 'select=id,name,tagline,sort_order,active&order=sort_order.asc'),
+        getRows('product_options', 'select=product_id,label,price_cents,active,image,show_image,sort_order&order=sort_order.asc')
+      ]);
+
+      const activeCategories = categoryRows.filter(c => c.active === true);
+      const allowedCategories = new Set(activeCategories.map(c => String(c.id)));
+      const original = new Map(PRODUCTOS.map(p => [String(p.id), p]));
+      const optionsByProduct = new Map();
+      for (const option of optionRows) {
+        if (option.active !== true || !Number.isFinite(Number(option.price_cents)) || Number(option.price_cents) <= 0) continue;
+        const id = String(option.product_id);
+        if (!optionsByProduct.has(id)) optionsByProduct.set(id, []);
+        optionsByProduct.get(id).push(option);
       }
 
-      const catalogProductByDatabaseId = new Map();
-      inactiveProductIds.clear();
-      rows.forEach(row => {
-        if (row.active === false) inactiveProductIds.add(String(row.id));
-        const normalizar = texto => String(texto || '')
-  .normalize('NFD')
-  .replace(/[\u0300-\u036f]/g, '')
-  .toLowerCase()
-  .replace(/[^a-z0-9]/g, '');
-
-const product = PRODUCTOS.find(p => String(p.id) === String(row.id))
-  || PRODUCTOS.find(p => normalizar(p.nombre) === normalizar(row.name));
-        if (!product) return;
-        if (row.active === false) inactiveProductIds.add(String(product.id));
-        catalogProductByDatabaseId.set(String(row.id), product);
-        // Los cambios guardados en administración prevalecen sobre el catálogo local.
-        if (typeof row.name === 'string' && row.name.trim()) product.nombre = row.name.trim();
-        if (typeof row.description === 'string') product.desc = row.description;
-        if (typeof row.category === 'string' && row.category.trim()) product.cat = row.category.trim();
-        product.imageUrl = publicImageUrl(row.image) || product.imagenBiblioteca || '';
-        // La demostración solo complementa el catálogo; no sobrescribe imágenes propias.
-        if (row.base_price_cents !== null && row.base_price_cents !== undefined && Number.isFinite(Number(row.base_price_cents))) product.precioDemo = false;
-        product.saleUnit = row.sale_unit || null;
-        product.preparations = Array.isArray(row.preparations) ? row.preparations : [];
-        if (product.saleUnit) {
-          product.precio = product.precio ? product.precio.replace(/\/(kg|ud)/i, '/' + product.saleUnit) : product.precio;
-          product.cantidades = product.saleUnit === 'kg' ? ['250 gr','500 gr','750 gr','1 kg'] : ['1 unidad','2 unidades','4 unidades','6 unidades'];
+      const published = [];
+      for (const row of rows) {
+        if (row.active !== true || !allowedCategories.has(String(row.category))) continue;
+        const options = optionsByProduct.get(String(row.id)) || [];
+        if (!options.length) continue;
+        const baseCents = Number(row.base_price_cents);
+        const base = Number.isFinite(baseCents) && baseCents > 0
+          ? baseCents / 100 : Number(options[0].price_cents) / 100;
+        if (!(base > 0)) continue;
+        const legacy = original.get(String(row.id)) || {};
+        const unit = row.sale_unit === 'ud' ? 'ud' : (row.sale_unit === 'kg' ? 'kg' : (legacy.saleUnit || (legacy.precio && /\/ud/i.test(legacy.precio) ? 'ud' : 'kg')));
+        const p = {
+          ...legacy,
+          id: String(row.id),
+          nombre: String(row.name || row.id),
+          desc: String(row.description || ''),
+          cat: String(row.category),
+          precio: base.toFixed(2).replace('.', ',') + ' €/' + unit,
+          precioDemo: false,
+          saleUnit: unit,
+          opcionLabel: legacy.opcionLabel || (unit === 'ud' ? 'Variedad o formato' : 'Corte o preparación'),
+          opciones: options.map(o => String(o.label)),
+          cantidades: unit === 'ud' ? ['1 unidad', '2 unidades', '4 unidades', '6 unidades'] : ['250 gr', '500 gr', '750 gr', '1 kg'],
+          preparations: Array.isArray(row.preparations) ? row.preparations : [],
+          imageUrl: publicImageUrl(row.image) || legacy.imagenBiblioteca || '',
+          preciosOpciones: {},
+          optionImages: {},
+          factoresOpciones: {}
+        };
+        for (const option of options) {
+          const key = normalizarClave(option.label);
+          p.preciosOpciones[key] = Number(option.price_cents) / 100;
+          p.optionImages[key] = { url: publicImageUrl(option.image), showImage: option.show_image !== false };
         }
-        if (row.base_price_cents === null || row.base_price_cents === undefined || !Number.isFinite(Number(row.base_price_cents))) return;
-        const unit = (product.precio && product.precio.match(/\/(kg|ud)/i) || [,'ud'])[1].toLowerCase();
-        const basePrice = Number(row.base_price_cents) / 100;
-        product.precio = basePrice.toFixed(2).replace('.', ',') + ' €/' + unit;
-        if (Array.isArray(product.cantidades)) {
-          product.cantidades = product.cantidades.map(label => {
-            const amountMatch = label.match(/[0-9]+(?:[.,][0-9]+)?/);
-            if (!amountMatch) return label;
-            const amount = Number(amountMatch[0].replace(',', '.'));
-            const lower = label.toLowerCase();
-            let factor = amount;
-            if (/gr|gram/.test(lower)) factor = amount / 1000;
-            else if (/kg|kilo/.test(lower)) factor = amount;
-            const value = (basePrice * factor).toFixed(2).replace('.', ',');
-            return label.replace(/-\s*[0-9]+(?:[.,][0-9]+)?\s*€/i, '- ' + value + ' €');
-          });
-        }
-      });
-
-      // Cargar precios específicos guardados para cualquier producto.
-      const publicKey = response.url.split('apikey=')[1];
-      if (publicKey) {
-        const optionsResponse = await fetch(
-          'https://ugqiomoywgpkmogcdjqn.supabase.co/rest/v1/product_options?select=product_id,label,price_cents,active,image,show_image&apikey=' + publicKey,
-          { method: 'GET', mode: 'cors', cache: 'no-store' }
-        );
-        if (optionsResponse.ok) {
-          const optionRows = await optionsResponse.json();
-          PRODUCTOS.forEach(product => {
-              product.cantidadesOriginales = product.cantidades.slice();
-              product.factoresOpciones = {};
-              const configured = window.FACTORES_OPCIONES && window.FACTORES_OPCIONES[product.id];
-              if (configured) Object.entries(configured).forEach(([label, factor]) => {
-                product.factoresOpciones[normalizarClave(label)] = factor;
-              });
-              product.preciosOpciones = {};
-            });
-            optionRows.forEach(row => {
-              const product = catalogProductByDatabaseId.get(String(row.product_id)) || PRODUCTOS.find(p => String(p.id) === String(row.product_id));
-              if (!product || !row.label) return;
-
-              const label = String(row.label).trim();
-              const key = normalizarClave(label);
-              product.optionImages = product.optionImages || {};
-              product.optionImages[key] = { url: publicImageUrl(row.image), showImage: row.show_image !== false };
-
-              // Las opciones OFF se retiran de la tienda, aunque sigan guardadas en administración.
-              if (row.active === false) {
-                product.opciones = product.opciones.filter(option => normalizarClave(option) !== key);
-                return;
-              }
-
-              if (!product.opciones.some(option => normalizarClave(option) === key)) {
-                product.opciones.push(label);
-              }
-
-              if (Number.isFinite(Number(row.price_cents))) {
-                product.preciosOpciones[key] = Number(row.price_cents) / 100;
-              }
-            });
-        }
+        published.push(p);
       }
+
+      PRODUCTOS.splice(0, PRODUCTOS.length, ...published);
+      CATEGORIAS.splice(0, CATEGORIAS.length, ...activeCategories.map(c => ({
+        id: String(c.id), nombre: String(c.name || c.id), lema: String(c.tagline || '')
+      })));
+      const validProductIds = new Set(published.map(p => p.id));
+      cart = cart.filter(item => validProductIds.has(item.id)
+        && published.some(p => p.id === item.id && p.opciones.includes(item.opcion)));
+      save();
+      return true;
     } catch (error) {
-      console.warn('No se pudieron sincronizar los precios; se muestran los precios locales.', error);
+      console.error('Catálogo no disponible:', error);
+      PRODUCTOS.splice(0, PRODUCTOS.length);
+      CATEGORIAS.splice(0, CATEGORIAS.length);
+      cart = [];
+      return false;
     }
   }
 
@@ -977,15 +939,17 @@ const product = PRODUCTOS.find(p => String(p.id) === String(row.id))
     return String(texto || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]/g, '');
   }
 
-  // Mostrar el catálogo local inmediatamente, sin esperar a Supabase.
-  renderCatalogo();
-  renderCart();
-
-  // Actualizar precios en segundo plano; si falla la conexión,
-  // el catálogo seguirá visible con los precios locales.
-  sincronizarPrecios().then(() => {
+  // Los precios de demostración nunca se muestran como catálogo vendible.
+  $('#secciones').textContent = 'Cargando productos y precios actualizados…';
+  sincronizarPrecios().then(ok => {
     renderCatalogo();
-    document.querySelectorAll('.card [data-field="opcion"]').forEach(option => option.dispatchEvent(new Event('change', { bubbles: true })));
     renderCart();
+    if (!ok) {
+      $('#secciones').textContent = 'No podemos comprobar los precios en este momento. Inténtalo de nuevo más tarde o consúltanos por WhatsApp.';
+    } else if (!PRODUCTOS.length) {
+      $('#secciones').textContent = 'No hay productos disponibles para encargar en este momento.';
+    } else {
+      document.querySelectorAll('.card [data-field="opcion"]').forEach(option => option.dispatchEvent(new Event('change', { bubbles: true })));
+    }
   }); 
 })();
