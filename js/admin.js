@@ -262,12 +262,11 @@
      const width=source.naturalWidth*scale,height=source.naturalHeight*scale;
      ctx.drawImage(source,(size-width)/2,(size-height)/2,width,height);
      URL.revokeObjectURL(sourceUrl);
-     const dataUrl=canvas.toDataURL('image/webp',0.88);
+     const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/webp',0.88));
      if(version!==imagePreviewVersion)return;
-     const blob=await (await fetch(dataUrl)).blob();
-     if(version!==imagePreviewVersion)return;
-     selectedImageFile=new File([blob],(originalImageFile.name||'producto').replace(/\.[^.]+$/,'')+'.webp',{type:'image/webp'});
-     $('imagePreview').src=dataUrl;$('imagePreview').hidden=false;
+     if(!blob)throw new Error('El navegador no pudo procesar la imagen.');
+     selectedImageFile=new File([blob],(originalImageFile.name||'producto').replace(/\.[^.]+$/,'')+'.webp',{type:blob.type||'image/webp'});
+     $('imagePreview').src=URL.createObjectURL(blob);$('imagePreview').hidden=false;
      $('imageCurrent').textContent='';status('imageStatus','');
    }catch(error){
      if(version!==imagePreviewVersion)return;
