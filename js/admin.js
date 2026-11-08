@@ -296,103 +296,56 @@
    renderSelectedImage();
  }
 
- const GITHUB_LIBRARY_API='https://api.github.com/repos/CarniceriaRodri/carniceriarodri.github.io/contents/img/productos/biblioteca/biblioteca?ref=main';
+ const GITHUB_CONTENTS_BASE='https://api.github.com/repos/CarniceriaRodri/carniceriarodri.github.io/contents/img/productos/biblioteca/';
  const GITHUB_PAGES_BASE='https://carniceriarodri.github.io/';
+ let currentLibraryFolder='biblioteca';
+ function folderSlug(value){return String(value||'biblioteca').normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').toLowerCase().replace(/[^a-z0-9-]+/g,'-').replace(/^-+|-+$/g,'')||'biblioteca';}
+ function libraryPath(folder=currentLibraryFolder){return 'img/productos/biblioteca/'+folder+'/';}
  function libraryImageUrl(path){return GITHUB_PAGES_BASE+path.split('/').map(encodeURIComponent).join('/');}
- async function loadImageLibrary(){
-   const grid=$('imageLibraryGrid');
-   grid.innerHTML='';
-   status('imageLibraryStatus','Cargando biblioteca…');
+ function updateLibraryPaths(){const path=libraryPath();$('imageLibraryPath').textContent=path;$('libraryUploadPath').textContent=path;}
+ async function loadImageLibrary(folder=currentLibraryFolder){
+   currentLibraryFolder=folder;updateLibraryPaths();
+   const grid=$('imageLibraryGrid');grid.innerHTML='';status('imageLibraryStatus','Cargando biblioteca…');
    try{
-     const response=await fetch(GITHUB_LIBRARY_API,{headers:{Accept:'application/vnd.github+json'}});
-     if(response.status===404){
-       status('imageLibraryStatus','La biblioteca todavía está vacía. Puedes subir varias imágenes aquí mismo.');
-       return [];
-     }
+     const response=await fetch(GITHUB_CONTENTS_BASE+folder.split('/').map(encodeURIComponent).join('/')+'?ref=main&v='+Date.now(),{headers:{Accept:'application/vnd.github+json'},cache:'no-store'});
+     if(response.status===404){status('imageLibraryStatus','Esta carpeta está vacía. Puedes subir imágenes aquí desde el panel principal.');return [];}
      if(!response.ok)throw new Error('GitHub respondió '+response.status+'.');
-     const files=await response.json();
-     const images=Array.isArray(files)?files.filter(file=>file.type==='file'&&/\\.(jpe?g|png|webp)$/i.test(file.name)):[];
-     images.sort((a,b)=>b.name.localeCompare(a.name));
-     if(!images.length){
-       status('imageLibraryStatus','Todavía no hay imágenes guardadas en la biblioteca.');
-       return [];
-     }
+     const entries=await response.json();
+     const folders=Array.isArray(entries)?entries.filter(entry=>entry.type==='dir'):[];
+     const images=Array.isArray(entries)?entries.filter(file=>file.type==='file'&&/\\.(jpe?g|png|webp)$/i.test(file.name)):[];
+     folders.sort((a,b)=>a.name.localeCompare(b.name,'es'));images.sort((a,b)=>b.name.localeCompare(a.name));
+     if(folder!=='biblioteca'){const up=document.createElement('button');up.type='button';up.className='secondary';up.textContent='↩ Volver a biblioteca';up.addEventListener('click',()=>loadImageLibrary('biblioteca'));grid.append(up);}
+     folders.forEach(dir=>{const button=document.createElement('button');button.type='button';button.className='secondary';button.textContent='📁 '+dir.name;button.style.cssText='padding:10px;min-width:0;text-align:left';button.addEventListener('click',()=>loadImageLibrary(folder+'/'+folderSlug(dir.name)));grid.append(button);});
      for(const file of images){
-       const card=document.createElement('button');
-       card.type='button';
-       card.className='secondary';
-       card.style.cssText='padding:6px;min-width:0;background:#f8f6f2;color:var(--ink);border:1px solid var(--line)';
-       const img=document.createElement('img');
-       img.src=libraryImageUrl(file.path);
-       img.alt=file.name;
-       img.loading='lazy';
-       img.style.cssText='display:block;width:100%;height:86px;object-fit:contain;background:white;border-radius:6px';
-       const name=document.createElement('span');
-       name.textContent=file.name.replace(/-\\d+\\.(?:jpe?g|png|webp)$/i,'');
-       name.style.cssText='display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;margin-top:4px';
-       card.append(img,name);
-       card.addEventListener('click',()=>{
-         selectedLibraryPath=file.path;
-         selectedImageFile=null;
-         originalImageFile=null;
-         originalImageUrl=libraryImageUrl(file.path);
-         $('imagePreview').src=originalImageUrl;
-         $('imagePreview').hidden=false;
-         $('imageCurrent').textContent='Imagen seleccionada de la biblioteca. Pulsa «Guardar imagen» para asignarla.';
-         status('imageStatus','Imagen de la biblioteca seleccionada.');
-         $('imageLibraryPicker').hidden=true;
-       });
+       const card=document.createElement('button');card.type='button';card.className='secondary';card.style.cssText='padding:6px;min-width:0;background:#f8f6f2;color:var(--ink);border:1px solid var(--line)';
+       const img=document.createElement('img');img.src=libraryImageUrl(file.path)+'?v='+encodeURIComponent(file.sha||'');img.alt=file.name;img.loading='lazy';img.style.cssText='display:block;width:100%;height:86px;object-fit:contain;background:white;border-radius:6px';
+       const name=document.createElement('span');name.textContent=file.name;name.style.cssText='display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;margin-top:4px';card.append(img,name);
+       card.addEventListener('click',()=>{selectedLibraryPath=file.path;selectedImageFile=null;originalImageFile=null;originalImageUrl=libraryImageUrl(file.path);$('imagePreview').src=originalImageUrl;$('imagePreview').hidden=false;$('imageCurrent').textContent='Imagen seleccionada de la biblioteca. Pulsa «Guardar imagen» para asignarla.';status('imageStatus','Imagen de la biblioteca seleccionada.');$('imageLibraryPicker').hidden=true;});
        grid.append(card);
      }
-     status('imageLibraryStatus',images.length+' imágenes disponibles.');
-     return images;
-   }catch(error){
-     status('imageLibraryStatus','No se pudo cargar la biblioteca: '+(error?.message||String(error)));
-     return [];
-   }
+     status('imageLibraryStatus',images.length+' imágenes y '+folders.length+' carpetas disponibles.');return images;
+   }catch(error){status('imageLibraryStatus','No se pudo cargar la biblioteca: '+(error?.message||String(error)));return [];}
  }
- $('openImageLibrary').addEventListener('click',async()=>{
-   $('imageLibraryPicker').hidden=!$('imageLibraryPicker').hidden;
-   if(!$('imageLibraryPicker').hidden)await loadImageLibrary();
- });
- $('refreshImageLibrary').addEventListener('click',loadImageLibrary);
+ $('openImageLibrary').addEventListener('click',async()=>{$('imageLibraryPicker').hidden=!$('imageLibraryPicker').hidden;if(!$('imageLibraryPicker').hidden)await loadImageLibrary('biblioteca');});
+ $('refreshImageLibrary').addEventListener('click',()=>loadImageLibrary(currentLibraryFolder));
+ $('libraryGoRoot').addEventListener('click',()=>loadImageLibrary('biblioteca'));
+ $('libraryFolder').addEventListener('input',()=>{$('libraryUploadPath').textContent=libraryPath(folderSlug($('libraryFolder').value));});
+ $('libraryUploadButton').addEventListener('click',()=>$('libraryUploadFiles').click());
  $('libraryUploadFiles').addEventListener('change',async()=>{
-   const files=Array.from($('libraryUploadFiles').files||[]);
-   if(!files.length)return;
-   const input=$('libraryUploadFiles');
-   const statusEl=$('libraryUploadStatus');
-   const valid=files.filter(file=>['image/jpeg','image/png','image/webp'].includes(file.type)&&file.size>0&&file.size<=5*1024*1024);
-   const invalid=files.length-valid.length;
-   if(!valid.length){
-     statusEl.textContent='No hay imágenes válidas. Usa JPG, PNG o WebP de hasta 5 MB cada una.';
-     input.value='';
-     return;
+   const files=Array.from($('libraryUploadFiles').files||[]);if(!files.length)return;
+   const input=$('libraryUploadFiles'),button=$('libraryUploadButton'),statusEl=$('libraryUploadStatus'),folder=folderSlug($('libraryFolder').value);
+   const valid=files.filter(file=>['image/jpeg','image/png','image/webp'].includes(file.type)&&file.size>0&&file.size<=5*1024*1024),invalid=files.length-valid.length;
+   if(!valid.length){statusEl.textContent='No hay imágenes válidas. Usa JPG, PNG o WebP de hasta 5 MB cada una.';input.value='';return;}
+   input.disabled=true;button.disabled=true;let uploaded=0,failed=0;statusEl.textContent='Preparando '+valid.length+' imágenes…';
+   for(let i=0;i<valid.length;i++){const file=valid[i];statusEl.textContent='Subiendo '+(i+1)+' de '+valid.length+': '+file.name;
+     try{const {data,error}=await client.functions.invoke('github-images',{body:{action:'upload',kind:'product',category:'biblioteca',productSlug:folder,contentType:file.type,contentBase64:await fileBase64(file)}});
+       if(error)throw error;if(!data?.path)throw new Error('GitHub no devolvió la ruta.');uploaded++;
+     }catch(error){failed++;statusEl.textContent='Error con '+file.name+': '+(error?.message||String(error));}
    }
-   input.disabled=true;
-   let uploaded=0,failed=0;
-   statusEl.textContent='Preparando '+valid.length+' imágenes…';
-   for(let i=0;i<valid.length;i++){
-     const file=valid[i];
-     statusEl.textContent='Subiendo '+(i+1)+' de '+valid.length+': '+file.name;
-     try{
-       const {data,error}=await client.functions.invoke('github-images',{body:{
-         action:'upload',kind:'product',category:'biblioteca',productSlug:'biblioteca',
-         contentType:file.type,contentBase64:await fileBase64(file)
-       }});
-       if(error)throw error;
-       if(!data?.path)throw new Error('GitHub no devolvió la ruta.');
-       uploaded++;
-     }catch(error){
-       failed++;
-       statusEl.textContent='Subiendo '+(i+1)+' de '+valid.length+' · Error con '+file.name+': '+(error?.message||String(error));
-     }
-   }
-   input.disabled=false;
-   input.value='';
+   input.disabled=false;button.disabled=false;input.value='';
    statusEl.textContent='Proceso terminado: '+uploaded+' imágenes guardadas'+(failed?', '+failed+' errores':'')+(invalid?', '+invalid+' archivos omitidos por formato o tamaño':'')+'.';
-   await loadImageLibrary();
+   await loadImageLibrary(folder);
  });
-
  $('imageShowToggle').addEventListener('change',updateImageToggleText);
  document.querySelectorAll('input[name="imageFit"]').forEach(input=>input.addEventListener('change',()=>{if(originalImageFile||originalImageUrl)renderSelectedImage();}));
  $('imageFile').addEventListener('change',()=>handleSelectedImage($('imageFile').files?.[0]||null,'imageFile'));
