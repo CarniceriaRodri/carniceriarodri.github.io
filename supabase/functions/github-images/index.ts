@@ -382,7 +382,7 @@ Deno.serve(async (req: Request) => {
     const extension = type === "image/png" ? "png" : type === "image/webp" ? "webp" : "jpg";
     const version = Date.now();
     let path = "img/productos/" + category + "/" + (productParts.length ? productParts.join("/") + "/" : "");
-    const requestedName = String(body.fileName || "").split(/[\\/]/).pop().replace(/\\.[^.]+$/, "");
+    const requestedName = String(body.fileName || "").split(/[\\/]/).pop().replace(/\.[^.]+$/, "");
     const sourceName = slug(requestedName || (body.kind === "product" ? "principal" : String(body.optionSlug || "preparacion")));
     if (!sourceName || sourceName.length > 100) return json({ error: "Nombre de imagen no válido" }, 400, origin);
     let fileName = sourceName + "." + extension;
