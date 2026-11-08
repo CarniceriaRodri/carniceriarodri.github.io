@@ -730,6 +730,25 @@
      return;
    }
 
+   const deleteProductButton=e.target.closest('[data-delete-product]');
+   if(deleteProductButton){
+     const id=deleteProductButton.dataset.deleteProduct;
+     deleteProductButton.disabled=true;
+     try{
+       const {count,error}=await client.from('product_options').select('id',{count:'exact',head:true}).eq('product_id',id);
+       if(error)throw error;
+       if(count>0){alert('Primero elimina las '+count+' opciones de este producto.');return}
+       if(!confirm('¿Eliminar definitivamente este producto?'))return;
+       const result=await client.from('products').delete().eq('id',id).select('id');
+       if(result.error)throw result.error;
+       if(!result.data?.length)throw new Error('Supabase no autorizó el borrado. Comprueba los permisos.');
+       alert('Producto eliminado correctamente.');
+       await loadProducts();
+     }catch(err){alert('No se pudo eliminar el producto: '+err.message)}
+     finally{deleteProductButton.disabled=false}
+     return;
+   }
+
    const detailsButton=e.target.closest('[data-save-product-details]');
    if(detailsButton){
      const id=detailsButton.dataset.saveProductDetails;
