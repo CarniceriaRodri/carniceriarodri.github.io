@@ -46,9 +46,9 @@ dialog#imageDialog::backdrop{background:#211a1780}
 .image-fit-choice:focus-within{outline:3px solid #7b2e2060;outline-offset:2px}
 @media(max-width:360px){.image-fit-choice{min-height:88px}.image-fit-icon{width:36px;height:36px}}
 .image-choices{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0}
-.image-choice{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:11px 14px;border:1px solid #7b2e20;border-radius:9px;background:#7b2e20;color:#fff;font-weight:650;cursor:pointer}
+.image-choice{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:7px;box-sizing:border-box;width:112px;min-width:112px;height:44px;padding:10px 12px;border:1px solid #d8cfc6;border-radius:9px;background:#eee8e1;color:var(--ink);font-weight:650;cursor:pointer}
 .image-choice.secondary{background:#eee8e1;border-color:#d8cfc6;color:var(--ink)}
-.image-choice.camera-only{width:48px;min-width:48px;padding:11px 0;font-size:20px}
+.image-choice.camera-only{width:112px;min-width:112px;height:44px;padding:10px 12px;font-size:20px}
 .image-choice input{position:absolute;width:1px;height:1px;opacity:0;overflow:hidden;pointer-events:none}
 .image-toggle{display:flex;align-items:center;gap:9px;margin:12px 0}
 .image-toggle input{width:20px;height:20px}
