@@ -1,0 +1,854 @@
+{
+  "version": 1,
+  "estado": "borrador_pendiente_de_confirmacion_de_carnicero",
+  "aviso": "Las preparaciones son sugerencias, no disponibilidad confirmada. Los precios no están fijados. No modificar Supabase ni activar opciones automáticamente.",
+  "moneda": "EUR",
+  "productos": [
+    {
+      "id": "chuletas-de-lomo",
+      "nombre": "Chuletas de lomo",
+      "categoria": "cerdo",
+      "imagen": "img/productos/biblioteca/cerdo/01-chuletas-de-lomo-de-cerdo.jpg",
+      "unidad_venta_sugerida": "kg",
+      "precio_eur": null,
+      "opciones_preparacion_sugeridas": [
+        "Finas",
+        "Normales",
+        "Gruesas"
+      ],
+      "confirmado": false
+    },
+    {
+      "id": "lomo-entero",
+      "nombre": "Lomo entero",
+      "categoria": "cerdo",
+      "imagen": "img/productos/biblioteca/cerdo/02-lomo-entero-de-cerdo.jpg",
+      "unidad_venta_sugerida": "kg",
+      "precio_eur": null,
+      "opciones_preparacion_sugeridas": [
+        "Entero",
+        "En filetes",
+        "En trozos"
+      ],
+      "confirmado": false
+    },
+    {
+      "id": "filetes-de-lomo",
+      "nombre": "Filetes de lomo",
+      "categoria": "cerdo",
+      "imagen": "img/productos/biblioteca/cerdo/03-filetes-de-lomo-de-cerdo.jpg",
+      "unidad_venta_sugerida": "kg",
+      "precio_eur": null,
+      "opciones_preparacion_sugeridas": [
+        "Finos",
+        "Normales",
+        "Gruesos"
+      ],
+      "confirmado": false
+    },
+    {
+      "id": "chuletas-de-cabeza",
+      "nombre": "Chuletas de cabeza",
+      "categoria": "cerdo",
+      "imagen": "img/productos/biblioteca/cerdo/04-chuletas-de-cabeza-de-cerdo.jpg",
+      "unidad_venta_sugerida": "kg",
+      "precio_eur": null,
+      "opciones_preparacion_sugeridas": [
+        "Finas",
+        "Normales",
+        "Gruesas"
+      ],
+      "confirmado": false
+    },
+    {
+      "id": "cabeza-entera-con-hueso",
+      "nombre": "Cabeza entera con hueso",
+      "categoria": "cerdo",
+      "imagen": "img/productos/biblioteca/cerdo/05-cabeza-entera-con-hueso-de-cerdo.jpg",
+      "unidad_venta_sugerida": "kg",
+      "precio_eur": null,
+      "opciones_preparacion_sugeridas": [
+        "Entero",
+        "En filetes",
+        "En trozos",
+        "Para guiso",
+        "Al gusto"
+      ],
+      "confirmado": false
+    },
+    {
+      "id": "cabeza-entera-sin-hueso",
+      "nombre": "Cabeza entera sin hueso",
+      "categoria": "cerdo",
+      "imagen": "img/productos/biblioteca/cerdo/06-cabeza-entera-sin-hueso-de-cerdo.jpg",
+      "unidad_venta_sugerida": "kg",
+      "precio_eur": null,
+      "opciones_preparacion_sugeridas": [
+        "Entero",
+        "En filetes",
+        "En trozos",
+        "Para guiso",
+        "Al gusto"
+      ],
+      "confirmado": false
+    },
+    {
+      "id": "solomillo-de-cerdo",
+      "nombre": "Solomillo de cerdo",
+      "categoria": "cerdo",
+      "imagen": null,
+      "unidad_venta_sugerida": "kg",
+      "precio_eur": null,
+      "opciones_preparacion_sugeridas": [
+        "Entero",
+        "En medallones",
+        "En trozos"
+      ],
+      "confirmado": false
+    },
+    {
+      "id": "trocitos-de-cerdo",
+      "nombre": "Trocitos de cerdo",
+      "categoria": "cerdo",
+      "imagen": null,
+      "unidad_venta_sugerida": "kg",
+      "precio_eur": null,
+      "opciones_preparacion_sugeridas": [
+        "Entero",
+        "En filetes",
+        "En trozos",
+        "Para guiso",
+        "Al gusto"
+      ],
+      "confirmado": false
+    },
+    {
+      "id": "filete-de-jamon-de-cerdo",
+      "nombre": "Filete de jamón de cerdo",
+      "categoria": "cerdo",
+      "imagen": "img/productos/biblioteca/cerdo/09-filetes-de-jamon-de-cerdo.jpg",
+      "unidad_venta_sugerida": "kg",
+      "precio_eur": null,
+      "opciones_preparacion_sugeridas": [
+        "Entero",
+        "En filetes",
+        "En trozos",
+        "Para guiso",
+        "Al gusto"
+      ],
+      "confirmado": false
+    },
+    {
+      "id": "jamon-entero-de-cerdo",
+      "nombre": "Jamón entero de cerdo",
+      "categoria": "cerdo",
+      "imagen": "img/productos/biblioteca/cerdo/10-jamon-entero-de-cerdo.jpg",
+      "unidad_venta_sugerida": "kg",
+      "precio_eur": null,
+      "opciones_preparacion_sugeridas": [
+        "Entero",
+        "En filetes",
+        "En trozos",
+        "Para guiso",
+        "Al gusto"
+      ],
+      "confirmado": false
+    },
+    {
+      "id": "paleta-entera-de-cerdo",
+      "nombre": "Paleta entera de cerdo",
+      "categoria": "cerdo",
+      "imagen": "img/productos/biblioteca/cerdo/11-paleta-entera-de-cerdo.jpg",
+      "unidad_venta_sugerida": "kg",
+      "precio_eur": null,
+      "opciones_preparacion_sugeridas": [
+        "Entero",
+        "En filetes",
+        "En trozos",
+        "Para guiso",
+        "Al gusto"
+      ],
+      "confirmado": false
+    },
+    {
+      "id": "morcilla",
+      "nombre": "Morcilla",
+      "categoria": "cerdo",
+      "imagen": "img/productos/biblioteca/cerdo/12-morcilla-de-cerdo.jpg",
+      "unidad_venta_sugerida": "kg",
+      "precio_eur": null,
+      "opciones_preparacion_sugeridas": [
+        "Entero",
+        "En filetes",
+        "En trozos",
+        "Para guiso",
+        "Al gusto"
+      ],
+      "confirmado": false
+    },
+    {
+      "id": "chorizo",
+      "nombre": "Chorizo",
+      "categoria": "cerdo",
+      "imagen": "img/productos/biblioteca/cerdo/13-chorizo-de-cerdo.jpg",
+      "unidad_venta_sugerida": "kg",
+      "precio_eur": null,
+      "opciones_preparacion_sugeridas": [
+        "Entero",
+        "En filetes",
+        "En trozos",
+        "Para guiso",
+        "Al gusto"
+      ],
+      "confirmado": false
+    },
+    {
+      "id": "tiras-de-costilla-de-cerdo",
+      "nombre": "Tiras de costilla de cerdo",
+      "categoria": "cerdo",
+      "imagen": "img/productos/biblioteca/cerdo/14-tiras-de-costilla-de-lomo-de-cerdo.jpg",
+      "unidad_venta_sugerida": "kg",
+      "precio_eur": null,
+      "opciones_preparacion_sugeridas": [
+        "Entero",
+        "En filetes",
+        "En trozos",
+        "Para guiso",
+        "Al gusto"
+      ],
+      "confirmado": false
+    },
+    {
+      "id": "costilla-carnosa",
+      "nombre": "Costilla carnosa",
+      "categoria": "cerdo",
+      "imagen": "img/productos/biblioteca/cerdo/15-costilla-carnosa-de-cerdo.jpg",
+      "unidad_venta_sugerida": "kg",
+      "precio_eur": null,
+      "opciones_preparacion_sugeridas": [
+        "Entero",
+        "En filetes",
+        "En trozos",
+        "Para guiso",
+        "Al gusto"
+      ],
+      "confirmado": false
+    },
+    {
+      "id": "jarrete-de-cerdo",
+      "nombre": "Jarrete de cerdo",
+      "categoria": "cerdo",
+      "imagen": null,
+      "unidad_venta_sugerida": "kg",
+      "precio_eur": null,
+      "opciones_preparacion_sugeridas": [
+        "Entero",
+        "En filetes",
+        "En trozos",
+        "Para guiso",
+        "Al gusto"
+      ],
+      "confirmado": false
+    },
+    {
+      "id": "manitas-de-cerdo",
+      "nombre": "Manitas de cerdo",
+      "categoria": "cerdo",
+      "imagen": "img/productos/biblioteca/cerdo/17-manitas-de-cerdo.jpg",
+      "unidad_venta_sugerida": "kg",
+      "precio_eur": null,
+      "opciones_preparacion_sugeridas": [
+        "Entero",
+        "En filetes",
+        "En trozos",
+        "Para guiso",
+        "Al gusto"
+      ],
+      "confirmado": false
+    },
+    {
+      "id": "higado-de-cerdo",
+      "nombre": "Hígado de cerdo",
+      "categoria": "cerdo",
+      "imagen": "img/productos/biblioteca/cerdo/18-higado-de-cerdo.jpg",
+      "unidad_venta_sugerida": "kg",
+      "precio_eur": null,
+      "opciones_preparacion_sugeridas": [
+        "Entero",
+        "En filetes",
+        "En trozos",
+        "Para guiso",
+        "Al gusto"
+      ],
+      "confirmado": false
+    },
+    {
+      "id": "pella-de-cerdo",
+      "nombre": "Pella de cerdo",
+      "categoria": "cerdo",
+      "imagen": null,
+      "unidad_venta_sugerida": "kg",
+      "precio_eur": null,
+      "opciones_preparacion_sugeridas": [
+        "Entero",
+        "En filetes",
+        "En trozos",
+        "Para guiso",
+        "Al gusto"
+      ],
+      "confirmado": false
+    },
+    {
+      "id": "pajarilla-de-cerdo",
+      "nombre": "Pajarilla de cerdo",
+      "categoria": "cerdo",
+      "imagen": null,
+      "unidad_venta_sugerida": "kg",
+      "precio_eur": null,
+      "opciones_preparacion_sugeridas": [
+        "Entero",
+        "En filetes",
+        "En trozos",
+        "Para guiso",
+        "Al gusto"
+      ],
+      "confirmado": false
+    },
+    {
+      "id": "hueso-de-espinazo-de-cerdo",
+      "nombre": "Hueso de espinazo de cerdo",
+      "categoria": "cerdo",
+      "imagen": "img/productos/biblioteca/cerdo/21-hueso-de-espinazo-de-cerdo.jpg",
+      "unidad_venta_sugerida": "kg",
+      "precio_eur": null,
+      "opciones_preparacion_sugeridas": [
+        "Entero",
+        "En filetes",
+        "En trozos",
+        "Para guiso",
+        "Al gusto"
+      ],
+      "confirmado": false
+    },
+    {
+      "id": "oreja-de-cerdo",
+      "nombre": "Oreja de cerdo",
+      "categoria": "cerdo",
+      "imagen": "img/productos/biblioteca/cerdo/22-oreja-de-cerdo.jpg",
+      "unidad_venta_sugerida": "kg",
+      "precio_eur": null,
+      "opciones_preparacion_sugeridas": [
+        "Entero",
+        "En filetes",
+        "En trozos",
+        "Para guiso",
+        "Al gusto"
+      ],
+      "confirmado": false
+    },
+    {
+      "id": "lengua-de-cerdo",
+      "nombre": "Lengua de cerdo",
+      "categoria": "cerdo",
+      "imagen": "img/productos/biblioteca/cerdo/23-lengua-de-cerdo.jpg",
+      "unidad_venta_sugerida": "kg",
+      "precio_eur": null,
+      "opciones_preparacion_sugeridas": [
+        "Entero",
+        "En filetes",
+        "En trozos",
+        "Para guiso",
+        "Al gusto"
+      ],
+      "confirmado": false
+    },
+    {
+      "id": "punta-de-solomillo",
+      "nombre": "Punta de solomillo",
+      "categoria": "cerdo",
+      "imagen": "img/productos/biblioteca/cerdo/24-punta-de-solomillo-de-cerdo.jpg",
+      "unidad_venta_sugerida": "kg",
+      "precio_eur": null,
+      "opciones_preparacion_sugeridas": [
+        "Entero",
+        "En filetes",
+        "En trozos",
+        "Para guiso",
+        "Al gusto"
+      ],
+      "confirmado": false
+    },
+    {
+      "id": "tocino-fresco",
+      "nombre": "Tocino fresco",
+      "categoria": "cerdo",
+      "imagen": "img/productos/biblioteca/cerdo/25-tocino-fresco-de-cerdo.jpg",
+      "unidad_venta_sugerida": "kg",
+      "precio_eur": null,
+      "opciones_preparacion_sugeridas": [
+        "Entero",
+        "En filetes",
+        "En trozos",
+        "Para guiso",
+        "Al gusto"
+      ],
+      "confirmado": false
+    },
+    {
+      "id": "chuletas-ibericas",
+      "nombre": "Chuletas ibéricas",
+      "categoria": "cerdo-iberico",
+      "imagen": "img/productos/biblioteca/cerdo-iberico/01-chuletas-ibericas.jpg",
+      "unidad_venta_sugerida": "kg",
+      "precio_eur": null,
+      "opciones_preparacion_sugeridas": [
+        "Entero",
+        "En filetes",
+        "En medallones",
+        "Al gusto"
+      ],
+      "confirmado": false
+    },
+    {
+      "id": "lomo-iberico",
+      "nombre": "Lomo ibérico",
+      "categoria": "cerdo-iberico",
+      "imagen": "img/productos/biblioteca/cerdo-iberico/02-lomo-iberico.jpg",
+      "unidad_venta_sugerida": "kg",
+      "precio_eur": null,
+      "opciones_preparacion_sugeridas": [
+        "Entero",
+        "En filetes",
+        "En medallones",
+        "Al gusto"
+      ],
+      "confirmado": false
+    },
+    {
+      "id": "filete-iberico",
+      "nombre": "Filete ibérico",
+      "categoria": "cerdo-iberico",
+      "imagen": "img/productos/biblioteca/cerdo-iberico/03-filete-iberico.jpg",
+      "unidad_venta_sugerida": "kg",
+      "precio_eur": null,
+      "opciones_preparacion_sugeridas": [
+        "Entero",
+        "En filetes",
+        "En medallones",
+        "Al gusto"
+      ],
+      "confirmado": false
+    },
+    {
+      "id": "lagartito-iberico",
+      "nombre": "Lagartito ibérico",
+      "categoria": "cerdo-iberico",
+      "imagen": "img/productos/biblioteca/cerdo-iberico/04-lagartito-iberico.jpg",
+      "unidad_venta_sugerida": "kg",
+      "precio_eur": null,
+      "opciones_preparacion_sugeridas": [
+        "Entero",
+        "En filetes",
+        "En medallones",
+        "Al gusto"
+      ],
+      "confirmado": false
+    },
+    {
+      "id": "presa-iberica",
+      "nombre": "Presa ibérica",
+      "categoria": "cerdo-iberico",
+      "imagen": "img/productos/biblioteca/cerdo-iberico/05-presa-iberica.jpg",
+      "unidad_venta_sugerida": "kg",
+      "precio_eur": null,
+      "opciones_preparacion_sugeridas": [
+        "Entero",
+        "En filetes",
+        "En medallones",
+        "Al gusto"
+      ],
+      "confirmado": false
+    },
+    {
+      "id": "secreto-iberico",
+      "nombre": "Secreto ibérico",
+      "categoria": "cerdo-iberico",
+      "imagen": "img/productos/biblioteca/cerdo-iberico/06-secreto-iberico.jpg",
+      "unidad_venta_sugerida": "kg",
+      "precio_eur": null,
+      "opciones_preparacion_sugeridas": [
+        "Entero",
+        "En filetes",
+        "En medallones",
+        "Al gusto"
+      ],
+      "confirmado": false
+    },
+    {
+      "id": "solomillo-iberico",
+      "nombre": "Solomillo ibérico",
+      "categoria": "cerdo-iberico",
+      "imagen": "img/productos/biblioteca/cerdo-iberico/07-solomillo-iberico.jpg",
+      "unidad_venta_sugerida": "kg",
+      "precio_eur": null,
+      "opciones_preparacion_sugeridas": [
+        "Entero",
+        "En filetes",
+        "En medallones",
+        "Al gusto"
+      ],
+      "confirmado": false
+    },
+    {
+      "id": "costilla-iberica",
+      "nombre": "Costilla ibérica",
+      "categoria": "cerdo-iberico",
+      "imagen": "img/productos/biblioteca/cerdo-iberico/08-costilla-iberica.jpg",
+      "unidad_venta_sugerida": "kg",
+      "precio_eur": null,
+      "opciones_preparacion_sugeridas": [
+        "Entero",
+        "En filetes",
+        "En medallones",
+        "Al gusto"
+      ],
+      "confirmado": false
+    },
+    {
+      "id": "babilla-de-ternera",
+      "nombre": "Babilla de ternera",
+      "categoria": "ternera",
+      "imagen": "img/productos/biblioteca/ternera/01-babilla-de-ternera.jpg",
+      "unidad_venta_sugerida": "kg",
+      "precio_eur": null,
+      "opciones_preparacion_sugeridas": [
+        "Entero",
+        "En filetes",
+        "En dados para guiso",
+        "Al gusto"
+      ],
+      "confirmado": false
+    },
+    {
+      "id": "chuleta-de-ternera",
+      "nombre": "Chuleta de ternera",
+      "categoria": "ternera",
+      "imagen": "img/productos/biblioteca/ternera/02-chuleta-de-ternera.jpg",
+      "unidad_venta_sugerida": "kg",
+      "precio_eur": null,
+      "opciones_preparacion_sugeridas": [
+        "Entero",
+        "En filetes",
+        "En dados para guiso",
+        "Al gusto"
+      ],
+      "confirmado": false
+    },
+    {
+      "id": "ternera-para-guiso",
+      "nombre": "Ternera para guiso",
+      "categoria": "ternera",
+      "imagen": "img/productos/biblioteca/ternera/03-carne-para-guiso-de-ternera.jpg",
+      "unidad_venta_sugerida": "kg",
+      "precio_eur": null,
+      "opciones_preparacion_sugeridas": [
+        "En dados",
+        "En trozos grandes"
+      ],
+      "confirmado": false
+    },
+    {
+      "id": "solomillo-de-ternera",
+      "nombre": "Solomillo de ternera",
+      "categoria": "ternera",
+      "imagen": "img/productos/biblioteca/ternera/04-solomillo-de-ternera.jpg",
+      "unidad_venta_sugerida": "kg",
+      "precio_eur": null,
+      "opciones_preparacion_sugeridas": [
+        "Entero",
+        "En filetes",
+        "En dados para guiso",
+        "Al gusto"
+      ],
+      "confirmado": false
+    },
+    {
+      "id": "entrecot-de-ternera",
+      "nombre": "Entrecot de ternera",
+      "categoria": "ternera",
+      "imagen": "img/productos/biblioteca/ternera/05-entrecot-de-ternera.jpg",
+      "unidad_venta_sugerida": "kg",
+      "precio_eur": null,
+      "opciones_preparacion_sugeridas": [
+        "Entero",
+        "En filetes",
+        "En dados para guiso",
+        "Al gusto"
+      ],
+      "confirmado": false
+    },
+    {
+      "id": "espinazo-salado",
+      "nombre": "Espinazo salado",
+      "categoria": "salados",
+      "imagen": "img/productos/biblioteca/salados/01-espinazo-salado.jpg",
+      "unidad_venta_sugerida": "kg",
+      "precio_eur": null,
+      "opciones_preparacion_sugeridas": [
+        "Por peso",
+        "En trozos",
+        "Al gusto"
+      ],
+      "confirmado": false
+    },
+    {
+      "id": "blanco-salado",
+      "nombre": "Blanco salado",
+      "categoria": "salados",
+      "imagen": "img/productos/biblioteca/salados/02-blanco-salado.jpg",
+      "unidad_venta_sugerida": "kg",
+      "precio_eur": null,
+      "opciones_preparacion_sugeridas": [
+        "Por peso",
+        "En trozos",
+        "Al gusto"
+      ],
+      "confirmado": false
+    },
+    {
+      "id": "costilla-salada",
+      "nombre": "Costilla salada",
+      "categoria": "salados",
+      "imagen": "img/productos/biblioteca/salados/03-costilla-salada.jpg",
+      "unidad_venta_sugerida": "kg",
+      "precio_eur": null,
+      "opciones_preparacion_sugeridas": [
+        "Por peso",
+        "En trozos",
+        "Al gusto"
+      ],
+      "confirmado": false
+    },
+    {
+      "id": "tocino-salado",
+      "nombre": "Tocino salado",
+      "categoria": "salados",
+      "imagen": "img/productos/biblioteca/salados/04-tocino-salado.jpg",
+      "unidad_venta_sugerida": "kg",
+      "precio_eur": null,
+      "opciones_preparacion_sugeridas": [
+        "Por peso",
+        "En trozos",
+        "Al gusto"
+      ],
+      "confirmado": false
+    },
+    {
+      "id": "corteza-aneja",
+      "nombre": "Corteza añeja",
+      "categoria": "salados",
+      "imagen": "img/productos/biblioteca/salados/05-corteza-aneja.jpg",
+      "unidad_venta_sugerida": "kg",
+      "precio_eur": null,
+      "opciones_preparacion_sugeridas": [
+        "Por peso",
+        "En trozos",
+        "Al gusto"
+      ],
+      "confirmado": false
+    },
+    {
+      "id": "rabo-salado",
+      "nombre": "Rabo salado",
+      "categoria": "salados",
+      "imagen": "img/productos/biblioteca/salados/06-rabo-salado.jpg",
+      "unidad_venta_sugerida": "kg",
+      "precio_eur": null,
+      "opciones_preparacion_sugeridas": [
+        "Por peso",
+        "En trozos",
+        "Al gusto"
+      ],
+      "confirmado": false
+    },
+    {
+      "id": "filetes-empanados",
+      "nombre": "Filetes empanados",
+      "categoria": "precocinados",
+      "imagen": "img/productos/biblioteca/precocinados/01-filetes-empanados.jpg",
+      "unidad_venta_sugerida": "ud",
+      "precio_eur": null,
+      "opciones_preparacion_sugeridas": [
+        "Por unidades",
+        "Por peso"
+      ],
+      "confirmado": false
+    },
+    {
+      "id": "lagrimitas-de-pollo",
+      "nombre": "Lagrimitas de pollo",
+      "categoria": "precocinados",
+      "imagen": "img/productos/biblioteca/precocinados/02-lagrimitas-de-pollo.jpg",
+      "unidad_venta_sugerida": "ud",
+      "precio_eur": null,
+      "opciones_preparacion_sugeridas": [
+        "Por unidades",
+        "Por peso",
+        "Al gusto"
+      ],
+      "confirmado": false
+    },
+    {
+      "id": "aneto-de-jamon-y-queso",
+      "nombre": "Aneto de jamón y queso",
+      "categoria": "precocinados",
+      "imagen": "img/productos/biblioteca/precocinados/03-aneto-de-jamon-y-queso.jpg",
+      "unidad_venta_sugerida": "ud",
+      "precio_eur": null,
+      "opciones_preparacion_sugeridas": [
+        "Por unidades",
+        "Por peso",
+        "Al gusto"
+      ],
+      "confirmado": false
+    },
+    {
+      "id": "albondigas-de-pollo",
+      "nombre": "Albóndigas de pollo",
+      "categoria": "precocinados",
+      "imagen": "img/productos/biblioteca/precocinados/04-albondigas-de-pollo.jpg",
+      "unidad_venta_sugerida": "ud",
+      "precio_eur": null,
+      "opciones_preparacion_sugeridas": [
+        "Por unidades",
+        "Por peso",
+        "Al gusto"
+      ],
+      "confirmado": false
+    },
+    {
+      "id": "albondigas-mixtas",
+      "nombre": "Albóndigas mixtas",
+      "categoria": "precocinados",
+      "imagen": "img/productos/biblioteca/precocinados/05-albondigas-mixtas.jpg",
+      "unidad_venta_sugerida": "ud",
+      "precio_eur": null,
+      "opciones_preparacion_sugeridas": [
+        "Por unidades",
+        "Por peso",
+        "Al gusto"
+      ],
+      "confirmado": false
+    },
+    {
+      "id": "san-jacobo",
+      "nombre": "San Jacobo",
+      "categoria": "precocinados",
+      "imagen": "img/productos/biblioteca/precocinados/06-san-jacobos.jpg",
+      "unidad_venta_sugerida": "ud",
+      "precio_eur": null,
+      "opciones_preparacion_sugeridas": [
+        "Por unidades"
+      ],
+      "confirmado": false
+    },
+    {
+      "id": "fajitas-de-pollo",
+      "nombre": "Fajitas de pollo",
+      "categoria": "precocinados",
+      "imagen": "img/productos/biblioteca/precocinados/08-fajitas-de-pollo.jpg",
+      "unidad_venta_sugerida": "ud",
+      "precio_eur": null,
+      "opciones_preparacion_sugeridas": [
+        "Por unidades",
+        "Por peso",
+        "Al gusto"
+      ],
+      "confirmado": false
+    },
+    {
+      "id": "hamburguesa-de-pollo",
+      "nombre": "Hamburguesa de pollo",
+      "categoria": "precocinados",
+      "imagen": "img/productos/biblioteca/precocinados/09-hamburguesas-de-pollo.jpg",
+      "unidad_venta_sugerida": "ud",
+      "precio_eur": null,
+      "opciones_preparacion_sugeridas": [
+        "Por unidades"
+      ],
+      "confirmado": false
+    },
+    {
+      "id": "hamburguesa-iberica",
+      "nombre": "Hamburguesa ibérica",
+      "categoria": "precocinados",
+      "imagen": "img/productos/biblioteca/precocinados/10-hamburguesas-ibericas.jpg",
+      "unidad_venta_sugerida": "ud",
+      "precio_eur": null,
+      "opciones_preparacion_sugeridas": [
+        "Por unidades"
+      ],
+      "confirmado": false
+    },
+    {
+      "id": "hamburguesa-de-ternera",
+      "nombre": "Hamburguesa de ternera",
+      "categoria": "precocinados",
+      "imagen": "img/productos/biblioteca/precocinados/11-hamburguesas-de-ternera.jpg",
+      "unidad_venta_sugerida": "ud",
+      "precio_eur": null,
+      "opciones_preparacion_sugeridas": [
+        "Por unidades"
+      ],
+      "confirmado": false
+    },
+    {
+      "id": "hamburguesa-de-cerdo",
+      "nombre": "Hamburguesa de cerdo",
+      "categoria": "precocinados",
+      "imagen": "img/productos/biblioteca/precocinados/12-hamburguesas-de-cerdo.jpg",
+      "unidad_venta_sugerida": "ud",
+      "precio_eur": null,
+      "opciones_preparacion_sugeridas": [
+        "Por unidades"
+      ],
+      "confirmado": false
+    },
+    {
+      "id": "pinchito-de-pechuga-de-pollo",
+      "nombre": "Pinchito de pechuga de pollo",
+      "categoria": "precocinados",
+      "imagen": "img/productos/biblioteca/precocinados/13-pinchitos-de-pechuga-de-pollo.jpg",
+      "unidad_venta_sugerida": "ud",
+      "precio_eur": null,
+      "opciones_preparacion_sugeridas": [
+        "Por unidades"
+      ],
+      "confirmado": false
+    },
+    {
+      "id": "pinchito-de-contramuslo-de-pollo",
+      "nombre": "Pinchito de contramuslo de pollo",
+      "categoria": "precocinados",
+      "imagen": "img/productos/biblioteca/precocinados/14-pinchitos-de-contramuslo-de-pollo.jpg",
+      "unidad_venta_sugerida": "ud",
+      "precio_eur": null,
+      "opciones_preparacion_sugeridas": [
+        "Por unidades"
+      ],
+      "confirmado": false
+    },
+    {
+      "id": "pinchito-de-cerdo",
+      "nombre": "Pinchito de cerdo",
+      "categoria": "precocinados",
+      "imagen": "img/productos/biblioteca/precocinados/15-pinchitos-de-cerdo.jpg",
+      "unidad_venta_sugerida": "ud",
+      "precio_eur": null,
+      "opciones_preparacion_sugeridas": [
+        "Por unidades"
+      ],
+      "confirmado": false
+    }
+  ]
+}
