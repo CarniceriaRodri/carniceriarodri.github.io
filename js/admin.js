@@ -357,18 +357,71 @@
      status('imageLibraryStatus',images.length+' imágenes y '+folders.length+' carpetas disponibles.');return images;
    }catch(error){status('imageLibraryStatus','No se pudo cargar la biblioteca: '+(error?.message||String(error)));return [];}
  }
+ async function manageLibraryItem(action,entry){
+   const isFolder=entry.type==='dir';
+   const currentPath=entry.path;
+   if(action==='delete'){
+     const warning=isFolder
+       ?'¿Borrar la carpeta «'+entry.name+'» y TODO su contenido? Esta acción no se puede deshacer.'
+       :'¿Borrar la imagen «'+entry.name+'»? Si está asignada a un producto, se quitará también esa asignación.';
+     if(!confirm(warning))return;
+   }
+   let newName='';
+   if(action==='rename'){
+     newName=prompt(isFolder?'Nuevo nombre de la carpeta:':'Nuevo nombre del archivo (con extensión):',entry.name);
+     if(newName===null)return;
+     newName=newName.trim();
+     if(!newName||newName===entry.name)return;
+   }
+   const host=$('libraryUploadNavStatus');
+   host.textContent=action==='delete'?'Borrando…':'Renombrando…';
+   try{
+     const {data,error}=await client.functions.invoke('github-images',{body:{
+       action:action==='delete'?'delete-item':'rename-item',
+       path:currentPath,
+       newName
+     }});
+     if(error)throw error;
+     if(data?.error)throw new Error(data.error);
+     host.textContent=action==='delete'?'Elemento borrado correctamente.':'Elemento renombrado correctamente.';
+     await refreshUploadFolders();
+     if(!$('imageLibraryPicker').hidden)await loadImageLibrary(currentLibraryFolder);
+   }catch(error){host.textContent='No se pudo '+(action==='delete'?'borrar':'renombrar')+': '+await functionErrorMessage(error);}
+ }
+ function libraryItemRow(entry){
+   const isFolder=entry.type==='dir';
+   const row=document.createElement('div');row.className='library-item';
+   const open=document.createElement('button');open.type='button';open.className='library-item-open';
+   if(isFolder){
+     open.textContent='📁 '+entry.name;
+     open.addEventListener('click',()=>{uploadLibraryFolder=uploadLibraryFolder?uploadLibraryFolder+'/'+folderSlug(entry.name):folderSlug(entry.name);refreshUploadFolders();});
+   }else{
+     const img=document.createElement('img');img.className='library-item-thumb';img.src=libraryImageUrl(entry.path)+'?v='+encodeURIComponent(entry.sha||'');img.alt='';img.loading='lazy';
+     const name=document.createElement('span');name.className='library-item-name';name.textContent=entry.name;
+     open.append(img,name);
+   }
+   const actions=document.createElement('div');actions.className='library-item-actions';
+   const rename=document.createElement('button');rename.type='button';rename.textContent='✏️';rename.title=isFolder?'Renombrar carpeta':'Renombrar archivo';rename.setAttribute('aria-label',rename.title);
+   rename.addEventListener('click',()=>manageLibraryItem('rename',entry));
+   const remove=document.createElement('button');remove.type='button';remove.textContent='🗑️';remove.title=isFolder?'Borrar carpeta y contenido':'Borrar archivo';remove.setAttribute('aria-label',remove.title);
+   remove.addEventListener('click',()=>manageLibraryItem('delete',entry));
+   actions.append(rename,remove);row.append(open,actions);return row;
+ }
  async function refreshUploadFolders(){
    const host=$('libraryUploadFolders');host.innerHTML='';
    updateLibraryPaths();
    try{
      const entries=await listLibraryFolder(uploadLibraryFolder);
      const folders=entries.filter(entry=>entry.type==='dir').sort((a,b)=>a.name.localeCompare(b.name,'es'));
-     folders.forEach(dir=>{
-       const button=document.createElement('button');button.type='button';button.className='secondary';button.textContent='📁 '+dir.name;
-       button.addEventListener('click',()=>{uploadLibraryFolder=uploadLibraryFolder?uploadLibraryFolder+'/'+folderSlug(dir.name):folderSlug(dir.name);refreshUploadFolders();});
-       host.append(button);
-     });
-     $('libraryUploadNavStatus').textContent=folders.length? 'Carpetas en esta ubicación. Pulsa una para entrar.':'No hay subcarpetas en esta ubicación.';
+     const files=entries.filter(entry=>entry.type==='file'&&/\\.(jpe?g|png|webp)$/i.test(entry.name)).sort((a,b)=>a.name.localeCompare(b.name,'es'));
+     if(uploadLibraryFolder){
+       const up=document.createElement('button');up.type='button';up.className='secondary';up.textContent='⬆️ Subir un nivel';
+       up.addEventListener('click',()=>{uploadLibraryFolder=uploadLibraryFolder.includes('/')?uploadLibraryFolder.slice(0,uploadLibraryFolder.lastIndexOf('/')):'';refreshUploadFolders();});
+       host.append(up);
+     }
+     folders.forEach(dir=>host.append(libraryItemRow(dir)));
+     files.forEach(file=>host.append(libraryItemRow(file)));
+     $('libraryUploadNavStatus').textContent=folders.length+' carpetas y '+files.length+' imágenes en esta ubicación. Puedes entrar, renombrar o borrar.';
    }catch(error){$('libraryUploadNavStatus').textContent='No se pudieron cargar las carpetas: '+await functionErrorMessage(error);}
  }
  $('openImageLibrary').addEventListener('click',async()=>{$('imageLibraryPicker').hidden=!$('imageLibraryPicker').hidden;if(!$('imageLibraryPicker').hidden)await loadImageLibrary('');});
