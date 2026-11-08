@@ -36,12 +36,15 @@ dialog#imageDialog::backdrop{background:#211a1780}
 .image-dialog-head button{padding:5px 11px;background:#eee8e1;color:var(--ink);font-size:20px}
 .image-preview{display:block;width:100%;max-height:230px;object-fit:contain;background:#f5f2ed;border-radius:10px;margin:14px 0}
 .image-preview[hidden]{display:none}
-.image-fit-choices{display:grid;gap:8px;margin:14px 0}
-.image-fit-choice{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border:1px solid #ddd2c8;border-radius:10px;background:#fff;cursor:pointer}
-.image-fit-choice:has(input:checked){border-color:#7b2e20;background:#fbf3ef}
-.image-fit-choice input{width:18px;height:18px;margin:2px 0 0;flex:0 0 auto}
-.image-fit-choice span{display:block}
-.image-fit-choice small{display:block;color:var(--muted);font-weight:400;margin-top:2px}
+.image-fit-choices{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin:14px 0}
+.image-fit-choice{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;min-height:96px;padding:12px 6px;border:2px solid #ddd2c8;border-radius:12px;background:#fff;cursor:pointer;text-align:center}
+.image-fit-choice:has(input:checked){border-color:#7b2e20;background:#fbf3ef;box-shadow:0 0 0 2px #7b2e2018}
+.image-fit-choice input{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+.image-fit-icon{display:grid;place-items:center;width:42px;height:42px;border:2px solid currentColor;border-radius:8px;color:#7b2e20;font-size:24px;font-weight:800;line-height:1}
+.image-fit-choice strong{font-size:12px;line-height:1.2}
+.image-fit-choice small{display:none}
+.image-fit-choice:focus-within{outline:3px solid #7b2e2060;outline-offset:2px}
+@media(max-width:360px){.image-fit-choice{min-height:88px}.image-fit-icon{width:36px;height:36px}}
 .image-choices{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0}
 .image-choice{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:11px 14px;border:1px solid #7b2e20;border-radius:9px;background:#7b2e20;color:#fff;font-weight:650;cursor:pointer}
 .image-choice.secondary{background:#eee8e1;border-color:#d8cfc6;color:var(--ink)}
@@ -99,10 +102,10 @@ dialog#imageDialog::backdrop{background:#211a1780}
     </label>
   </div>
   <fieldset class="image-fit-choices" style="border:0;padding:0">
-    <legend style="font-weight:750;font-size:14px;margin-bottom:8px">Cómo quieres adaptar la foto</legend>
-    <label class="image-fit-choice"><input type="radio" name="imageFit" value="contain" checked><span><strong>Foto completa</strong><small>No recorta nada; añade fondo blanco si hace falta.</small></span></label>
-    <label class="image-fit-choice"><input type="radio" name="imageFit" value="padded"><span><strong>Cuadrada con margen</strong><small>Centra el producto y deja espacio alrededor.</small></span></label>
-    <label class="image-fit-choice"><input type="radio" name="imageFit" value="cover"><span><strong>Cuadrada rellenando</strong><small>Amplía la foto hasta llenar el cuadro; puede cortar bordes.</small></span></label>
+    <legend style="font-weight:750;font-size:14px;margin-bottom:8px">Elige el encuadre · la vista previa cambia al instante</legend>
+    <label class="image-fit-choice" title="Mostrar la foto completa"><input type="radio" name="imageFit" value="contain" checked><span class="image-fit-icon" aria-hidden="true">⛶</span><strong>Completa</strong></label>
+    <label class="image-fit-choice" title="Añadir margen blanco alrededor"><input type="radio" name="imageFit" value="padded"><span class="image-fit-icon" aria-hidden="true">▣</span><strong>Con margen</strong></label>
+    <label class="image-fit-choice" title="Rellenar el cuadrado, puede recortar"><input type="radio" name="imageFit" value="cover"><span class="image-fit-icon" aria-hidden="true">⌗</span><strong>Rellenar</strong></label>
   </fieldset>
   <label id="imageToggleRow" class="image-toggle" hidden>
     <input id="imageShowToggle" type="checkbox" checked>
