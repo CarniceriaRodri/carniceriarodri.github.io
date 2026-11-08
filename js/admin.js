@@ -127,14 +127,15 @@
    const name=row.querySelector('[data-cat-name]').value.trim();
    if(!name){status('categoryStatus','Escribe el nombre de la categoría.');return}
    button.disabled=true;
-   const {error}=await client.from('categories').update({
+   const {data,error}=await client.from('categories').update({
      name,tagline:row.querySelector('[data-cat-tagline]').value.trim(),
      sort_order:Number(row.querySelector('[data-cat-order]').value)||0,
      active:row.querySelector('[data-cat-active]').checked
-   }).eq('id',row.dataset.categoryId);
+   }).eq('id',row.dataset.categoryId).select('id');
    button.disabled=false;
-   status('categoryStatus',error?'No se pudo guardar: '+error.message:'Categoría guardada correctamente.');
-   if(!error)await loadProducts();
+   const saved=!error&&Array.isArray(data)&&data.length>0;
+   status('categoryStatus',saved?'Categoría guardada correctamente.':'No se pudo guardar: '+(error?.message||'sin filas modificadas.'));
+   if(saved)await loadProducts();
  });
  $('createCategory').addEventListener('click',async()=>{
    const id=$('newCategoryId').value.trim().toLowerCase().replace(/[^a-z0-9-]/g,'-');
@@ -826,9 +827,9 @@
      if(!confirm('¿Eliminar definitivamente esta opción? Esta acción no se puede deshacer.'))return;
      e.target.disabled=true;
      status('adminStatus','Eliminando opción…');
-     const {error}=await client.from('product_options').delete().eq('id',deleteOptionId);
+     const {data,error}=await client.from('product_options').delete().eq('id',deleteOptionId).select('id');
      e.target.disabled=false;
-     if(error){status('adminStatus','No se pudo eliminar: '+error.message);return}
+     if(error || !data?.length){status('adminStatus','No se pudo eliminar: '+(error?.message||'sin filas modificadas.'));return}
      status('adminStatus','Opción eliminada.');
      await loadProducts();
      return;
