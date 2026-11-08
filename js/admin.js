@@ -273,7 +273,7 @@
      const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/webp',0.9));
      if(version!==imagePreviewVersion)return;
      if(!blob)throw new Error('El navegador no pudo procesar la imagen.');
-     selectedImageFile=new File([blob],((originalImageFile?.name||'imagen-actual').replace(/\.[^.]+$/,'')+'.webp'),{type:blob.type||'image/webp'});
+     selectedImageFile=new File([blob],((originalImageFile?.name||selectedLibraryPath.split('/').pop()||'imagen-actual').replace(/\.[^.]+$/,'')+'.webp'),{type:blob.type||'image/webp'});
      if($('imagePreview').src.startsWith('blob:'))URL.revokeObjectURL($('imagePreview').src);
      $('imagePreview').src=URL.createObjectURL(blob);$('imagePreview').hidden=false;
      $('imageCurrent').textContent='';status('imageStatus','');
@@ -492,7 +492,7 @@
      const changes={};
      let newPath=target.path||null;
      if(selectedImageFile){
-       const {data:uploadData,error:uploadError}=await client.functions.invoke('github-images',{body:{action:'upload',kind:target.kind,id:target.id,category:target.category,productSlug:target.productSlug,optionSlug:target.optionSlug,contentType:selectedImageFile.type,contentBase64:await fileBase64(selectedImageFile)}});
+       const {data:uploadData,error:uploadError}=await client.functions.invoke('github-images',{body:{action:'upload',kind:target.kind,id:target.id,category:target.category,productSlug:target.productSlug,optionSlug:target.optionSlug,contentType:selectedImageFile.type,fileName:selectedImageFile.name,contentBase64:await fileBase64(selectedImageFile)}});
        if(uploadError)throw uploadError;
        if(!uploadData?.path)throw new Error('GitHub no devolvió la ruta de la imagen.');
        newPath=uploadData.path;changes.image=newPath;
