@@ -219,6 +219,12 @@
  }
  function imageSlug(value){return String(value||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')||'imagen'}
  function fileBase64(file){return file.arrayBuffer().then(buffer=>{const bytes=new Uint8Array(buffer);let binary='';for(let i=0;i<bytes.length;i+=0x8000)binary+=String.fromCharCode(...bytes.subarray(i,i+0x8000));return btoa(binary)})}
+ function updateImageToggleText(){
+   const toggle=$('imageShowToggle');
+   $('imageShowToggleText').textContent=toggle.checked
+     ?'Mostrar imagen específica de esta preparación'
+     :'Mostrar imagen principal del producto';
+ }
  function openImageEditor(target){
    imageTarget=target;
    selectedImageFile=null;
@@ -231,6 +237,7 @@
    $('imageDialogTitle').textContent=target.kind==='product'?'Imagen principal · '+target.name:'Imagen · '+target.name;
    $('imageToggleRow').hidden=target.kind!=='option';
    $('imageShowToggle').checked=target.showImage!==false;
+   updateImageToggleText();
    const previewUrl=imagePublicUrl(target.path);
    $('imagePreview').hidden=!previewUrl;
    if(previewUrl){$('imagePreview').src=previewUrl;}
@@ -278,6 +285,7 @@
    originalImageFile=file;
    renderSelectedImage();
  }
+ $('imageShowToggle').addEventListener('change',updateImageToggleText);
  document.querySelectorAll('input[name="imageFit"]').forEach(input=>input.addEventListener('change',()=>{if(originalImageFile)renderSelectedImage();}));
  $('imageFile').addEventListener('change',()=>handleSelectedImage($('imageFile').files?.[0]||null,'imageFile'));
  $('imageCamera').addEventListener('change',()=>handleSelectedImage($('imageCamera').files?.[0]||null,'imageCamera'));
