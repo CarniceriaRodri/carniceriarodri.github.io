@@ -267,7 +267,7 @@ async function deleteLibraryItem(relative: string) {
   const files = (Array.isArray(item) || item.type === "dir")
     ? await listLibraryFilesRecursively(relative)
     : [{path:fullPath,sha:item.sha,name:item.name}];
-  if (item.type !== "dir" && !/\.(jpe?g|png|webp)$/i.test(item.name)) {
+  if (!Array.isArray(item) && item.type !== "dir" && !/\.(jpe?g|png|webp)$/i.test(item.name)) {
     throw new Error("Solo se pueden borrar imágenes de la biblioteca.");
   }
   for (const file of files) {
