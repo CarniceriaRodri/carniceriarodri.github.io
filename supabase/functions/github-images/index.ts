@@ -169,7 +169,7 @@ function libraryPathFromInput(raw: unknown) {
   if (!value.startsWith(LIBRARY_ROOT)) throw new Error("Solo se pueden gestionar elementos dentro de la biblioteca.");
   const relative = value.slice(LIBRARY_ROOT.length);
   const parts = relative.split("/");
-  if (!relative || parts.some((part) => !part || !/^[a-z0-9]+(?:-[a-z0-9]+)*(?:\\.[a-z0-9]+)?$/i.test(part))) {
+  if (!relative || parts.some((part) => !part || !/^[a-z0-9]+(?:-[a-z0-9]+)*(?:\.[a-z0-9]+)?$/i.test(part))) {
     throw new Error("Ruta de biblioteca no válida.");
   }
   return relative;
@@ -179,7 +179,7 @@ function libraryFullPath(relative: string) {
 }
 function safeLibraryName(raw: unknown, isFolder: boolean) {
   const value = String(raw || "").trim();
-  if (!value || value.includes("/") || value.includes("\\\\") || value === "." || value === "..") {
+  if (!value || value.includes("/") || value.includes("\\") || value === "." || value === "..") {
     throw new Error("Nombre no válido.");
   }
   if (isFolder) {
@@ -187,7 +187,7 @@ function safeLibraryName(raw: unknown, isFolder: boolean) {
     if (!name || name.length > 80) throw new Error("Nombre de carpeta no válido.");
     return name;
   }
-  const match = value.match(/^(.*)\\.(jpe?g|png|webp)$/i);
+  const match = value.match(/^(.*)\.(jpe?g|png|webp)$/i);
   if (!match) throw new Error("El archivo debe ser JPG, PNG o WebP e incluir su extensión.");
   const base = slug(match[1]);
   if (!base || base.length > 100) throw new Error("Nombre de archivo no válido.");
@@ -228,7 +228,7 @@ async function readGitHubFile(path: string) {
   if (blob.encoding !== "base64" || typeof blob.content !== "string") {
     throw new Error("GitHub no devolvió el contenido de la imagen en formato base64.");
   }
-  return {content:blob.content.replace(/\\s/g,""),sha:item.sha};
+  return {content:blob.content.replace(/\s/g,""),sha:item.sha};
 }
 async function deleteGitHubFile(path: string, sha: string) {
   const branch = Deno.env.get("GITHUB_BRANCH") || "main";
@@ -264,14 +264,14 @@ async function deleteLibraryItem(relative: string) {
   const fullPath = libraryFullPath(relative);
   const item = await githubRequest(fullPath);
   if (!item) throw new Error("El elemento ya no existe.");
-  const files = item.type === "dir"
+  const files = (Array.isArray(item) || item.type === "dir")
     ? await listLibraryFilesRecursively(relative)
     : [{path:fullPath,sha:item.sha,name:item.name}];
-  if (item.type !== "dir" && !/\\.(jpe?g|png|webp)$/i.test(item.name)) {
+  if (item.type !== "dir" && !/\.(jpe?g|png|webp)$/i.test(item.name)) {
     throw new Error("Solo se pueden borrar imágenes de la biblioteca.");
   }
   for (const file of files) {
-    if (/\\.(jpe?g|png|webp)$/i.test(file.name)) {
+    if (/\.(jpe?g|png|webp)$/i.test(file.name)) {
       const relativeFile = file.path.slice(LIBRARY_ROOT.length);
       await updateImageReferences(libraryFullPath(relativeFile),null);
     }
@@ -283,9 +283,9 @@ async function renameLibraryItem(relative: string, newNameRaw: unknown) {
   const fullPath = libraryFullPath(relative);
   const item = await githubRequest(fullPath);
   if (!item) throw new Error("El elemento ya no existe.");
-  const isFolder = item.type === "dir";
+  const isFolder = Array.isArray(item) || item.type === "dir";
   const newName = safeLibraryName(newNameRaw,isFolder);
-  if (!isFolder && !/\\.(jpe?g|png|webp)$/i.test(item.name)) {
+  if (!isFolder && !/\.(jpe?g|png|webp)$/i.test(item.name)) {
     throw new Error("Solo se pueden renombrar imágenes de la biblioteca.");
   }
   const parent = relative.includes("/") ? relative.slice(0,relative.lastIndexOf("/")) : "";
@@ -310,7 +310,7 @@ async function renameLibraryItem(relative: string, newNameRaw: unknown) {
     moved.push({oldPath:file.path,newPath,sha:source.sha,name:file.name});
   }
   for (const file of moved) {
-    if (/\\.(jpe?g|png|webp)$/i.test(file.name)) await updateImageReferences(file.oldPath,file.newPath);
+    if (/\.(jpe?g|png|webp)$/i.test(file.name)) await updateImageReferences(file.oldPath,file.newPath);
   }
   for (const file of moved) await deleteGitHubFile(file.oldPath,file.sha);
   return {path:destinationFull,moved:moved.length};
