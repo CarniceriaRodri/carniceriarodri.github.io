@@ -298,24 +298,41 @@
 
  const GITHUB_CONTENTS_BASE='https://api.github.com/repos/CarniceriaRodri/carniceriarodri.github.io/contents/img/productos/biblioteca/';
  const GITHUB_PAGES_BASE='https://carniceriarodri.github.io/';
- let currentLibraryFolder='biblioteca';
- function folderSlug(value){return String(value||'biblioteca').normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').toLowerCase().replace(/[^a-z0-9-]+/g,'-').replace(/^-+|-+$/g,'')||'biblioteca';}
+ let currentLibraryFolder='';
+ let uploadLibraryFolder='';
+ function folderSlug(value){return String(value||'').normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').toLowerCase().replace(/[^a-z0-9-]+/g,'-').replace(/^-+|-+$/g,'');}
  function libraryPath(folder=currentLibraryFolder){return 'img/productos/biblioteca/'+(folder?folder+'/':'');}
  function libraryImageUrl(path){return GITHUB_PAGES_BASE+path.split('/').map(encodeURIComponent).join('/');}
- function updateLibraryPaths(){const path=libraryPath();$('imageLibraryPath').textContent=path;$('libraryUploadPath').textContent=path;}
+ function updateLibraryPaths(){
+   $('imageLibraryPath').textContent=libraryPath(currentLibraryFolder);
+   $('libraryUploadPath').textContent=libraryPath(uploadLibraryFolder);
+ }
+ async function listLibraryFolder(folder){
+   const response=await fetch(GITHUB_CONTENTS_BASE+(folder?folder.split('/').map(encodeURIComponent).join('/'):'')+'?ref=main&v='+Date.now(),{headers:{Accept:'application/vnd.github+json'},cache:'no-store'});
+   if(response.status===404)return [];
+   if(!response.ok)throw new Error('GitHub respondió '+response.status+'.');
+   const entries=await response.json();
+   return Array.isArray(entries)?entries:[];
+ }
  async function loadImageLibrary(folder=currentLibraryFolder){
    currentLibraryFolder=folder;updateLibraryPaths();
    const grid=$('imageLibraryGrid');grid.innerHTML='';status('imageLibraryStatus','Cargando biblioteca…');
    try{
-     const response=await fetch(GITHUB_CONTENTS_BASE+(folder?folder.split('/').map(encodeURIComponent).join('/'):'')+'?ref=main&v='+Date.now(),{headers:{Accept:'application/vnd.github+json'},cache:'no-store'});
-     if(response.status===404){status('imageLibraryStatus','Esta carpeta está vacía. Puedes subir imágenes aquí desde el panel principal.');return [];}
-     if(!response.ok)throw new Error('GitHub respondió '+response.status+'.');
-     const entries=await response.json();
-     const folders=Array.isArray(entries)?entries.filter(entry=>entry.type==='dir'):[];
-     const images=Array.isArray(entries)?entries.filter(file=>file.type==='file'&&/\\.(jpe?g|png|webp)$/i.test(file.name)):[];
+     const entries=await listLibraryFolder(folder);
+     const folders=entries.filter(entry=>entry.type==='dir');
+     const images=entries.filter(file=>file.type==='file'&&/\\.(jpe?g|png|webp)$/i.test(file.name));
      folders.sort((a,b)=>a.name.localeCompare(b.name,'es'));images.sort((a,b)=>b.name.localeCompare(a.name));
-     if(folder!=='biblioteca'){const up=document.createElement('button');up.type='button';up.className='secondary';up.textContent='↩ Volver a biblioteca';up.addEventListener('click',()=>loadImageLibrary(''));grid.append(up);}
-     folders.forEach(dir=>{const button=document.createElement('button');button.type='button';button.className='secondary';button.textContent='📁 '+dir.name;button.style.cssText='padding:10px;min-width:0;text-align:left';button.addEventListener('click',()=>loadImageLibrary(folder+'/'+folderSlug(dir.name)));grid.append(button);});
+     if(folder){
+       const up=document.createElement('button');up.type='button';up.className='secondary';up.textContent='↑ Subir un nivel';
+       up.addEventListener('click',()=>loadImageLibrary(folder.includes('/')?folder.slice(0,folder.lastIndexOf('/')):''));
+       grid.append(up);
+     }
+     folders.forEach(dir=>{
+       const button=document.createElement('button');button.type='button';button.className='secondary';button.textContent='📁 '+dir.name;
+       button.style.cssText='padding:10px;min-width:0;text-align:left';
+       button.addEventListener('click',()=>loadImageLibrary(folder?folder+'/'+folderSlug(dir.name):folderSlug(dir.name)));
+       grid.append(button);
+     });
      for(const file of images){
        const card=document.createElement('button');card.type='button';card.className='secondary';card.style.cssText='padding:6px;min-width:0;background:#f8f6f2;color:var(--ink);border:1px solid var(--line)';
        const img=document.createElement('img');img.src=libraryImageUrl(file.path)+'?v='+encodeURIComponent(file.sha||'');img.alt=file.name;img.loading='lazy';img.style.cssText='display:block;width:100%;height:86px;object-fit:contain;background:white;border-radius:6px';
@@ -326,43 +343,58 @@
      status('imageLibraryStatus',images.length+' imágenes y '+folders.length+' carpetas disponibles.');return images;
    }catch(error){status('imageLibraryStatus','No se pudo cargar la biblioteca: '+(error?.message||String(error)));return [];}
  }
+ async function refreshUploadFolders(){
+   const host=$('libraryUploadFolders');host.innerHTML='';
+   updateLibraryPaths();
+   try{
+     const entries=await listLibraryFolder(uploadLibraryFolder);
+     const folders=entries.filter(entry=>entry.type==='dir').sort((a,b)=>a.name.localeCompare(b.name,'es'));
+     folders.forEach(dir=>{
+       const button=document.createElement('button');button.type='button';button.className='secondary';button.textContent='📁 '+dir.name;
+       button.addEventListener('click',()=>{uploadLibraryFolder=uploadLibraryFolder?uploadLibraryFolder+'/'+folderSlug(dir.name):folderSlug(dir.name);refreshUploadFolders();});
+       host.append(button);
+     });
+     $('libraryUploadNavStatus').textContent=folders.length? 'Carpetas en esta ubicación. Pulsa una para entrar.':'No hay subcarpetas en esta ubicación.';
+   }catch(error){$('libraryUploadNavStatus').textContent='No se pudieron cargar las carpetas: '+(error?.message||String(error));}
+ }
  $('openImageLibrary').addEventListener('click',async()=>{$('imageLibraryPicker').hidden=!$('imageLibraryPicker').hidden;if(!$('imageLibraryPicker').hidden)await loadImageLibrary('');});
  $('refreshImageLibrary').addEventListener('click',()=>loadImageLibrary(currentLibraryFolder));
  $('libraryGoRoot').addEventListener('click',()=>loadImageLibrary(''));
- $('libraryFolder').addEventListener('input',()=>{$('libraryUploadPath').textContent=libraryPath(folderSlug($('libraryFolder').value));});
+ $('libraryUploadUp').addEventListener('click',()=>{uploadLibraryFolder=uploadLibraryFolder.includes('/')?uploadLibraryFolder.slice(0,uploadLibraryFolder.lastIndexOf('/')):'';refreshUploadFolders();});
+ $('libraryUploadRoot').addEventListener('click',()=>{uploadLibraryFolder='';refreshUploadFolders();});
  $('libraryCreateFolderButton').addEventListener('click',async()=>{
-   const raw=$('libraryFolder').value.trim(),folder=folderSlug(raw);
-   const button=$('libraryCreateFolderButton'),statusEl=$('libraryUploadStatus');
-   if(!raw||!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(folder)||folder.length>80){
-     statusEl.textContent='Escribe un nombre válido de hasta 80 caracteres.';return;
-   }
+   const raw=prompt('Nombre de la nueva carpeta:');
+   if(raw===null)return;
+   const folder=folderSlug(raw),button=$('libraryCreateFolderButton'),statusEl=$('libraryUploadNavStatus');
+   if(!folder||folder.length>80){statusEl.textContent='Escribe un nombre válido de hasta 80 caracteres.';return;}
    button.disabled=true;statusEl.textContent='Creando carpeta…';
    try{
-     const {data,error}=await client.functions.invoke('github-images',{body:{action:'create-folder',folder}});
+     const {data,error}=await client.functions.invoke('github-images',{body:{action:'create-folder',folder:uploadLibraryFolder?uploadLibraryFolder+'/'+folder:folder}});
      if(error)throw error;
      if(!data?.path)throw new Error('GitHub no confirmó la creación de la carpeta.');
-     $('libraryFolder').value=folder;currentLibraryFolder=folder;updateLibraryPaths();
-     statusEl.textContent='Carpeta creada: '+data.path;
-     await loadImageLibrary(folder);
+     uploadLibraryFolder=uploadLibraryFolder?uploadLibraryFolder+'/'+folder:folder;
+     statusEl.textContent='Carpeta creada correctamente.';
+     await refreshUploadFolders();await loadImageLibrary(currentLibraryFolder);
    }catch(error){statusEl.textContent='No se pudo crear la carpeta: '+(error?.message||String(error));}
    finally{button.disabled=false;}
  });
  $('libraryUploadButton').addEventListener('click',()=>$('libraryUploadFiles').click());
  $('libraryUploadFiles').addEventListener('change',async()=>{
    const files=Array.from($('libraryUploadFiles').files||[]);if(!files.length)return;
-   const input=$('libraryUploadFiles'),button=$('libraryUploadButton'),statusEl=$('libraryUploadStatus'),folder=folderSlug($('libraryFolder').value);
+   const input=$('libraryUploadFiles'),button=$('libraryUploadButton'),statusEl=$('libraryUploadStatus'),folder=uploadLibraryFolder;
    const valid=files.filter(file=>['image/jpeg','image/png','image/webp'].includes(file.type)&&file.size>0&&file.size<=5*1024*1024),invalid=files.length-valid.length;
    if(!valid.length){statusEl.textContent='No hay imágenes válidas. Usa JPG, PNG o WebP de hasta 5 MB cada una.';input.value='';return;}
    input.disabled=true;button.disabled=true;let uploaded=0,failed=0;statusEl.textContent='Preparando '+valid.length+' imágenes…';
    for(let i=0;i<valid.length;i++){const file=valid[i];statusEl.textContent='Subiendo '+(i+1)+' de '+valid.length+': '+file.name;
-     try{const {data,error}=await client.functions.invoke('github-images',{body:{action:'upload',kind:'product',category:'biblioteca',productSlug:folder,contentType:file.type,contentBase64:await fileBase64(file)}});
+     try{const {data,error}=await client.functions.invoke('github-images',{body:{action:'upload',kind:'product',category:'biblioteca',productSlug:folder||'general',contentType:file.type,contentBase64:await fileBase64(file)}});
        if(error)throw error;if(!data?.path)throw new Error('GitHub no devolvió la ruta.');uploaded++;
      }catch(error){failed++;statusEl.textContent='Error con '+file.name+': '+(error?.message||String(error));}
    }
    input.disabled=false;button.disabled=false;input.value='';
    statusEl.textContent='Proceso terminado: '+uploaded+' imágenes guardadas'+(failed?', '+failed+' errores':'')+(invalid?', '+invalid+' archivos omitidos por formato o tamaño':'')+'.';
-   await loadImageLibrary(folder);
+   await refreshUploadFolders();await loadImageLibrary(currentLibraryFolder);
  });
+ refreshUploadFolders();
  $('imageShowToggle').addEventListener('change',updateImageToggleText);
  document.querySelectorAll('input[name="imageFit"]').forEach(input=>input.addEventListener('change',()=>{if(originalImageFile||originalImageUrl)renderSelectedImage();}));
  $('imageFile').addEventListener('change',()=>handleSelectedImage($('imageFile').files?.[0]||null,'imageFile'));
