@@ -65,14 +65,14 @@ def main():
             if source not in names:
                 sys.exit(f"ERROR: falta {source} en el ZIP. No se continuará.")
             data = archive.read(source)
-            if not data.startswith(b"\\xff\\xd8\\xff"):
+            if not data.startswith(bytes([0xff, 0xd8, 0xff])):
                 sys.exit(f"ERROR: no parece JPG: {source}")
             existing = request(dest, token)
             if existing:
                 if existing.get("type") != "file":
                     sys.exit(f"ERROR: ruta ocupada por otro tipo de objeto: {dest}")
                 current_sha = existing.get("sha")
-                expected_sha = hashlib.sha1(b"blob " + str(len(data)).encode() + b"\\0" + data).hexdigest()
+                expected_sha = hashlib.sha1(b"blob " + str(len(data)).encode() + bytes([0]) + data).hexdigest()
                 if current_sha != expected_sha:
                     print(f"[{index}/{len(items)}] CONFLICTO, no sobrescrito: {dest}")
                 else:
