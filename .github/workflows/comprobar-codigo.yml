@@ -1,0 +1,21 @@
+name: Verificar JavaScript y scripts
+on:
+  push:
+    branches: [main]
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  comprobar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Comprobar sintaxis JavaScript
+        run: |
+          node --check js/app.js
+          node --check js/admin.js
+          node --check js/catalogo.js
+          node --check js/backup-images.js
+          node --check js/precios.js
+      - name: Comprobar sintaxis de scripts Python
+        run: python3 -m compileall -q scripts
