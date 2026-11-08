@@ -462,7 +462,7 @@
      if(preserveFolders){
        const relative=String(file.webkitRelativePath||file.name).split('/');
        relative.pop();
-       const nested=relative.slice(1).map(folderSlug).filter(Boolean);
+       const nested=relative.slice(0,-1).map(folderSlug).filter(Boolean);
        if(nested.length)destination=[baseFolder,...nested].filter(Boolean).join('/');
      }
      statusEl.textContent='Subiendo '+(i+1)+' de '+valid.length+': '+file.name;
