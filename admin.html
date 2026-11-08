@@ -36,6 +36,12 @@ dialog#imageDialog::backdrop{background:#211a1780}
 .image-dialog-head button{padding:5px 11px;background:#eee8e1;color:var(--ink);font-size:20px}
 .image-preview{display:block;width:100%;max-height:230px;object-fit:contain;background:#f5f2ed;border-radius:10px;margin:14px 0}
 .image-preview[hidden]{display:none}
+.image-fit-choices{display:grid;gap:8px;margin:14px 0}
+.image-fit-choice{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border:1px solid #ddd2c8;border-radius:10px;background:#fff;cursor:pointer}
+.image-fit-choice:has(input:checked){border-color:#7b2e20;background:#fbf3ef}
+.image-fit-choice input{width:18px;height:18px;margin:2px 0 0;flex:0 0 auto}
+.image-fit-choice span{display:block}
+.image-fit-choice small{display:block;color:var(--muted);font-weight:400;margin-top:2px}
 .image-choices{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0}
 .image-choice{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:11px 14px;border:1px solid #7b2e20;border-radius:9px;background:#7b2e20;color:#fff;font-weight:650;cursor:pointer}
 .image-choice.secondary{background:#eee8e1;border-color:#d8cfc6;color:var(--ink)}
@@ -92,6 +98,12 @@ dialog#imageDialog::backdrop{background:#211a1780}
       <input id="imageFile" type="file" accept="image/jpeg,image/png,image/webp">
     </label>
   </div>
+  <fieldset class="image-fit-choices" style="border:0;padding:0">
+    <legend style="font-weight:750;font-size:14px;margin-bottom:8px">Cómo quieres adaptar la foto</legend>
+    <label class="image-fit-choice"><input type="radio" name="imageFit" value="contain" checked><span><strong>Foto completa</strong><small>No recorta nada; añade fondo blanco si hace falta.</small></span></label>
+    <label class="image-fit-choice"><input type="radio" name="imageFit" value="padded"><span><strong>Cuadrada con margen</strong><small>Centra el producto y deja espacio alrededor.</small></span></label>
+    <label class="image-fit-choice"><input type="radio" name="imageFit" value="cover"><span><strong>Cuadrada rellenando</strong><small>Amplía la foto hasta llenar el cuadro; puede cortar bordes.</small></span></label>
+  </fieldset>
   <label id="imageToggleRow" class="image-toggle" hidden>
     <input id="imageShowToggle" type="checkbox" checked>
     Mostrar imagen específica de esta preparación
