@@ -67,7 +67,7 @@
     if (value.toLowerCase().endsWith('.jpg')) value = value.slice(0, -4);
     return img(value, 600, 450);
   };
-  const imageForProduct = (product) => product?.imageUrl || product?.imagenBiblioteca || img(product?.img || '', 600, 450);
+  const imageForProduct = (product) => publicImageUrl(product?.imageUrl || product?.imagenBiblioteca || product?.img) || img('', 600, 450);
 
   const escapeHtml = (s) =>
     String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
