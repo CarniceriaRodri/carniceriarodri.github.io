@@ -197,3 +197,575 @@ window.PRODUCTOS.forEach(producto => {
     producto.imagenBiblioteca = window.IMAGENES_BIBLIOTECA_RODRI[producto.id];
   }
 });
+
+// DEMOSTRACIÓN TEMPORAL: precios estimados y opciones propuestas; no son tarifas oficiales.
+// Supabase sigue teniendo prioridad al sincronizar precios y opciones configuradas.
+window.RODRI_PRECIOS_DEMO = {
+  "chuletas-de-lomo": {
+    "precio": 9.5,
+    "unidad": "kg",
+    "opciones": [
+      "Finas",
+      "Normales",
+      "Gruesas"
+    ]
+  },
+  "lomo-entero": {
+    "precio": 9.9,
+    "unidad": "kg",
+    "opciones": [
+      "Entero",
+      "En filetes",
+      "En trozos"
+    ]
+  },
+  "filetes-de-lomo": {
+    "precio": 10.9,
+    "unidad": "kg",
+    "opciones": [
+      "Finos",
+      "Normales",
+      "Gruesos"
+    ]
+  },
+  "chuletas-de-cabeza": {
+    "precio": 8.9,
+    "unidad": "kg",
+    "opciones": [
+      "Finas",
+      "Normales",
+      "Gruesas"
+    ]
+  },
+  "cabeza-entera-con-hueso": {
+    "precio": 9.9,
+    "unidad": "kg",
+    "opciones": [
+      "Entero",
+      "En filetes",
+      "En trozos",
+      "Para guiso",
+      "Al gusto"
+    ]
+  },
+  "cabeza-entera-sin-hueso": {
+    "precio": 9.9,
+    "unidad": "kg",
+    "opciones": [
+      "Entero",
+      "En filetes",
+      "En trozos",
+      "Para guiso",
+      "Al gusto"
+    ]
+  },
+  "solomillo-de-cerdo": {
+    "precio": 13.9,
+    "unidad": "kg",
+    "opciones": [
+      "Entero",
+      "En medallones",
+      "En trozos"
+    ]
+  },
+  "trocitos-de-cerdo": {
+    "precio": 9.9,
+    "unidad": "kg",
+    "opciones": [
+      "Entero",
+      "En filetes",
+      "En trozos",
+      "Para guiso",
+      "Al gusto"
+    ]
+  },
+  "filete-de-jamon-de-cerdo": {
+    "precio": 9.9,
+    "unidad": "kg",
+    "opciones": [
+      "Entero",
+      "En filetes",
+      "En trozos",
+      "Para guiso",
+      "Al gusto"
+    ]
+  },
+  "jamon-entero-de-cerdo": {
+    "precio": 9.9,
+    "unidad": "kg",
+    "opciones": [
+      "Entero",
+      "En filetes",
+      "En trozos",
+      "Para guiso",
+      "Al gusto"
+    ]
+  },
+  "paleta-entera-de-cerdo": {
+    "precio": 9.9,
+    "unidad": "kg",
+    "opciones": [
+      "Entero",
+      "En filetes",
+      "En trozos",
+      "Para guiso",
+      "Al gusto"
+    ]
+  },
+  "morcilla-cerdo": {
+    "precio": 8.9,
+    "unidad": "kg",
+    "opciones": [
+      "Entero",
+      "En filetes",
+      "En trozos",
+      "Para guiso",
+      "Al gusto"
+    ]
+  },
+  "chorizo-cerdo": {
+    "precio": 10.9,
+    "unidad": "kg",
+    "opciones": [
+      "Entero",
+      "En filetes",
+      "En trozos",
+      "Para guiso",
+      "Al gusto"
+    ]
+  },
+  "tiras-de-costilla": {
+    "precio": 9.9,
+    "unidad": "kg",
+    "opciones": [
+      "Entero",
+      "En filetes",
+      "En trozos",
+      "Para guiso",
+      "Al gusto"
+    ]
+  },
+  "costilla-carnosa": {
+    "precio": 9.9,
+    "unidad": "kg",
+    "opciones": [
+      "Entero",
+      "En filetes",
+      "En trozos",
+      "Para guiso",
+      "Al gusto"
+    ]
+  },
+  "jarrete-de-cerdo": {
+    "precio": 9.9,
+    "unidad": "kg",
+    "opciones": [
+      "Entero",
+      "En filetes",
+      "En trozos",
+      "Para guiso",
+      "Al gusto"
+    ]
+  },
+  "manitas-de-cerdo": {
+    "precio": 9.9,
+    "unidad": "kg",
+    "opciones": [
+      "Entero",
+      "En filetes",
+      "En trozos",
+      "Para guiso",
+      "Al gusto"
+    ]
+  },
+  "higado-de-cerdo": {
+    "precio": 9.9,
+    "unidad": "kg",
+    "opciones": [
+      "Entero",
+      "En filetes",
+      "En trozos",
+      "Para guiso",
+      "Al gusto"
+    ]
+  },
+  "pella-de-cerdo": {
+    "precio": 9.9,
+    "unidad": "kg",
+    "opciones": [
+      "Entero",
+      "En filetes",
+      "En trozos",
+      "Para guiso",
+      "Al gusto"
+    ]
+  },
+  "pajarilla-de-cerdo": {
+    "precio": 9.9,
+    "unidad": "kg",
+    "opciones": [
+      "Entero",
+      "En filetes",
+      "En trozos",
+      "Para guiso",
+      "Al gusto"
+    ]
+  },
+  "hueso-de-espinazo-de-cerdo": {
+    "precio": 9.9,
+    "unidad": "kg",
+    "opciones": [
+      "Entero",
+      "En filetes",
+      "En trozos",
+      "Para guiso",
+      "Al gusto"
+    ]
+  },
+  "oreja-de-cerdo": {
+    "precio": 9.9,
+    "unidad": "kg",
+    "opciones": [
+      "Entero",
+      "En filetes",
+      "En trozos",
+      "Para guiso",
+      "Al gusto"
+    ]
+  },
+  "lengua-de-cerdo": {
+    "precio": 9.9,
+    "unidad": "kg",
+    "opciones": [
+      "Entero",
+      "En filetes",
+      "En trozos",
+      "Para guiso",
+      "Al gusto"
+    ]
+  },
+  "punta-de-solomillo": {
+    "precio": 9.9,
+    "unidad": "kg",
+    "opciones": [
+      "Entero",
+      "En filetes",
+      "En trozos",
+      "Para guiso",
+      "Al gusto"
+    ]
+  },
+  "tocino-fresco": {
+    "precio": 5.9,
+    "unidad": "kg",
+    "opciones": [
+      "Entero",
+      "En filetes",
+      "En trozos",
+      "Para guiso",
+      "Al gusto"
+    ]
+  },
+  "chuletas-ibericas": {
+    "precio": 19.9,
+    "unidad": "kg",
+    "opciones": [
+      "Entero",
+      "En filetes",
+      "En medallones",
+      "Al gusto"
+    ]
+  },
+  "lomo-iberico": {
+    "precio": 21.9,
+    "unidad": "kg",
+    "opciones": [
+      "Entero",
+      "En filetes",
+      "En medallones",
+      "Al gusto"
+    ]
+  },
+  "filete-iberico": {
+    "precio": 20.9,
+    "unidad": "kg",
+    "opciones": [
+      "Entero",
+      "En filetes",
+      "En medallones",
+      "Al gusto"
+    ]
+  },
+  "lagartito-iberico": {
+    "precio": 20.9,
+    "unidad": "kg",
+    "opciones": [
+      "Entero",
+      "En filetes",
+      "En medallones",
+      "Al gusto"
+    ]
+  },
+  "presa-iberica": {
+    "precio": 24.9,
+    "unidad": "kg",
+    "opciones": [
+      "Entero",
+      "En filetes",
+      "En medallones",
+      "Al gusto"
+    ]
+  },
+  "secreto-iberico": {
+    "precio": 21.9,
+    "unidad": "kg",
+    "opciones": [
+      "Entero",
+      "En filetes",
+      "En medallones",
+      "Al gusto"
+    ]
+  },
+  "solomillo-iberico": {
+    "precio": 23.9,
+    "unidad": "kg",
+    "opciones": [
+      "Entero",
+      "En filetes",
+      "En medallones",
+      "Al gusto"
+    ]
+  },
+  "costilla-iberica": {
+    "precio": 15.9,
+    "unidad": "kg",
+    "opciones": [
+      "Entero",
+      "En filetes",
+      "En medallones",
+      "Al gusto"
+    ]
+  },
+  "babilla-de-ternera": {
+    "precio": 18.9,
+    "unidad": "kg",
+    "opciones": [
+      "Entero",
+      "En filetes",
+      "En dados para guiso",
+      "Al gusto"
+    ]
+  },
+  "chuleta-de-ternera": {
+    "precio": 22.9,
+    "unidad": "kg",
+    "opciones": [
+      "Entero",
+      "En filetes",
+      "En dados para guiso",
+      "Al gusto"
+    ]
+  },
+  "ternera-para-guiso": {
+    "precio": 15.9,
+    "unidad": "kg",
+    "opciones": [
+      "En dados",
+      "En trozos grandes"
+    ]
+  },
+  "solomillo-de-ternera": {
+    "precio": 39.9,
+    "unidad": "kg",
+    "opciones": [
+      "Entero",
+      "En filetes",
+      "En dados para guiso",
+      "Al gusto"
+    ]
+  },
+  "entrecot-de-ternera": {
+    "precio": 24.9,
+    "unidad": "kg",
+    "opciones": [
+      "Entero",
+      "En filetes",
+      "En dados para guiso",
+      "Al gusto"
+    ]
+  },
+  "espinazo-salado": {
+    "precio": 5.9,
+    "unidad": "kg",
+    "opciones": [
+      "Por peso",
+      "En trozos",
+      "Al gusto"
+    ]
+  },
+  "blanco-salado": {
+    "precio": 6.9,
+    "unidad": "kg",
+    "opciones": [
+      "Por peso",
+      "En trozos",
+      "Al gusto"
+    ]
+  },
+  "costilla-salada": {
+    "precio": 8.9,
+    "unidad": "kg",
+    "opciones": [
+      "Por peso",
+      "En trozos",
+      "Al gusto"
+    ]
+  },
+  "tocino-salado": {
+    "precio": 6.5,
+    "unidad": "kg",
+    "opciones": [
+      "Por peso",
+      "En trozos",
+      "Al gusto"
+    ]
+  },
+  "corteza-aneja": {
+    "precio": 5.9,
+    "unidad": "kg",
+    "opciones": [
+      "Por peso",
+      "En trozos",
+      "Al gusto"
+    ]
+  },
+  "rabo-salado": {
+    "precio": 6.9,
+    "unidad": "kg",
+    "opciones": [
+      "Por peso",
+      "En trozos",
+      "Al gusto"
+    ]
+  },
+  "filetes-empanados": {
+    "precio": 13.9,
+    "unidad": "kg",
+    "opciones": [
+      "Por unidades",
+      "Por peso"
+    ]
+  },
+  "lagrimitas-de-pollo": {
+    "precio": 12.9,
+    "unidad": "kg",
+    "opciones": [
+      "Por unidades",
+      "Por peso",
+      "Al gusto"
+    ]
+  },
+  "aneto-jamon-y-queso": {
+    "precio": 4.5,
+    "unidad": "ud",
+    "opciones": [
+      "Por unidades",
+      "Por peso",
+      "Al gusto"
+    ]
+  },
+  "albondigas-de-pollo": {
+    "precio": 11.9,
+    "unidad": "kg",
+    "opciones": [
+      "Por unidades",
+      "Por peso",
+      "Al gusto"
+    ]
+  },
+  "albondigas-mixtas": {
+    "precio": 12.9,
+    "unidad": "kg",
+    "opciones": [
+      "Por unidades",
+      "Por peso",
+      "Al gusto"
+    ]
+  },
+  "san-jacobo": {
+    "precio": 3.5,
+    "unidad": "ud",
+    "opciones": [
+      "Por unidades"
+    ]
+  },
+  "fajitas-de-pollo": {
+    "precio": 12.9,
+    "unidad": "kg",
+    "opciones": [
+      "Por unidades",
+      "Por peso",
+      "Al gusto"
+    ]
+  },
+  "hamburguesa-de-pollo": {
+    "precio": 2.2,
+    "unidad": "ud",
+    "opciones": [
+      "Por unidades"
+    ]
+  },
+  "hamburguesa-iberica": {
+    "precio": 3.2,
+    "unidad": "ud",
+    "opciones": [
+      "Por unidades"
+    ]
+  },
+  "hamburguesa-de-ternera": {
+    "precio": 3.1,
+    "unidad": "ud",
+    "opciones": [
+      "Por unidades"
+    ]
+  },
+  "hamburguesa-de-cerdo": {
+    "precio": 2.1,
+    "unidad": "ud",
+    "opciones": [
+      "Por unidades"
+    ]
+  },
+  "pinchito-de-pollo-pechuga": {
+    "precio": 2.5,
+    "unidad": "ud",
+    "opciones": [
+      "Por unidades"
+    ]
+  },
+  "pinchito-de-pollo-contramuslo": {
+    "precio": 2.3,
+    "unidad": "ud",
+    "opciones": [
+      "Por unidades"
+    ]
+  },
+  "pinchito-de-cerdo": {
+    "precio": 2.4,
+    "unidad": "ud",
+    "opciones": [
+      "Por unidades"
+    ]
+  }
+};
+window.PRODUCTOS.forEach(producto => {
+  const demo = window.RODRI_PRECIOS_DEMO[producto.id];
+  if (!demo) return;
+  producto.precioDemo = true;
+  producto.precio = demo.precio.toFixed(2).replace('.', ',') + ' €/' + demo.unidad;
+  producto.opcionLabel = 'Corte o preparación (propuesta)';
+  producto.opciones = demo.opciones.slice();
+  producto.cantidades = demo.unidad === 'ud'
+    ? ['1 unidad','2 unidades','4 unidades','6 unidades']
+    : ['250 gr','500 gr','750 gr','1 kg'];
+});
