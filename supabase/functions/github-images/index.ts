@@ -130,6 +130,16 @@ Deno.serve(async (req: Request) => {
   try {
     await verifyAdmin(req);
     const body = await req.json();
+    if (body.action === "create-folder") {
+      const rawFolder = String(body.folder || "").trim();
+      const folder = slug(rawFolder);
+      if (!rawFolder || !folder || folder.length > 80 || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(folder)) {
+        return json({ error: "Nombre de carpeta no válido" }, 400, origin);
+      }
+      const path = "img/productos/biblioteca/" + folder + "/.gitkeep";
+      await saveToGitHub(path, "");
+      return json({ path: "img/productos/biblioteca/" + folder + "/" }, 200, origin);
+    }
     if (body.action !== "upload") return json({ error: "Acción no permitida" }, 400, origin);
     if (!["product", "option"].includes(body.kind)) return json({ error: "Tipo no válido" }, 400, origin);
 
