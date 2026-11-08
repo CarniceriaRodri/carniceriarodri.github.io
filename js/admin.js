@@ -205,6 +205,7 @@
  let imageTarget=null;
  let selectedImageFile=null;
  let originalImageFile=null;
+ let originalImageUrl='';
  let imagePreviewVersion=0;
 
  function managedStoragePath(path){
