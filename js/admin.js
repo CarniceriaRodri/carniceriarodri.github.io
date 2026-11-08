@@ -413,7 +413,7 @@
    try{
      const entries=await listLibraryFolder(uploadLibraryFolder);
      const folders=entries.filter(entry=>entry.type==='dir').sort((a,b)=>a.name.localeCompare(b.name,'es'));
-     const files=entries.filter(entry=>entry.type==='file'&&/\\.(jpe?g|png|webp)$/i.test(entry.name)).sort((a,b)=>a.name.localeCompare(b.name,'es'));
+     const files=entries.filter(entry=>entry.type==='file'&&/\.(jpe?g|png|webp)$/i.test(entry.name)).sort((a,b)=>a.name.localeCompare(b.name,'es'));
      if(uploadLibraryFolder){
        const up=document.createElement('button');up.type='button';up.className='secondary';up.textContent='⬆️ Subir un nivel';
        up.addEventListener('click',()=>{uploadLibraryFolder=uploadLibraryFolder.includes('/')?uploadLibraryFolder.slice(0,uploadLibraryFolder.lastIndexOf('/')):'';refreshUploadFolders();});
