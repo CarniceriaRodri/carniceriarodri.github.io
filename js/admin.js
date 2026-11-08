@@ -190,7 +190,16 @@
    const previousCategorySections=Array.from(document.querySelectorAll('.category-section'));
    const openCategoryPanels=new Set(previousCategorySections.filter(el=>el.open).map(el=>el.dataset.categorySection));
    const hadCategoryPanels=previousCategorySections.length>0;
-   const groupedProducts=Object.keys(categoryMeta).map(categoryKey=>({
+   // Categorías retiradas de la vista del panel a petición del propietario.
+   // No se borran registros ni productos de Supabase.
+   const categoriasOcultas=new Set([
+     'charcuteria y quesos','cordero y cabrito','despensa y complementos',
+     'elaborados de la casa','pollo y aves','vacuno y ternera'
+   ]);
+   const normalizarCategoria=v=>String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
+   const groupedProducts=Object.keys(categoryMeta).filter(categoryKey=>
+     !categoriasOcultas.has(normalizarCategoria(categoryMeta[categoryKey].name))
+   ).map(categoryKey=>({
      key:categoryKey,
      meta:categoryMeta[categoryKey],
      items:products.filter(p=>p.category===categoryKey)
