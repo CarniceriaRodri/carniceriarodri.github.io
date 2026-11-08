@@ -109,7 +109,7 @@ dialog#imageDialog::backdrop{background:#211a1780}
   </label>
   <p class="status" id="maintenanceStatus" role="status"></p>
 </div>
-<p class="muted">Los productos nuevos se crean activos. Usa la casilla «Activo» a la derecha de cada producto para mostrarlo u ocultarlo al instante. Los productos sin precio u opciones válidas no se mostrarán.</p><div class="actions"><button type="button" id="activateAllProducts" class="secondary">✅ Activar todos los productos existentes</button></div>
+<p class="muted">Los productos nuevos se crean activos. Usa la casilla «Activo» a la derecha de cada producto para mostrarlo u ocultarlo al instante. Los productos sin precio u opciones válidas no se mostrarán.</p><div class="actions"><button type="button" id="activateAllProducts" class="secondary">✅ Activar todos los productos existentes</button></div><details class="notice" style="margin:14px 0"><summary style="cursor:pointer;font-weight:700">🗑️ Eliminar definitivamente categorías retiradas</summary><p>Quita de Supabase Conejo, Cordero, Caza, Cabritos y sus productos y opciones. Antes descargará una copia JSON. Requiere permisos de borrado y dos confirmaciones. Las fotografías de GitHub se conservarán.</p><button type="button" id="removeRetiredCategories" style="background:#9c2929">Descargar copia y eliminar registros</button></details>
 <div class="notice" id="emptyNotice" hidden>La conexión está lista, pero todavía no hay productos cargados en la base de datos. Hay que importar el catálogo antes de editar precios.</div>
 
 <details id="categoryManagement" class="category-management"><summary>⚙️ Gestionar categorías <span class="category-management-hint">Abrir editor</span></summary><div class="category-management-body"><p class="muted">Cambia el nombre, la descripción, el orden o la visibilidad de cada categoría. Pulsa «Guardar cambios» en la categoría que modifiques.</p><div id="categoryRows"></div><div class="category-new"><h3>Añadir una categoría</h3><label>Identificador (sin espacios)<input id="newCategoryId" placeholder="Ej.: ofertas"></label><label>Nombre visible<input id="newCategoryName" placeholder="Ej.: Ofertas"></label><label>Descripción<input id="newCategoryTagline" placeholder="Descripción breve"></label><label>Posición<input id="newCategoryOrder" type="number" value="0"></label><button type="button" id="createCategory">Crear categoría</button></div><p class="status" id="categoryStatus" role="status"></p></div></details>
@@ -182,6 +182,6 @@ dialog#imageDialog::backdrop{background:#211a1780}
 <script src="js/catalogo.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js" defer></script>
-<script src="js/admin.js?v=3.8" defer></script>
+<script src="js/admin.js?v=3.9" defer></script>
 </body>
 </html>
