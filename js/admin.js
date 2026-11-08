@@ -386,7 +386,7 @@
    if(!valid.length){statusEl.textContent='No hay imágenes válidas. Usa JPG, PNG o WebP de hasta 5 MB cada una.';input.value='';return;}
    input.disabled=true;button.disabled=true;let uploaded=0,failed=0;statusEl.textContent='Preparando '+valid.length+' imágenes…';
    for(let i=0;i<valid.length;i++){const file=valid[i];statusEl.textContent='Subiendo '+(i+1)+' de '+valid.length+': '+file.name;
-     try{const {data,error}=await client.functions.invoke('github-images',{body:{action:'upload',kind:'product',category:'biblioteca',productSlug:folder||'general',contentType:file.type,contentBase64:await fileBase64(file)}});
+     try{const {data,error}=await client.functions.invoke('github-images',{body:{action:'upload',kind:'product',category:'biblioteca',productSlug:folder,contentType:file.type,contentBase64:await fileBase64(file)}});
        if(error)throw error;if(!data?.path)throw new Error('GitHub no devolvió la ruta.');uploaded++;
      }catch(error){failed++;statusEl.textContent='Error con '+file.name+': '+(error?.message||String(error));}
    }
