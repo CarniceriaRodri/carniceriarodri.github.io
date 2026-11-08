@@ -230,6 +230,7 @@
    imageTarget=target;
    selectedImageFile=null;
    originalImageFile=null;
+   originalImageUrl='';
    imagePreviewVersion++;
    document.querySelector('input[name="imageFit"][value="contain"]').checked=true;
    $('imageFile').value='';
@@ -241,37 +242,44 @@
    updateImageToggleText();
    const previewUrl=imagePublicUrl(target.path);
    $('imagePreview').hidden=!previewUrl;
-   if(previewUrl){$('imagePreview').src=previewUrl;}
-   else{$('imagePreview').removeAttribute('src');}
+   if(previewUrl){$('imagePreview').src=previewUrl;originalImageUrl=previewUrl;}
+   else{$('imagePreview').removeAttribute('src');originalImageUrl='';}
    $('imageCurrent').textContent=target.path?'Imagen asignada. Puedes sustituirla o quitarla.':'Todavía no hay una imagen propia asignada.';
    $('imageRemove').hidden=!target.path;
    $('imageDialog').showModal();
  }
  async function renderSelectedImage(){
-   if(!originalImageFile)return;
+   if(!originalImageFile&&!originalImageUrl)return;
    const version=++imagePreviewVersion;
    const mode=document.querySelector('input[name="imageFit"]:checked')?.value||'contain';
+   let sourceUrl='';
    try{
-     const sourceUrl=URL.createObjectURL(originalImageFile);
-     const source=new Image();source.src=sourceUrl;
-     await new Promise((resolve,reject)=>{source.onload=resolve;source.onerror=()=>reject(new Error('No se puede abrir la imagen'));});
-     if(version!==imagePreviewVersion){URL.revokeObjectURL(sourceUrl);return;}
-     const size=1200,canvas=document.createElement('canvas');canvas.width=size;canvas.height=size;
+     sourceUrl=originalImageFile?URL.createObjectURL(originalImageFile):originalImageUrl;
+     const source=new Image();
+     if(!originalImageFile&&/^https?:\\/\\//i.test(sourceUrl))source.crossOrigin='anonymous';
+     source.src=sourceUrl;
+     await new Promise((resolve,reject)=>{source.onload=resolve;source.onerror=()=>reject(new Error('No se puede abrir la imagen. Comprueba que la dirección sea accesible.'));});
+     if(version!==imagePreviewVersion)return;
+     const width=1200,height=900,canvas=document.createElement('canvas');canvas.width=width;canvas.height=height;
      const ctx=canvas.getContext('2d');if(!ctx)throw new Error('No se pudo crear la vista previa');
-     ctx.fillStyle='#fff';ctx.fillRect(0,0,size,size);
-     const scale=mode==='cover'?Math.max(size/source.naturalWidth,size/source.naturalHeight):Math.min(size/source.naturalWidth,size/source.naturalHeight)*(mode==='padded'?0.84:1);
-     const width=source.naturalWidth*scale,height=source.naturalHeight*scale;
-     ctx.drawImage(source,(size-width)/2,(size-height)/2,width,height);
-     URL.revokeObjectURL(sourceUrl);
-     const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/webp',0.88));
+     ctx.fillStyle='#fff';ctx.fillRect(0,0,width,height);
+     const scale=mode==='cover'?Math.max(width/source.naturalWidth,height/source.naturalHeight):Math.min(width/source.naturalWidth,height/source.naturalHeight);
+     const drawWidth=source.naturalWidth*scale,drawHeight=source.naturalHeight*scale;
+     ctx.drawImage(source,(width-drawWidth)/2,(height-drawHeight)/2,drawWidth,drawHeight);
+     if(originalImageFile)URL.revokeObjectURL(sourceUrl);
+     sourceUrl='';
+     const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/webp',0.9));
      if(version!==imagePreviewVersion)return;
      if(!blob)throw new Error('El navegador no pudo procesar la imagen.');
-     selectedImageFile=new File([blob],(originalImageFile.name||'producto').replace(/\.[^.]+$/,'')+'.webp',{type:blob.type||'image/webp'});
+     selectedImageFile=new File([blob],((originalImageFile?.name||'imagen-actual').replace(/\\.[^.]+$/,'')+'.webp'),{type:blob.type||'image/webp'});
+     if($('imagePreview').src.startsWith('blob:'))URL.revokeObjectURL($('imagePreview').src);
      $('imagePreview').src=URL.createObjectURL(blob);$('imagePreview').hidden=false;
      $('imageCurrent').textContent='';status('imageStatus','');
    }catch(error){
      if(version!==imagePreviewVersion)return;
      selectedImageFile=null;status('imageStatus','No se pudo actualizar la imagen: '+(error?.message||String(error)));
+   }finally{
+     if(sourceUrl&&originalImageFile)URL.revokeObjectURL(sourceUrl);
    }
  }
  function handleSelectedImage(file,inputId){
@@ -286,7 +294,7 @@
    renderSelectedImage();
  }
  $('imageShowToggle').addEventListener('change',updateImageToggleText);
- document.querySelectorAll('input[name="imageFit"]').forEach(input=>input.addEventListener('change',()=>{if(originalImageFile)renderSelectedImage();}));
+ document.querySelectorAll('input[name="imageFit"]').forEach(input=>input.addEventListener('change',()=>{if(originalImageFile||originalImageUrl)renderSelectedImage();}));
  $('imageFile').addEventListener('change',()=>handleSelectedImage($('imageFile').files?.[0]||null,'imageFile'));
  $('imageCamera').addEventListener('change',()=>handleSelectedImage($('imageCamera').files?.[0]||null,'imageCamera'));
  function closeImageEditor(){
@@ -295,6 +303,7 @@
    imageTarget=null;
    selectedImageFile=null;
    originalImageFile=null;
+   originalImageUrl='';
    imagePreviewVersion++;
  }
  $('imageClose').addEventListener('click',closeImageEditor);
