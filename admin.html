@@ -87,10 +87,14 @@ dialog#imageDialog::backdrop{background:#211a1780}
 <div class="notice" style="margin:12px 0 20px">
   <strong>Subir imágenes a la biblioteca</strong>
   <p class="muted">Selecciona fotos del ordenador o del móvil. Máximo 5 MB por imagen.</p>
-  <label for="libraryFolder">Carpeta de destino</label>
-  <input id="libraryFolder" type="text" value="biblioteca" placeholder="Ej.: carnes, preparados, ofertas">
-  <div class="actions" style="margin-top:8px"><button type="button" id="libraryCreateFolderButton" class="secondary">＋ Crear carpeta</button></div>
-  <p class="muted">Ruta actual: <strong id="libraryUploadPath">img/productos/biblioteca/biblioteca/</strong></p>
+  <p class="muted">Destino de las próximas subidas: <strong id="libraryUploadPath">img/productos/biblioteca/</strong></p>
+  <div class="actions" style="margin-top:8px">
+    <button type="button" id="libraryUploadUp" class="secondary">↑ Subir un nivel</button>
+    <button type="button" id="libraryUploadRoot" class="secondary">⌂ Ir a biblioteca</button>
+    <button type="button" id="libraryCreateFolderButton" class="secondary">＋ Crear carpeta</button>
+  </div>
+  <div id="libraryUploadFolders" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"></div>
+  <p id="libraryUploadNavStatus" class="muted" role="status"></p>
   <input id="libraryUploadFiles" type="file" accept="image/jpeg,image/png,image/webp" multiple hidden>
   <button type="button" id="libraryUploadButton">Subir imágenes</button>
   <p id="libraryUploadStatus" class="status" role="status"></p>
@@ -116,7 +120,7 @@ dialog#imageDialog::backdrop{background:#211a1780}
   </div>
   <section id="imageLibraryPicker" hidden style="border:1px solid var(--line);border-radius:12px;padding:12px;margin:12px 0">
     <div class="image-dialog-head"><strong>Biblioteca de imágenes</strong><button type="button" id="refreshImageLibrary" class="secondary">↻</button></div>
-    <p class="muted">Biblioteca de imágenes guardadas.</p><p class="muted">Ruta actual: <strong id="imageLibraryPath">img/productos/biblioteca/biblioteca/</strong></p><button type="button" id="libraryGoRoot" class="secondary" style="margin-bottom:8px">Carpeta principal</button>
+    <p class="muted">Biblioteca de imágenes guardadas.</p><p class="muted">Ruta actual: <strong id="imageLibraryPath">img/productos/biblioteca/</strong></p><button type="button" id="libraryGoRoot" class="secondary" style="margin-bottom:8px">Carpeta principal</button>
     <div id="imageLibraryGrid" style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px"></div>
     <p id="imageLibraryStatus" class="status" role="status"></p>
   </section>
@@ -138,6 +142,6 @@ dialog#imageDialog::backdrop{background:#211a1780}
 
 <script src="js/catalogo.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-<script src="js/admin.js?v=2.4" defer></script>
+<script src="js/admin.js?v=2.5" defer></script>
 </body>
 </html>
