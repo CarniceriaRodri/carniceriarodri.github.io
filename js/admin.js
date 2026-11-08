@@ -4,6 +4,12 @@
  const $ = id => document.getElementById(id);
  const euro = cents => (Number(cents || 0)/100).toFixed(2).replace('.', ',') + ' €';
  const centsFromInput = value => Math.round(Number(String(value).replace(',', '.')) * 100);
+ const normalizedText = value => String(value || '').normalize('NFD')
+   .replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[_-]/g,' ').trim();
+ const isRetiredCategory = value => /\b(conejo|conejos|cordero|corderos|caza|cabrito|cabritos|cabrita|cabritas)\b/.test(normalizedText(value));
+ const isRetiredProduct = (product, categoryMap) => isRetiredCategory(product.category)
+   || isRetiredCategory(categoryMap.get(String(product.category)) || '')
+   || isRetiredCategory(product.name);
 
  function status(id,msg){$(id).textContent=msg}
 
@@ -95,7 +101,7 @@
    if(!container)return;
    const {data,error}=await client.from('categories').select('id,name,tagline,sort_order,active').order('sort_order');
    if(error){status('categoryStatus','No se pudieron cargar las categorías: '+error.message);return}
-   container.innerHTML=(data||[]).map(c=>
+   container.innerHTML=(data||[]).filter(c=>!isRetiredCategory(c.id)&&!isRetiredCategory(c.name)).map(c=>
      '<div class="category-editor-row" data-category-id="'+escapeHtml(c.id)+'">'+
      '<strong>'+escapeHtml(c.name)+'</strong><div class="muted">Identificador: '+escapeHtml(c.id)+'</div>'+
      '<label>Nombre de la categoría<input data-cat-name value="'+escapeHtml(c.name)+'"></label>'+
@@ -167,6 +173,7 @@
       let added=0,updated=0,skipped=0,failed=0;
       const errors=[];
       for(const entry of manifest.productos||[]){
+        if(isRetiredCategory(entry.categoria)||isRetiredCategory(entry.nombre)){skipped++;continue}
         if(!entry.id||!entry.nombre||!entry.categoria||!entry.imagen||!entry.imagen.startsWith('img/productos/biblioteca/')){skipped++;continue}
         if(!categories.has(entry.categoria)){skipped++;continue}
         const current=existing.get(String(entry.id));
@@ -177,7 +184,7 @@
         }else{
           const {error}=await client.from('products').insert({
             id:entry.id,name:entry.nombre,category:entry.categoria,image:entry.imagen,
-            description:'',active:false,sort_order:9999
+            description:'',active:true,sort_order:9999
           });
           if(error){failed++;errors.push(entry.id+': '+error.message)}
           else{added++;existing.set(String(entry.id),{id:entry.id,image:entry.imagen})}
@@ -193,6 +200,10 @@
    status('adminStatus','Cargando productos…');
    let {data:products,error}=await client.from('products').select('id,name,description,category,image,base_price_cents,active,sort_order,sale_unit,preparations').order('sort_order');
    if(products){
+     const {data:categoryRecords,error:categoryLookupError}=await client.from('categories').select('id,name');
+     if(categoryLookupError){status('adminStatus','No se pudieron verificar categorías: '+categoryLookupError.message);return}
+     const categoryLookup=new Map((categoryRecords||[]).map(c=>[String(c.id),c.name]));
+     products=products.filter(p=>!isRetiredProduct(p,categoryLookup));
      const excludedCategories=['caza','casqueria','vaca-buey','vaca buey','vaca y buey'];
      const normalizeCategory=value=>String(value||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase('es').trim();
      products=products.filter(product=>!excludedCategories.includes(normalizeCategory(product.category)));
@@ -228,7 +239,7 @@
      pavo:{name:'Pavo',icon:'🦃',color:'#80612a',bg:'#f8f4e8'},
      bebidas:{name:'Refrescos y bebidas',icon:'🥤',color:'#356b83',bg:'#edf5f8'}
    };
-   (databaseCategories||[]).forEach(c=>{categoryMeta[c.id]={...(categoryMeta[c.id]||{icon:'📦',color:'#765c4d',bg:'#f7f2ec'}),name:c.name,tagline:c.tagline,active:c.active};});
+   (databaseCategories||[]).filter(c=>!isRetiredCategory(c.id)&&!isRetiredCategory(c.name)).forEach(c=>{categoryMeta[c.id]={...(categoryMeta[c.id]||{icon:'📦',color:'#765c4d',bg:'#f7f2ec'}),name:c.name,tagline:c.tagline,active:c.active};});
    products.forEach(p=>{if(!categoryMeta[p.category])categoryMeta[p.category]={name:p.category||'Sin categoría',icon:'📦',color:'#765c4d',bg:'#f7f2ec'};});
    const categoryOptions=Object.entries(categoryMeta).map(([id,c])=>'<option value="'+escapeHtml(id)+'">'+escapeHtml(c.name)+'</option>').join('');
    // Orden estable por categoría: cada categoría se crea una sola vez,
@@ -272,8 +283,8 @@
        const pending=missing.map(label=>'<div class="option-item pending-option"><div class="option-heading"><div class="option-name">'+escapeHtml(label)+'</div><span class="option-state">Pendiente</span></div><div class="add-option-row"><input inputmode="decimal" placeholder="Precio (€)" aria-label="Precio para '+escapeHtml(label)+'" data-pending-price="'+p.id+'" data-pending-label="'+escapeHtml(label)+'"><button class="icon-button" title="Añadir opción" aria-label="Añadir opción" data-add-catalogue-option="'+p.id+'" data-option-label="'+escapeHtml(label)+'">➕</button></div></div>').join('');
        const prepValues=Array.isArray(p.preparations)?p.preparations:[];
        const prepEditor='<div class="options-content" style="padding:10px 0"><label>Tipo de venta<select data-sale-unit="'+p.id+'"><option value="">Sin definir</option><option value="kg"'+(p.sale_unit==='kg'?' selected':'')+'>Por kilo</option><option value="ud"'+(p.sale_unit==='ud'?' selected':'')+'>Por unidad</option></select></label><label style="display:block;margin-top:8px">Preparaciones gratuitas (una por línea)<textarea rows="3" data-preparations="'+p.id+'" placeholder="Filetes finos&#10;Filetes gruesos&#10;En dados">'+escapeHtml(prepValues.join('\n'))+'</textarea></label><button type="button" class="secondary" data-save-product-settings="'+p.id+'">Guardar venta y preparaciones</button></div>';
-       return '<article class="product product-unified"><div class="product-head"><div style="display:flex;align-items:center;gap:12px;min-width:0"><div class="admin-product-thumb" style="width:86px;height:86px;flex:0 0 86px;border-radius:10px;background:#f2eee9;overflow:hidden;display:grid;place-items:center">'+(imagePublicUrl(p.image||cp?.imagenBiblioteca)?'<img loading="lazy" src="'+escapeHtml(imagePublicUrl(p.image||cp?.imagenBiblioteca))+'" alt="Foto de '+escapeHtml(p.name)+'" style="width:100%;height:100%;object-fit:contain">':'<span style="font-size:11px;text-align:center;padding:5px">Sin imagen</span>')+'</div><div><div class="product-name">'+escapeHtml(p.name)+'</div><div class="category">'+escapeHtml(p.category||group.meta.name)+(p.active?'':' · Inactivo')+'</div></div></div><button type="button" class="image-action product-image-action" data-image-product="'+escapeHtml(p.id)+'" data-image-category="'+escapeHtml(cp?.cat||p.category||'otros')+'" data-image-product-slug="'+escapeHtml(cp?.id||p.name||p.id)+'" data-image-path="'+escapeHtml(p.image||cp?.imagenBiblioteca||'')+'" title="Gestionar imagen principal" aria-label="Gestionar imagen principal de '+escapeHtml(p.name)+'">📷 Imagen</button></div>'+
-         '<details class="product-settings"><summary>Editar ficha del producto</summary><div class="options-content"><label>Nombre<input data-product-name="'+escapeHtml(p.id)+'" value="'+escapeHtml(p.name)+'"></label><label>Descripción<textarea rows="2" data-product-description="'+escapeHtml(p.id)+'">'+escapeHtml(p.description||'')+'</textarea></label><label>Categoría<select data-product-category="'+escapeHtml(p.id)+'">'+categoryOptions.replace('value="'+escapeHtml(p.category)+'"','value="'+escapeHtml(p.category)+'" selected')+'</select></label><label>Precio base (€)<input inputmode="decimal" data-product-base="'+escapeHtml(p.id)+'" value="'+(p.base_price_cents==null?'':(Number(p.base_price_cents)/100).toFixed(2))+'"></label><label>Orden<input type="number" data-product-order="'+escapeHtml(p.id)+'" value="'+Number(p.sort_order||0)+'"></label><label class="product-active-label"><input type="checkbox" data-product-active="'+escapeHtml(p.id)+'"'+(p.active?' checked':'')+'> Activo</label><button type="button" class="secondary" data-save-product-details="'+escapeHtml(p.id)+'">Guardar ficha</button><button type="button" data-delete-product="'+escapeHtml(p.id)+'" style="background:#9c2929;margin-left:8px">Eliminar producto</button></div></details>'+ 
+       return '<article class="product product-unified"><div class="product-head"><div style="display:flex;align-items:center;gap:12px;min-width:0"><div class="admin-product-thumb" style="width:86px;height:86px;flex:0 0 86px;border-radius:10px;background:#f2eee9;overflow:hidden;display:grid;place-items:center">'+(imagePublicUrl(p.image||cp?.imagenBiblioteca)?'<img loading="lazy" src="'+escapeHtml(imagePublicUrl(p.image||cp?.imagenBiblioteca))+'" alt="Foto de '+escapeHtml(p.name)+'" style="width:100%;height:100%;object-fit:contain">':'<span style="font-size:11px;text-align:center;padding:5px">Sin imagen</span>')+'</div><div><div class="product-name">'+escapeHtml(p.name)+'</div><div class="category">'+escapeHtml(p.category||group.meta.name)+(p.active?'':' · Inactivo')+'</div></div></div><div class="product-head-controls"><label class="product-active-label" title="Mostrar u ocultar producto en la tienda"><span>Activo</span><input type="checkbox" data-product-active="'+escapeHtml(p.id)+'"'+(p.active?' checked':'')+' aria-label="Activar o desactivar '+escapeHtml(p.name)+'"></label><button type="button" class="image-action product-image-action" data-image-product="'+escapeHtml(p.id)+'" data-image-category="'+escapeHtml(cp?.cat||p.category||'otros')+'" data-image-product-slug="'+escapeHtml(cp?.id||p.name||p.id)+'" data-image-path="'+escapeHtml(p.image||cp?.imagenBiblioteca||'')+'" title="Gestionar imagen principal" aria-label="Gestionar imagen principal de '+escapeHtml(p.name)+'">📷 Imagen</button></div></div>'+
+         '<details class="product-settings"><summary>Editar ficha del producto</summary><div class="options-content"><label>Nombre<input data-product-name="'+escapeHtml(p.id)+'" value="'+escapeHtml(p.name)+'"></label><label>Descripción<textarea rows="2" data-product-description="'+escapeHtml(p.id)+'">'+escapeHtml(p.description||'')+'</textarea></label><label>Categoría<select data-product-category="'+escapeHtml(p.id)+'">'+categoryOptions.replace('value="'+escapeHtml(p.category)+'"','value="'+escapeHtml(p.category)+'" selected')+'</select></label><label>Precio base (€)<input inputmode="decimal" data-product-base="'+escapeHtml(p.id)+'" value="'+(p.base_price_cents==null?'':(Number(p.base_price_cents)/100).toFixed(2))+'"></label><label>Orden<input type="number" data-product-order="'+escapeHtml(p.id)+'" value="'+Number(p.sort_order||0)+'"></label><button type="button" class="secondary" data-save-product-details="'+escapeHtml(p.id)+'">Guardar ficha</button><button type="button" data-delete-product="'+escapeHtml(p.id)+'" style="background:#9c2929;margin-left:8px">Eliminar producto</button></div></details>'+ 
          '<details class="options-details" data-product-options="'+p.id+'"'+(openOptionPanels.has(String(p.id))?' open':'')+'><summary>'+(group.key==='bebidas'?'Variedades y formatos':'Preparaciones y opciones')+' <span class="muted">'+opts.length+' guardadas · '+missing.length+' pendientes</span></summary><div class="options-content">'+
          '<details class="product-settings"><summary>Venta y preparaciones gratuitas</summary>'+prepEditor+'</details>'+(saved||'')+(pending||'')+
          '<div class="option" style="margin-top:14px;font-weight:700;color:var(--ink)">'+(group.key==='bebidas'?'Añadir variedad y formato':'Añadir preparación u opción')+'</div><div class="add-option-row"><label class="sr-only" for="new-label-'+p.id+'">Nombre opción</label><input id="new-label-'+p.id+'" placeholder="'+(group.key==='bebidas'?'Ej. Fanta naranja · botella 1,5 L':'Nombre de la opción')+'"><label class="sr-only" for="new-price-'+p.id+'">Precio (€)</label><input id="new-price-'+p.id+'" inputmode="decimal" placeholder="Precio (€)"><button class="icon-button" aria-label="Añadir opción" data-add-option="'+p.id+'">➕</button></div></div></details></article>';
@@ -711,6 +722,51 @@
    }
  });
 
+
+ $('products').addEventListener('change',async e=>{
+   const toggle=e.target.closest('[data-product-active]');
+   if(!toggle)return;
+   const requested=toggle.checked;
+   toggle.disabled=true;
+   status('adminStatus','Actualizando visibilidad del producto…');
+   const {data,error}=await client.from('products').update({active:requested})
+     .eq('id',toggle.dataset.productActive).select('id,active');
+   toggle.disabled=false;
+   if(error || !data?.length){
+     toggle.checked=!requested;
+     status('adminStatus','No se pudo cambiar la visibilidad: '+(error?.message||'sin filas modificadas.'));
+     return;
+   }
+   const row=toggle.closest('.product-unified');
+   const label=row?.querySelector('.product-head .category');
+   if(label)label.textContent=label.textContent.replace(/ · Inactivo$/, '')+(requested?'':' · Inactivo');
+   status('adminStatus',requested?'Producto activado. Será visible si tiene opciones y precio.':'Producto desactivado y oculto en la tienda.');
+ });
+
+ $('activateAllProducts').addEventListener('click',async()=>{
+   const button=$('activateAllProducts');
+   if(!confirm('¿Activar todos los productos permitidos? También se activarán los que anteriormente desactivaste.'))return;
+   button.disabled=true;
+   status('adminStatus','Activando productos…');
+   try{
+     const [{data:all,error:productsError},{data:cats,error:categoriesError}]=await Promise.all([
+       client.from('products').select('id,name,category,active'),
+       client.from('categories').select('id,name')
+     ]);
+     if(productsError||categoriesError)throw productsError||categoriesError;
+     const names=new Map((cats||[]).map(c=>[String(c.id),c.name]));
+     const pending=(all||[]).filter(p=>p.active!==true&&!isRetiredProduct(p,names));
+     let count=0;
+     for(const item of pending){
+       const {data,error}=await client.from('products').update({active:true}).eq('id',item.id).select('id');
+       if(error||!data?.length)throw new Error('No se pudo activar '+item.id+': '+(error?.message||'Permiso denegado'));
+       count++;
+     }
+     status('adminStatus',count+' productos activados. Ahora puedes desactivar los que no te interesen.');
+     await loadProducts();
+   }catch(error){status('adminStatus','Activación parcial o fallida: '+error.message);}
+   finally{button.disabled=false;}
+ });
 
  $('products').addEventListener('click',async e=>{
    const closeCategoryButton=e.target.closest('[data-close-category]');
