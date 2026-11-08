@@ -216,10 +216,10 @@ a { color: inherit; }
 /* Todas las fichas comparten una ventana de imagen y mantienen el producto completo. */
 .card-img {
   position: relative;
-  aspect-ratio: 4 / 3;
+  aspect-ratio: 1 / 1;
   overflow: hidden;
   box-sizing: border-box;
-  padding: 6px;
+  padding: 8px;
   display: grid;
   place-items: center;
   background: #f5f2ed;
