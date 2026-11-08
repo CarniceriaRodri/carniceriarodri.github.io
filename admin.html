@@ -103,13 +103,12 @@ dialog#imageDialog::backdrop{background:#211a1780}
     </label>
   </div>
   <fieldset class="image-fit-choices" aria-label="Encuadre de la imagen" style="border:0;padding:0">
-    <label class="image-fit-choice" title="Foto completa" aria-label="Foto completa"><input type="radio" name="imageFit" value="contain" checked><span class="image-fit-icon" aria-hidden="true">⛶</span></label>
-    <label class="image-fit-choice" title="Con margen blanco" aria-label="Con margen blanco"><input type="radio" name="imageFit" value="padded"><span class="image-fit-icon" aria-hidden="true">▣</span></label>
-    <label class="image-fit-choice" title="Rellenar el cuadro" aria-label="Rellenar el cuadro"><input type="radio" name="imageFit" value="cover"><span class="image-fit-icon" aria-hidden="true">⌗</span></label>
+    <label class="image-fit-choice" title="Mostrar el producto completo" aria-label="Mostrar el producto completo"><input type="radio" name="imageFit" value="contain" checked><span class="image-fit-icon" aria-hidden="true">⛶</span><strong>Completa</strong></label>
+    <label class="image-fit-choice" title="Rellenar el cuadro; puede recortar" aria-label="Rellenar el cuadro"><input type="radio" name="imageFit" value="cover"><span class="image-fit-icon" aria-hidden="true">⌗</span><strong>Rellenar</strong></label>
   </fieldset>
   <label id="imageToggleRow" class="image-toggle" hidden>
     <input id="imageShowToggle" type="checkbox" checked>
-    <span id="imageShowToggleText">Mostrar imagen específica de esta preparación</span>
+    <span id="imageShowToggleText">Mostrar imagen específica</span>
   </label>
   <div class="image-dialog-actions">
     <button type="button" id="imageSave">Guardar imagen</button>
