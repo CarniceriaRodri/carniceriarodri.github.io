@@ -1,12 +1,10 @@
--- Carnicería Rodri: completar SOLO los 58 productos del catálogo nuevo.
--- No modifica productos ajenos ni opciones existentes.
--- Precios estimados de DEMOSTRACIÓN, no tarifas oficiales.
--- Conserva precios e imágenes existentes si ya están configurados.
+-- Carnicería Rodri: completar los 58 productos sin tabla temporal.
+-- Ejecutar TODO el archivo en Supabase SQL Editor.
+-- Mantiene los datos existentes y solo rellena campos vacíos.
+-- Precios orientativos de PRUEBA; no tarifas oficiales.
 BEGIN;
-CREATE TEMP TABLE rodri_catalogo_demo_58 (
- id text PRIMARY KEY, imagen text, precio_centimos integer, unidad text
-) ON COMMIT DROP;
-INSERT INTO rodri_catalogo_demo_58 (id,imagen,precio_centimos,unidad) VALUES
+WITH datos(id,imagen,precio_centimos,unidad) AS (
+ VALUES
 ('chuletas-de-lomo','img/productos/biblioteca/cerdo/01-chuletas-de-lomo-de-cerdo.jpg',950,'kg'),
 ('lomo-entero','img/productos/biblioteca/cerdo/02-lomo-entero-de-cerdo.jpg',990,'kg'),
 ('filetes-de-lomo','img/productos/biblioteca/cerdo/03-filetes-de-lomo-de-cerdo.jpg',1090,'kg'),
@@ -64,15 +62,15 @@ INSERT INTO rodri_catalogo_demo_58 (id,imagen,precio_centimos,unidad) VALUES
 ('hamburguesa-de-cerdo','img/productos/biblioteca/precocinados/12-hamburguesas-de-cerdo.jpg',210,'ud'),
 ('pinchito-de-pollo-pechuga','img/productos/biblioteca/precocinados/13-pinchitos-de-pechuga-de-pollo.jpg',250,'ud'),
 ('pinchito-de-pollo-contramuslo','img/productos/biblioteca/precocinados/14-pinchitos-de-contramuslo-de-pollo.jpg',230,'ud'),
-('pinchito-de-cerdo','img/productos/biblioteca/precocinados/15-pinchitos-de-cerdo.jpg',240,'ud');
-
+('pinchito-de-cerdo','img/productos/biblioteca/precocinados/15-pinchitos-de-cerdo.jpg',240,'ud')
+)
 UPDATE public.products AS p
 SET image = CASE WHEN NULLIF(BTRIM(p.image),'') IS NULL AND d.imagen IS NOT NULL THEN d.imagen ELSE p.image END,
     base_price_cents = COALESCE(p.base_price_cents,d.precio_centimos),
     sale_unit = COALESCE(NULLIF(BTRIM(p.sale_unit),''),d.unidad)
-FROM rodri_catalogo_demo_58 AS d
+FROM datos AS d
 WHERE p.id=d.id
-  AND (NULLIF(BTRIM(p.image),'') IS NULL OR p.base_price_cents IS NULL OR NULLIF(BTRIM(p.sale_unit),'') IS NULL);
+ AND (NULLIF(BTRIM(p.image),'') IS NULL OR p.base_price_cents IS NULL OR NULLIF(BTRIM(p.sale_unit),'') IS NULL);
 COMMIT;
 
 -- Comprobación limitada a los 58 IDs de este catálogo:
