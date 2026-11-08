@@ -58,6 +58,9 @@ dialog#imageDialog::backdrop{background:#211a1780}
 .image-action{background:#fff;color:#6b3a29;border:1px solid #d8c4b5;padding:6px 9px;font-size:17px;line-height:1}
 .product-image-action{white-space:nowrap}.library-items{min-width:0}.library-item{display:flex;align-items:center;gap:8px;min-width:0;padding:8px;background:#fff;border:1px solid #e3d9d0;border-radius:9px}.library-item-open{flex:1;min-width:0;display:flex;align-items:center;gap:8px;text-align:left;padding:7px;background:#f5f1ec;color:var(--ink);overflow:hidden}.library-item-name{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px}.library-item-actions{display:flex;gap:5px;flex:0 0 auto}.library-item-actions button{padding:7px 9px;min-width:36px;background:#eee8e1;color:var(--ink)}.library-item-thumb{width:38px;height:38px;object-fit:contain;background:#f5f2ed;border-radius:5px;flex:0 0 auto}@media(max-width:380px){.library-item{gap:5px;padding:6px}.library-item-actions{gap:3px}.library-item-actions button{min-width:32px;padding:6px 7px}}
 
+.product-active-label{display:inline-flex;align-items:center;gap:7px;margin:12px 0 6px;line-height:1.2;cursor:pointer}.product-active-label input{width:19px;height:19px;margin:0;flex:none}
+.product-settings>summary,.options-details>summary{cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between;gap:10px}.product-settings>summary::-webkit-details-marker,.options-details>summary::-webkit-details-marker{display:none}.product-settings>summary::after,.options-details>summary::after{content:"";width:9px;height:9px;flex:none;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(-45deg);transition:transform .18s ease;margin-right:5px}.product-settings[open]>summary::after,.options-details[open]>summary::after{transform:rotate(45deg)}
+.library-management{margin:12px 0 20px;border:1px solid var(--line);border-radius:12px;background:#fff;overflow:hidden}.library-management>summary{padding:15px 16px;cursor:pointer;font-weight:750;list-style:none;display:flex;justify-content:space-between;align-items:center}.library-management>summary::-webkit-details-marker{display:none}.library-management>summary::after{content:"▸";font-size:21px}.library-management[open]>summary::after{content:"▾"}.library-management>.notice{margin:0!important;border-radius:0}
 </style>
 <style>
 .category-management{margin:18px 0;border:1px solid #e2d5c9;border-radius:14px;background:#faf7f3;overflow:hidden}
@@ -105,6 +108,7 @@ dialog#imageDialog::backdrop{background:#211a1780}
 <details id="categoryManagement" class="category-management"><summary>⚙️ Gestionar categorías <span class="category-management-hint">Abrir editor</span></summary><div class="category-management-body"><p class="muted">Cambia el nombre, la descripción, el orden o la visibilidad de cada categoría. Pulsa «Guardar cambios» en la categoría que modifiques.</p><div id="categoryRows"></div><div class="category-new"><h3>Añadir una categoría</h3><label>Identificador (sin espacios)<input id="newCategoryId" placeholder="Ej.: ofertas"></label><label>Nombre visible<input id="newCategoryName" placeholder="Ej.: Ofertas"></label><label>Descripción<input id="newCategoryTagline" placeholder="Descripción breve"></label><label>Posición<input id="newCategoryOrder" type="number" value="0"></label><button type="button" id="createCategory">Crear categoría</button></div><p class="status" id="categoryStatus" role="status"></p></div></details>
 <div class="notice" style="margin:14px 0"><strong>Sincronizar fotografías y productos verificados</strong><p class="muted">Importa desde la biblioteca de GitHub los productos que falten y asigna fotografías solo cuando no tengan una. No cambia precios ni reemplaza imágenes existentes.</p><button type="button" id="syncVerifiedCatalog">Sincronizar catálogo verificado</button><p id="syncVerifiedStatus" class="status" role="status"></p></div><div id="products"></div><p class="status" id="adminStatus" role="status"></p>
 <div class="notice" style="margin:24px 0 8px"><strong>Descarga de imágenes</strong><p class="muted">Guarda una copia de todas las fotografías del catálogo en tu dispositivo.</p><a class="button" href="backup-images.html" style="display:inline-block;text-decoration:none">Descargar imágenes</a></div>
+<details class="library-management" id="libraryManagement"><summary>📚 Biblioteca de imágenes</summary>
 <div class="notice" style="margin:12px 0 20px">
   <strong>Subir imágenes a la biblioteca</strong>
   <p class="muted">Selecciona fotos del ordenador o del móvil. Máximo 5 MB por imagen.</p>
@@ -126,6 +130,7 @@ dialog#imageDialog::backdrop{background:#211a1780}
   </div>
   <p id="libraryUploadStatus" class="status" role="status"></p>
 </div>
+</details>
 </section>
 </main>
 
