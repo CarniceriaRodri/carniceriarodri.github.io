@@ -205,6 +205,7 @@
  let imageTarget=null;
  let selectedImageFile=null;
  let originalImageFile=null;
+ let imagePreviewVersion=0;
 
  function managedStoragePath(path){
    return typeof path==='string' && /^(products|options)\//.test(path);
@@ -222,6 +223,7 @@
    imageTarget=target;
    selectedImageFile=null;
    originalImageFile=null;
+   imagePreviewVersion++;
    document.querySelector('input[name="imageFit"][value="contain"]').checked=true;
    $('imageFile').value='';
    $('imageCamera').value='';
@@ -239,29 +241,27 @@
  }
  async function renderSelectedImage(){
    if(!originalImageFile)return;
+   const version=++imagePreviewVersion;
    const mode=document.querySelector('input[name="imageFit"]:checked')?.value||'contain';
-   status('imageStatus','Preparando imagen…');
    try{
-     const bitmap=await createImageBitmap(originalImageFile);
-     const size=1200,canvas=document.createElement('canvas');
-     canvas.width=size;canvas.height=size;
-     const ctx=canvas.getContext('2d');
+     const sourceUrl=URL.createObjectURL(originalImageFile);
+     const source=new Image();
+     source.decoding='async';source.src=sourceUrl;
+     try{await source.decode();}catch(error){URL.revokeObjectURL(sourceUrl);throw new Error('No se ha podido leer la fotografía.');}
+     if(version!==imagePreviewVersion){URL.revokeObjectURL(sourceUrl);return;}
+     const size=1200,canvas=document.createElement('canvas');canvas.width=size;canvas.height=size;
+     const ctx=canvas.getContext('2d');if(!ctx)throw new Error('No se pudo preparar la imagen.');
      ctx.fillStyle='#fff';ctx.fillRect(0,0,size,size);
-     const scale=mode==='cover'?Math.max(size/bitmap.width,size/bitmap.height):Math.min(size/bitmap.width,size/bitmap.height)*(mode==='padded'?0.84:1);
-     const width=bitmap.width*scale,height=bitmap.height*scale;
-     ctx.drawImage(bitmap,(size-width)/2,(size-height)/2,width,height);
-     bitmap.close?.();
-     const blob=await new Promise((resolve,reject)=>canvas.toBlob(result=>result?resolve(result):reject(new Error('No se pudo preparar la imagen.')),'image/webp',0.88));
+     const scale=mode==='cover'?Math.max(size/source.naturalWidth,size/source.naturalHeight):Math.min(size/source.naturalWidth,size/source.naturalHeight)*(mode==='padded'?0.84:1);
+     const width=source.naturalWidth*scale,height=source.naturalHeight*scale;
+     ctx.drawImage(source,(size-width)/2,(size-height)/2,width,height);URL.revokeObjectURL(sourceUrl);
+     const blob=await new Promise((resolve,reject)=>canvas.toBlob(result=>result?resolve(result):reject(new Error('No se pudo generar la vista previa.')),'image/webp',0.88));
+     if(version!==imagePreviewVersion)return;
      selectedImageFile=new File([blob],(originalImageFile.name||'producto').replace(/\.[^.]+$/,'')+'.webp',{type:'image/webp'});
      if($('imagePreview').src.startsWith('blob:'))URL.revokeObjectURL($('imagePreview').src);
-     $('imagePreview').src=URL.createObjectURL(blob);
-     $('imagePreview').hidden=false;
-     $('imageCurrent').textContent='Vista previa · 1200 × 1200 px · WebP';
-     status('imageStatus','Así se verá la foto. Pulsa Guardar imagen para subirla.');
-   }catch(error){
-     selectedImageFile=null;
-     status('imageStatus','No se pudo preparar la foto: '+(error?.message||String(error)));
-   }
+     $('imagePreview').src=URL.createObjectURL(blob);$('imagePreview').hidden=false;
+     $('imageCurrent').textContent='Imagen preparada · 1200 × 1200 px';status('imageStatus','');
+   }catch(error){if(version!==imagePreviewVersion)return;selectedImageFile=null;status('imageStatus','No se pudo actualizar la vista previa: '+(error?.message||String(error)));}
  }
  function handleSelectedImage(file,inputId){
    if(!file)return;
@@ -274,7 +274,7 @@
    originalImageFile=file;
    renderSelectedImage();
  }
- document.querySelectorAll('input[name="imageFit"]').forEach(input=>input.addEventListener('change',renderSelectedImage));
+ document.querySelectorAll('input[name="imageFit"]').forEach(input=>input.addEventListener('change',()=>{if(originalImageFile)renderSelectedImage();}));
  $('imageFile').addEventListener('change',()=>handleSelectedImage($('imageFile').files?.[0]||null,'imageFile'));
  $('imageCamera').addEventListener('change',()=>handleSelectedImage($('imageCamera').files?.[0]||null,'imageCamera'));
  function closeImageEditor(){
@@ -283,6 +283,7 @@
    imageTarget=null;
    selectedImageFile=null;
    originalImageFile=null;
+   imagePreviewVersion++;
  }
  $('imageClose').addEventListener('click',closeImageEditor);
  $('imageCancel').addEventListener('click',closeImageEditor);
