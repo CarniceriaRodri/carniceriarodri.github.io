@@ -296,7 +296,6 @@
    renderSelectedImage();
  }
 
- const GITHUB_CONTENTS_BASE='https://api.github.com/repos/CarniceriaRodri/carniceriarodri.github.io/contents/img/productos/biblioteca/';
  const GITHUB_PAGES_BASE='https://carniceriarodri.github.io/';
  let currentLibraryFolder='';
  let uploadLibraryFolder='';
@@ -308,11 +307,14 @@
    $('libraryUploadPath').textContent=libraryPath(uploadLibraryFolder);
  }
  async function listLibraryFolder(folder){
-   const response=await fetch(GITHUB_CONTENTS_BASE+(folder?folder.split('/').map(encodeURIComponent).join('/'):'')+'?ref=main&v='+Date.now(),{headers:{Accept:'application/vnd.github+json'},cache:'no-store'});
-   if(response.status===404)return [];
-   if(!response.ok)throw new Error('GitHub respondió '+response.status+'.');
-   const entries=await response.json();
-   return Array.isArray(entries)?entries:[];
+   const {data,error}=await client.functions.invoke('github-images',{body:{action:'list-folder',folder}});
+   if(error){
+     let detail=error.message||'Error al consultar la biblioteca.';
+     try{const context=error.context;if(context&&typeof context.json==='function'){const body=await context.json();if(body?.error)detail=body.error;}}catch(_){}
+     throw new Error(detail);
+   }
+   if(data?.error)throw new Error(data.error);
+   return Array.isArray(data?.entries)?data.entries:[];
  }
  async function loadImageLibrary(folder=currentLibraryFolder){
    currentLibraryFolder=folder;updateLibraryPaths();
