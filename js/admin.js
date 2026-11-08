@@ -434,45 +434,42 @@
    if(!originalImageFile&&!originalImageUrl)return;
    const version=++imagePreviewVersion;
    const mode=document.querySelector('input[name="imageFit"]:checked')?.value||'contain';
-   let sourceUrl='';
+   selectedImageFile=null;
+   $('imageSave').disabled=true;
+   status('imageStatus','Preparando fotografía JPG…');
    try{
-     sourceUrl=originalImageFile?URL.createObjectURL(originalImageFile):originalImageUrl;
-     const source=new Image();
-     if(!originalImageFile&&/^https?:\/\//i.test(sourceUrl))source.crossOrigin='anonymous';
-     source.src=sourceUrl;
-     await new Promise((resolve,reject)=>{source.onload=resolve;source.onerror=()=>reject(new Error('No se puede abrir la imagen. Comprueba que la dirección sea accesible.'));});
+     const filename=originalImageFile?.name||selectedLibraryPath.split('/').pop()||'imagen-actual.jpg';
+     const jpg=originalImageFile
+       ?await RodriImages.toJpeg(originalImageFile,{product:true,fit:mode})
+       :await RodriImages.urlToJpeg(originalImageUrl,filename,{product:true,fit:mode});
      if(version!==imagePreviewVersion)return;
-     const width=1200,height=900,canvas=document.createElement('canvas');canvas.width=width;canvas.height=height;
-     const ctx=canvas.getContext('2d');if(!ctx)throw new Error('No se pudo crear la vista previa');
-     ctx.fillStyle='#fff';ctx.fillRect(0,0,width,height);
-     const scale=mode==='cover'?Math.max(width/source.naturalWidth,height/source.naturalHeight):Math.min(width/source.naturalWidth,height/source.naturalHeight);
-     const drawWidth=source.naturalWidth*scale,drawHeight=source.naturalHeight*scale;
-     ctx.drawImage(source,(width-drawWidth)/2,(height-drawHeight)/2,drawWidth,drawHeight);
-     if(originalImageFile)URL.revokeObjectURL(sourceUrl);
-     sourceUrl='';
-     const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/webp',0.9));
-     if(version!==imagePreviewVersion)return;
-     if(!blob)throw new Error('El navegador no pudo procesar la imagen.');
-     selectedImageFile=new File([blob],((originalImageFile?.name||selectedLibraryPath.split('/').pop()||'imagen-actual').replace(/\.[^.]+$/,'')+'.webp'),{type:blob.type||'image/webp'});
+     selectedImageFile=jpg;
      if($('imagePreview').src.startsWith('blob:'))URL.revokeObjectURL($('imagePreview').src);
-     $('imagePreview').src=URL.createObjectURL(blob);$('imagePreview').hidden=false;
-     $('imageCurrent').textContent='';status('imageStatus','');
+     $('imagePreview').src=URL.createObjectURL(jpg);
+     $('imagePreview').hidden=false;
+     $('imageCurrent').textContent='JPG preparado ('+Math.ceil(jpg.size/1024)+' KB).';
+     status('imageStatus','Fotografía preparada. Pulsa «Guardar imagen».');
    }catch(error){
      if(version!==imagePreviewVersion)return;
-     selectedImageFile=null;status('imageStatus','No se pudo actualizar la imagen: '+(error?.message||String(error)));
+     selectedImageFile=null;
+     status('imageStatus','No se pudo preparar la fotografía: '+(error?.message||String(error)));
    }finally{
-     if(sourceUrl&&originalImageFile)URL.revokeObjectURL(sourceUrl);
+     if(version===imagePreviewVersion)$('imageSave').disabled=false;
    }
  }
  function handleSelectedImage(file,inputId){
    if(!file)return;
-   if(!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size>5*1024*1024){
-     selectedImageFile=null;originalImageFile=null;
-     $(inputId).value='';
-     status('imageStatus','Formato no permitido o archivo superior a 5 MB.');
+   $(inputId).value='';
+   selectedImageFile=null;
+   selectedLibraryPath='';
+   originalImageFile=file;
+   originalImageUrl='';
+   try{RodriImages.validate(file)}
+   catch(error){
+     originalImageFile=null;
+     status('imageStatus',error.message);
      return;
    }
-   originalImageFile=file;
    renderSelectedImage();
  }
 
@@ -487,16 +484,35 @@
    $('libraryUploadPath').textContent=libraryPath(uploadLibraryFolder);
  }
  async function functionErrorMessage(error){
-   let detail=error?.message||String(error);
+   let detail=error?.message||'Error desconocido';
+   const response=error?.context;
+   const code=response?.status;
    try{
-     const response=error?.context;
      if(response&&typeof response.clone==='function'){
        const payload=await response.clone().json();
        if(payload?.error)detail=payload.error;
        else if(payload?.message)detail=payload.message;
      }
    }catch(_){}
+   if(navigator.onLine===false)return 'Sin conexión a Internet. Comprueba Wi-Fi o datos móviles.';
+   if(code===401||code===403)return 'Sesión caducada o sin permisos: '+detail;
+   if(code===413)return 'Archivo demasiado grande para el servidor.';
+   if(code===429)return 'Demasiadas peticiones. Espera unos segundos y reintenta.';
+   if(/failed to fetch|networkerror|network request failed|fetch failed/i.test(detail))
+     return 'Fallo de conexión con el servidor. Comprueba Internet e inténtalo de nuevo.';
    return detail;
+ }
+ async function uploadProcessedJpg(file,details){
+   if(navigator.onLine===false)throw Error('Sin conexión a Internet.');
+   if(file.type!=='image/jpeg'||!file.size||file.size>RodriImages.UPLOAD_LIMIT)
+     throw Error('La imagen JPG preparada no cumple el máximo de 5 MB.');
+   const {data,error}=await client.functions.invoke('github-images',{body:{
+     action:'upload',...details,fileName:file.name,contentType:'image/jpeg',contentBase64:await fileBase64(file)
+   }});
+   if(error)throw Error(await functionErrorMessage(error));
+   if(data?.error)throw Error(data.error);
+   if(!data?.path)throw Error('El servidor no confirmó la subida. Comprueba la biblioteca antes de repetirla.');
+   return data.path;
  }
  async function listLibraryFolder(folder){
    const {data,error}=await client.functions.invoke('github-images',{body:{action:'list-folder',folder}});
@@ -631,38 +647,47 @@
  async function uploadLibraryFiles(files,input,button,preserveFolders){
    if(!files.length)return;
    const statusEl=$('libraryUploadStatus'),baseFolder=uploadLibraryFolder;
-   const valid=files.filter(file=>['image/jpeg','image/png','image/webp'].includes(file.type)&&file.size>0&&file.size<=5*1024*1024);
-   const invalid=files.length-valid.length;
-   if(!valid.length){statusEl.textContent='No hay imágenes válidas. Usa JPG, PNG o WebP de hasta 5 MB cada una.';input.value='';return;}
+   const failed=[],skipped=[];
+   let uploaded=0;
    input.disabled=true;button.disabled=true;
-   let uploaded=0,failed=0;
-   statusEl.textContent='Preparando '+valid.length+' imágenes…';
-   for(let i=0;i<valid.length;i++){
-     const file=valid[i];
-     let destination=baseFolder;
-     if(preserveFolders){
-       const relative=String(file.webkitRelativePath||file.name).split('/');
-       relative.pop();
-       const nested=relative.slice(0,-1).map(folderSlug).filter(Boolean);
-       if(nested.length)destination=[baseFolder,...nested].filter(Boolean).join('/');
+   try{
+     for(let i=0;i<files.length;i++){
+       const file=files[i],name=file.name||'Archivo '+(i+1);
+       try{
+         RodriImages.validate(file);
+         let destination=baseFolder;
+         if(preserveFolders){
+           const path=String(file.relativeUploadPath||file.webkitRelativePath||file.name).split('/');
+           path.pop();
+           const nested=path.map(folderSlug).filter(Boolean);
+           if(nested.length)destination=[baseFolder,...nested].filter(Boolean).join('/');
+         }
+         statusEl.textContent='Convirtiendo a JPG '+(i+1)+' de '+files.length+': '+name;
+         const jpg=await RodriImages.toJpeg(file);
+         statusEl.textContent='Subiendo '+(i+1)+' de '+files.length+': '+jpg.name;
+         await uploadProcessedJpg(jpg,{kind:'product',category:'biblioteca',productSlug:destination});
+         uploaded++;
+       }catch(error){
+         const message=error?.message||String(error);
+         if(/formato no admitido|está vacío|supera el máximo de 30 MB/i.test(message))
+           skipped.push(name+': '+message);
+         else failed.push(name+': '+message);
+         statusEl.textContent='Procesadas '+(i+1)+' de '+files.length+'. Último error: '+message;
+       }
      }
-     statusEl.textContent='Subiendo '+(i+1)+' de '+valid.length+': '+file.name;
+     statusEl.textContent='Proceso terminado: '+uploaded+' imágenes JPG subidas'+
+       (failed.length?', '+failed.length+' errores':'')+
+       (skipped.length?', '+skipped.length+' archivos omitidos':'')+'.'+
+       (failed.length||skipped.length?'\n'+[...failed,...skipped].slice(0,8).join('\n'):'');
+   }finally{
+     input.disabled=false;button.disabled=false;input.value='';
      try{
-       const {data,error}=await client.functions.invoke('github-images',{body:{
-         action:'upload',kind:'product',category:'biblioteca',productSlug:destination,
-         fileName:file.name,contentType:file.type,contentBase64:await fileBase64(file)
-       }});
-       if(error)throw error;
-       if(!data?.path)throw new Error('GitHub no devolvió la ruta.');
-       uploaded++;
+       await refreshUploadFolders();
+       if(!$('imageLibraryPicker').hidden)await loadImageLibrary(currentLibraryFolder);
      }catch(error){
-       failed++;
-       statusEl.textContent='Error con '+file.name+': '+await functionErrorMessage(error);
+       statusEl.textContent+='\nNo se pudo actualizar la lista: '+(error?.message||String(error));
      }
    }
-   input.disabled=false;button.disabled=false;input.value='';
-   statusEl.textContent='Proceso terminado: '+uploaded+' imágenes guardadas'+(failed?', '+failed+' errores':'')+(invalid?', '+invalid+' archivos omitidos por formato o tamaño':'')+'.';
-   await refreshUploadFolders();await loadImageLibrary(currentLibraryFolder);
  }
  $('libraryUploadFiles').addEventListener('change',async()=>{
    await uploadLibraryFiles(Array.from($('libraryUploadFiles').files||[]),$('libraryUploadFiles'),$('libraryUploadButton'),false);
@@ -679,8 +704,8 @@
      $('libraryUploadStatus').textContent='Abriendo archivo ZIP…';
      const zip=await JSZip.loadAsync(archive);
      const entries=Object.values(zip.files).filter(entry=>!entry.dir&&!entry.name.startsWith('__MACOSX/')&&!entry.name.split('/').pop().startsWith('._'));
-     const imageEntries=entries.filter(entry=>/\.(jpe?g|png|webp)$/i.test(entry.name));
-     if(!imageEntries.length)throw new Error('El ZIP no contiene imágenes JPG, PNG o WebP.');
+     const imageEntries=entries.filter(entry=>RodriImages.EXTENSIONS.test(entry.name));
+     if(!imageEntries.length)throw new Error('El ZIP no contiene imágenes compatibles.');
      const totalSize=imageEntries.reduce((sum,entry)=>sum+(entry._data?.uncompressedSize||0),0);
      if(totalSize>100*1024*1024)throw new Error('El contenido de imágenes del ZIP supera el límite de 100 MB.');
      const files=[];
@@ -688,9 +713,11 @@
        const entry=imageEntries[i],name=entry.name.split('/').pop();
        $('libraryUploadStatus').textContent='Descomprimiendo '+(i+1)+' de '+imageEntries.length+': '+name;
        const blob=await entry.async('blob');
-       const type=/\.png$/i.test(name)?'image/png':/\.webp$/i.test(name)?'image/webp':'image/jpeg';
+       const ext=name.split('.').pop().toLowerCase();
+       const types={jpg:'image/jpeg',jpeg:'image/jpeg',png:'image/png',webp:'image/webp',gif:'image/gif',bmp:'image/bmp',avif:'image/avif',heic:'image/heic',heif:'image/heif'};
+       const type=types[ext]||'';
        const file=new File([blob],name,{type});
-       Object.defineProperty(file,'webkitRelativePath',{value:entry.name});
+       Object.defineProperty(file,'relativeUploadPath',{value:entry.name});
        files.push(file);
      }
      await uploadLibraryFiles(files,input,button,true);
@@ -723,34 +750,34 @@
  $('imageSave').addEventListener('click',async()=>{
    if(!imageTarget)return;
    const button=$('imageSave');
-   button.disabled=true;
-   $('imageRemove').disabled=true;
-   status('imageStatus','Guardando imagen…');
+   button.disabled=true;$('imageRemove').disabled=true;
+   status('imageStatus','Guardando fotografía…');
+   let githubPath='';
    try{
-     const target=imageTarget;
-     const changes={};
-     let newPath=target.path||null;
+     const target=imageTarget,changes={};
      if(selectedImageFile){
-       const {data:uploadData,error:uploadError}=await client.functions.invoke('github-images',{body:{action:'upload',kind:target.kind,id:target.id,category:target.category,productSlug:target.productSlug,optionSlug:target.optionSlug,contentType:selectedImageFile.type,fileName:selectedImageFile.name,contentBase64:await fileBase64(selectedImageFile)}});
-       if(uploadError)throw uploadError;
-       if(!uploadData?.path)throw new Error('GitHub no devolvió la ruta de la imagen.');
-       newPath=uploadData.path;changes.image=newPath;
-     } else if(selectedLibraryPath){
-       newPath=selectedLibraryPath;
-       changes.image=newPath;
+       githubPath=await uploadProcessedJpg(selectedImageFile,{
+         kind:target.kind,id:target.id,category:target.category,
+         productSlug:target.productSlug,optionSlug:target.optionSlug
+       });
+       changes.image=githubPath;
+     }else if(selectedLibraryPath){
+       changes.image=selectedLibraryPath;
+     }else if(originalImageFile){
+       throw Error('La fotografía todavía no está preparada como JPG. Selecciónala de nuevo.');
      }
      if(target.kind==='option')changes.show_image=$('imageShowToggle').checked;
      const table=target.kind==='product'?'products':'product_options';
-     const {error:updateError}=await client.from(table).update(changes).eq('id',target.id);
-     if(updateError)throw updateError;
+     const {data,error}=await client.from(table).update(changes).eq('id',target.id).select('id');
+     if(error||!data?.length)throw Error('No se pudo asociar la fotografía: '+(error?.message||'sin registro actualizado.'));
      closeImageEditor();
-     status('adminStatus','Imagen guardada correctamente.');
+     status('adminStatus','Fotografía guardada correctamente.');
      await loadProducts();
    }catch(error){
-     status('imageStatus','No se pudo guardar: '+(error?.message||String(error)));
+     status('imageStatus','No se pudo guardar: '+(error?.message||String(error))+
+       (githubPath?' El JPG se subió a GitHub pero no se pudo asociar: revisa la biblioteca antes de reintentarlo.':''));
    }finally{
-     button.disabled=false;
-     $('imageRemove').disabled=false;
+     button.disabled=false;$('imageRemove').disabled=false;
    }
  });
  $('imageRemove').addEventListener('click',async()=>{
