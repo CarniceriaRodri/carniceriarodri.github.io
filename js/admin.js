@@ -447,6 +447,7 @@
  });
  $('libraryUploadButton').addEventListener('click',()=>$('libraryUploadFiles').click());
  $('libraryUploadFolderButton').addEventListener('click',()=>$('libraryUploadFolder').click());
+ $('libraryUploadZipButton').addEventListener('click',()=>$('libraryUploadZip').click());
  async function uploadLibraryFiles(files,input,button,preserveFolders){
    if(!files.length)return;
    const statusEl=$('libraryUploadStatus'),baseFolder=uploadLibraryFolder;
@@ -488,6 +489,36 @@
  });
  $('libraryUploadFolder').addEventListener('change',async()=>{
    await uploadLibraryFiles(Array.from($('libraryUploadFolder').files||[]),$('libraryUploadFolder'),$('libraryUploadFolderButton'),true);
+ });
+ $('libraryUploadZip').addEventListener('change',async()=>{
+   const input=$('libraryUploadZip'),button=$('libraryUploadZipButton'),archive=input.files?.[0];
+   if(!archive)return;
+   if(!window.JSZip){$('libraryUploadStatus').textContent='No se ha podido cargar el descompresor ZIP. Recarga el panel.';input.value='';return;}
+   input.disabled=true;button.disabled=true;
+   try{
+     $('libraryUploadStatus').textContent='Abriendo archivo ZIP…';
+     const zip=await JSZip.loadAsync(archive);
+     const entries=Object.values(zip.files).filter(entry=>!entry.dir&&!entry.name.startsWith('__MACOSX/')&&!entry.name.split('/').pop().startsWith('._'));
+     const imageEntries=entries.filter(entry=>/\.(jpe?g|png|webp)$/i.test(entry.name));
+     if(!imageEntries.length)throw new Error('El ZIP no contiene imágenes JPG, PNG o WebP.');
+     const totalSize=imageEntries.reduce((sum,entry)=>sum+(entry._data?.uncompressedSize||0),0);
+     if(totalSize>100*1024*1024)throw new Error('El contenido de imágenes del ZIP supera el límite de 100 MB.');
+     const files=[];
+     for(let i=0;i<imageEntries.length;i++){
+       const entry=imageEntries[i],name=entry.name.split('/').pop();
+       $('libraryUploadStatus').textContent='Descomprimiendo '+(i+1)+' de '+imageEntries.length+': '+name;
+       const blob=await entry.async('blob');
+       const type=/\.png$/i.test(name)?'image/png':/\.webp$/i.test(name)?'image/webp':'image/jpeg';
+       const file=new File([blob],name,{type});
+       Object.defineProperty(file,'webkitRelativePath',{value:entry.name});
+       files.push(file);
+     }
+     await uploadLibraryFiles(files,input,button,true);
+   }catch(error){
+     $('libraryUploadStatus').textContent='No se pudo procesar el ZIP: '+(error?.message||String(error));
+   }finally{
+     input.disabled=false;button.disabled=false;input.value='';
+   }
  });
  refreshUploadFolders();
  $('imageShowToggle').addEventListener('change',updateImageToggleText);
