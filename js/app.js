@@ -67,7 +67,7 @@
     if (value.toLowerCase().endsWith('.jpg')) value = value.slice(0, -4);
     return img(value, 600, 450);
   };
-  const imageForProduct = (product) => product?.imageUrl || img(product?.img || '', 600, 450);
+  const imageForProduct = (product) => product?.imageUrl || product?.imagenBiblioteca || img(product?.img || '', 600, 450);
 
   const escapeHtml = (s) =>
     String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
@@ -126,7 +126,7 @@
         <div class="card-img">
           <img src="${imageForProduct(p)}" ${p.imageUrl ? "" : `srcset="${img(p.img, 400, 300)} 400w, ${img(p.img, 800, 600)} 800w`}
                sizes="(max-width: 640px) 100vw, 360px" alt="${escapeHtml(p.nombre)}" loading="lazy" width="600" height="450" decoding="async"
-               onerror="this.onerror=null;this.removeAttribute('srcset');this.src='${img(p.img, 600, 450)}'">
+               onerror="this.onerror=null;this.removeAttribute('srcset');this.src='${escapeHtml(p.imagenBiblioteca || img(p.img, 600, 450))}'">
           ${p.etiqueta ? `<span class="tag">${escapeHtml(p.etiqueta)}</span>` : ''}
         </div>
         <div class="card-body">
