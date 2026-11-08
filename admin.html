@@ -97,9 +97,11 @@ dialog#imageDialog::backdrop{background:#211a1780}
   <p id="libraryUploadNavStatus" class="muted" role="status"></p>
   <input id="libraryUploadFiles" type="file" accept="image/jpeg,image/png,image/webp" multiple hidden>
   <input id="libraryUploadFolder" type="file" accept="image/jpeg,image/png,image/webp" webkitdirectory directory multiple hidden>
+  <input id="libraryUploadZip" type="file" accept=".zip,application/zip" hidden>
   <div class="actions" style="margin-top:10px">
     <button type="button" id="libraryUploadButton" title="Subir imágenes sueltas">📤 Subir imágenes</button>
     <button type="button" id="libraryUploadFolderButton" class="secondary" title="Subir una carpeta completa">📁 Subir carpeta completa</button>
+    <button type="button" id="libraryUploadZipButton" class="secondary" title="Subir un ZIP y descomprimirlo">🗜️ Subir ZIP</button>
   </div>
   <p id="libraryUploadStatus" class="status" role="status"></p>
 </div>
@@ -146,6 +148,7 @@ dialog#imageDialog::backdrop{background:#211a1780}
 
 <script src="js/catalogo.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-<script src="js/admin.js?v=3.0" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js" defer></script>
+<script src="js/admin.js?v=3.1" defer></script>
 </body>
 </html>
