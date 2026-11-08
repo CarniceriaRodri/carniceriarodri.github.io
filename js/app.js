@@ -96,6 +96,7 @@
   };
 
   // ——— Catálogo ———
+  const inactiveProductIds = new Set();
   function renderCatalogo() {
     $('#chips').innerHTML =
       `<button type="button" class="chip is-active" data-chip="todo">Todo</button>` +
@@ -103,7 +104,7 @@
 
     $('#secciones').innerHTML = CATEGORIAS.map((c, i) => {
       // Solo se muestran productos que conservan al menos una opción activa.
-      const productos = PRODUCTOS.filter((p) => p.cat === c.id && (p.precioDemo === true || (Array.isArray(p.opciones) && p.opciones.length > 0)));
+      const productos = PRODUCTOS.filter((p) => p.cat === c.id && !inactiveProductIds.has(String(p.id)) && (p.precioDemo === true || (Array.isArray(p.opciones) && p.opciones.length > 0)));
       if (!productos.length) return '';
       return `
         <section class="cat" id="cat-${escapeHtml(c.id)}" data-cat="${escapeHtml(c.id)}">
@@ -878,7 +879,9 @@
       }
 
       const catalogProductByDatabaseId = new Map();
+      inactiveProductIds.clear();
       rows.forEach(row => {
+        if (row.active === false) inactiveProductIds.add(String(row.id));
         const normalizar = texto => String(texto || '')
   .normalize('NFD')
   .replace(/[\u0300-\u036f]/g, '')
@@ -888,6 +891,7 @@
 const product = PRODUCTOS.find(p => String(p.id) === String(row.id))
   || PRODUCTOS.find(p => normalizar(p.nombre) === normalizar(row.name));
         if (!product) return;
+        if (row.active === false) inactiveProductIds.add(String(product.id));
         catalogProductByDatabaseId.set(String(row.id), product);
         // Los cambios guardados en administración prevalecen sobre el catálogo local.
         if (typeof row.name === 'string' && row.name.trim()) product.nombre = row.name.trim();
