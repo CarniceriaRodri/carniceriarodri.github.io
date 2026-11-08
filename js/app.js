@@ -631,8 +631,38 @@
     const option = event.target.closest('.card [data-field="opcion"]');
     if (option) { actualizarImagenTarjeta(option.closest('.card'), true); return; }
     const quantity = event.target.closest('.card [data-field="cantidad"]');
-    if (quantity) actualizarImagenTarjeta(quantity.closest('.card'), true);
+    if (quantity) { actualizarImagenTarjeta(quantity.closest('.card'), true); actualizarPrecioCantidad(quantity.closest('.card')); }
   });
+  // Precio visible de la cantidad seleccionada, calculado desde el precio por kg/ud.
+  function actualizarPrecioCantidad(cardEl) {
+    if (!cardEl) return;
+    const p = PRODUCTOS.find(x => String(x.id) === String(cardEl.dataset.id));
+    const priceEl = cardEl.querySelector('[data-price]');
+    const quantity = cardEl.querySelector('[data-field="cantidad"]');
+    if (!p || !priceEl || !quantity) return;
+    const key = normalizarClave(cardEl.querySelector('[data-field="opcion"]')?.value || '');
+    const match = String(p.precio || '').replace(',', '.').match(/[0-9]+(?:\.[0-9]+)?/);
+    if (!match) return;
+    const base = Number(match[0]);
+    const option = p.preciosOpciones?.[key] ?? p.precioNumOpciones?.[key];
+    const unitPrice = Number.isFinite(Number(option)) ? Number(option) : base;
+    const label = quantity.value.toLowerCase();
+    const amountMatch = label.replace(',', '.').match(/[0-9]+(?:\.[0-9]+)?/);
+    if (!amountMatch) return;
+    const amount = Number(amountMatch[0]);
+    const factor = /\b(gr|gramos|gramo|grs)\b/.test(label) ? amount / 1000 : amount;
+    if (!Number.isFinite(factor) || factor <= 0) return;
+    const unit = (String(p.precio || '').match(/\/(kg|ud)/i) || [null, p.saleUnit || 'kg'])[1];
+    priceEl.textContent = (unitPrice * factor).toFixed(2).replace('.', ',') + ' € · ' + quantity.value.replace(/\s*-\s*[\d.,]+\s*€/g,'').trim();
+    cardEl.dataset.priceIsQuantity = 'true';
+    cardEl.dataset.baseUnitPrice = unitPrice.toFixed(2).replace('.', ',') + ' €/' + unit;
+  }
+  function restaurarPrecioBase(cardEl) {
+    if (!cardEl || cardEl.dataset.priceIsQuantity !== 'true') return;
+    const priceEl = cardEl.querySelector('[data-price]');
+    if (priceEl) priceEl.textContent = cardEl.dataset.baseUnitPrice || '';
+    delete cardEl.dataset.priceIsQuantity;
+  }
   function restaurarProductoInicial(cardEl) {
     if (!cardEl) return;
     const option = cardEl.querySelector('[data-field="opcion"]');
@@ -642,6 +672,7 @@
       option.dispatchEvent(new Event('change', { bubbles: true }));
     }
     actualizarImagenTarjeta(cardEl, false);
+    restaurarPrecioBase(cardEl);
   }
 
   function restaurarProductosAlSalir(exceptoCard = null) {
@@ -704,6 +735,7 @@
       const updated = label.replace(/-\s*[0-9]+(?:[.,][0-9]+)?\s*€/i, '- ' + value + ' €');
       return '<option>' + escapeHtml(updated) + '</option>';
     }).join('');
+    actualizarPrecioCantidad(cardEl);
   });
 
   // ——— Eventos ———
