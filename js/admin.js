@@ -245,23 +245,27 @@
    const mode=document.querySelector('input[name="imageFit"]:checked')?.value||'contain';
    try{
      const sourceUrl=URL.createObjectURL(originalImageFile);
-     const source=new Image();
-     source.decoding='async';source.src=sourceUrl;
-     try{await source.decode();}catch(error){URL.revokeObjectURL(sourceUrl);throw new Error('No se ha podido leer la fotografía.');}
+     const source=new Image();source.src=sourceUrl;
+     await new Promise((resolve,reject)=>{source.onload=resolve;source.onerror=()=>reject(new Error('No se puede abrir la imagen'));});
      if(version!==imagePreviewVersion){URL.revokeObjectURL(sourceUrl);return;}
      const size=1200,canvas=document.createElement('canvas');canvas.width=size;canvas.height=size;
-     const ctx=canvas.getContext('2d');if(!ctx)throw new Error('No se pudo preparar la imagen.');
+     const ctx=canvas.getContext('2d');if(!ctx)throw new Error('No se pudo crear la vista previa');
      ctx.fillStyle='#fff';ctx.fillRect(0,0,size,size);
      const scale=mode==='cover'?Math.max(size/source.naturalWidth,size/source.naturalHeight):Math.min(size/source.naturalWidth,size/source.naturalHeight)*(mode==='padded'?0.84:1);
      const width=source.naturalWidth*scale,height=source.naturalHeight*scale;
-     ctx.drawImage(source,(size-width)/2,(size-height)/2,width,height);URL.revokeObjectURL(sourceUrl);
-     const blob=await new Promise((resolve,reject)=>canvas.toBlob(result=>result?resolve(result):reject(new Error('No se pudo generar la vista previa.')),'image/webp',0.88));
+     ctx.drawImage(source,(size-width)/2,(size-height)/2,width,height);
+     URL.revokeObjectURL(sourceUrl);
+     const dataUrl=canvas.toDataURL('image/webp',0.88);
+     if(version!==imagePreviewVersion)return;
+     const blob=await (await fetch(dataUrl)).blob();
      if(version!==imagePreviewVersion)return;
      selectedImageFile=new File([blob],(originalImageFile.name||'producto').replace(/\.[^.]+$/,'')+'.webp',{type:'image/webp'});
-     if($('imagePreview').src.startsWith('blob:'))URL.revokeObjectURL($('imagePreview').src);
-     $('imagePreview').src=URL.createObjectURL(blob);$('imagePreview').hidden=false;
-     $('imageCurrent').textContent='Imagen preparada · 1200 × 1200 px';status('imageStatus','');
-   }catch(error){if(version!==imagePreviewVersion)return;selectedImageFile=null;status('imageStatus','No se pudo actualizar la vista previa: '+(error?.message||String(error)));}
+     $('imagePreview').src=dataUrl;$('imagePreview').hidden=false;
+     $('imageCurrent').textContent='';status('imageStatus','');
+   }catch(error){
+     if(version!==imagePreviewVersion)return;
+     selectedImageFile=null;status('imageStatus','No se pudo actualizar la imagen: '+(error?.message||String(error)));
+   }
  }
  function handleSelectedImage(file,inputId){
    if(!file)return;
