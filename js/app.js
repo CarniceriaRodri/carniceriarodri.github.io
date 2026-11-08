@@ -107,7 +107,8 @@
       : [];
   } catch { cart = []; }
   const save = () => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(cart));
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(cart)); }
+    catch (error) { console.warn('No se pudo guardar el carrito:', error); }
   };
 
   // ——— Catálogo ———
@@ -270,9 +271,11 @@
     const carritoEstabaVacio = cart.length === 0;
     const existing = cart.find((l) => l.id === id && l.cantidad === cantidad && l.opcion === opcion && (l.preparacion || '') === preparacion);
     if (existing) {
+      if (existing.uds >= 99) { toast('Máximo 99 unidades por producto.'); return; }
       existing.uds++;
       if (imagenSeleccionada) existing.img = imagenSeleccionada;
     } else {
+      if (cart.length >= 50) { toast('Máximo 50 líneas en el pedido.'); return; }
       cart.push({ id, cantidad, opcion, preparacion, uds: 1, ...(imagenSeleccionada ? { img: imagenSeleccionada } : {}) });
     }
     save();
@@ -403,8 +406,8 @@
       history.pushState({ rodriCartOpen: true }, '', location.href);
       cartHistoryEntry = true;
     }
-    inicializarTurnstile();
     backdrop.hidden = false;
+    inicializarTurnstile();
     drawer.removeAttribute('inert');
     requestAnimationFrame(() => {
       drawer.classList.add('open');
@@ -587,10 +590,11 @@
       return;
     }
 
+    if (!cart.length) { pedidoEnProceso = false; toast('Añade productos antes de enviar.'); return; }
     const hoy = new Date();
     const dd = String(hoy.getDate()).padStart(2, '0');
     const mm = String(hoy.getMonth() + 1).padStart(2, '0');
-    const idMostrar = `rod-${dd}${mm}-${Math.floor(10 + Math.random() * 90)}`;
+    const idMostrar = `rod-${dd}${mm}-${Array.from(crypto.getRandomValues(new Uint8Array(4)), b => b.toString(16).padStart(2, '0')).join('')}`;
 
     let totalPedido = 0;
     const productosParaSheets = cart.map((l) => {
@@ -674,8 +678,7 @@
       turnstileToken = '';
     }
 
-    // El navegador usa no-cors y no puede leer la respuesta de Apps Script.
-    // Se conserva el comportamiento actual del modal.
+    // no-cors NO permite confirmar el registro en Sheets: informar con precisión.
     mostrarModal(idMostrar);
   }
 
@@ -829,6 +832,8 @@
     if (inc || dec) {
       const el = inc || dec;
       const i = Number(el.dataset.inc != null ? el.dataset.inc : el.dataset.dec);
+      if (!Number.isInteger(i) || !cart[i]) return;
+      if (inc && cart[i].uds >= 99) { toast('Máximo 99 unidades por producto.'); return; }
       cart[i].uds += inc ? 1 : -1;
       if (cart[i].uds <= 0) cart.splice(i, 1);
       save(); renderCart();
@@ -846,16 +851,16 @@
   const btnWhatsAppModal = document.getElementById('btnEnviarWhatsApp');
   if (btnWhatsAppModal) {
     btnWhatsAppModal.onclick = () => {
-      if (enlaceWhatsAppPendiente) {
-        window.open(enlaceWhatsAppPendiente, '_blank', 'noopener,noreferrer');
-      }
+      if (!enlaceWhatsAppPendiente) { toast('No hay un pedido pendiente para enviar.'); return; }
+      // No borrar el carrito: abrir WhatsApp no demuestra que el mensaje se haya enviado.
+      const enlace = enlaceWhatsAppPendiente;
       const modal = document.getElementById('modalConfirmacion');
       const modalBackdrop = document.getElementById('modalBackdrop');
       if (modal) modal.setAttribute('hidden', '');
       if (modalBackdrop) modalBackdrop.setAttribute('hidden', '');
       document.body.classList.remove('no-scroll');
       pedidoEnProceso = false;
-      cart = []; save(); renderCart();
+      window.location.assign(enlace);
     };
   }
 
