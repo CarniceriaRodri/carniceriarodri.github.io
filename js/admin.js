@@ -446,20 +446,48 @@
    finally{button.disabled=false;}
  });
  $('libraryUploadButton').addEventListener('click',()=>$('libraryUploadFiles').click());
- $('libraryUploadFiles').addEventListener('change',async()=>{
-   const files=Array.from($('libraryUploadFiles').files||[]);if(!files.length)return;
-   const input=$('libraryUploadFiles'),button=$('libraryUploadButton'),statusEl=$('libraryUploadStatus'),folder=uploadLibraryFolder;
-   const valid=files.filter(file=>['image/jpeg','image/png','image/webp'].includes(file.type)&&file.size>0&&file.size<=5*1024*1024),invalid=files.length-valid.length;
+ $('libraryUploadFolderButton').addEventListener('click',()=>$('libraryUploadFolder').click());
+ async function uploadLibraryFiles(files,input,button,preserveFolders){
+   if(!files.length)return;
+   const statusEl=$('libraryUploadStatus'),baseFolder=uploadLibraryFolder;
+   const valid=files.filter(file=>['image/jpeg','image/png','image/webp'].includes(file.type)&&file.size>0&&file.size<=5*1024*1024);
+   const invalid=files.length-valid.length;
    if(!valid.length){statusEl.textContent='No hay imágenes válidas. Usa JPG, PNG o WebP de hasta 5 MB cada una.';input.value='';return;}
-   input.disabled=true;button.disabled=true;let uploaded=0,failed=0;statusEl.textContent='Preparando '+valid.length+' imágenes…';
-   for(let i=0;i<valid.length;i++){const file=valid[i];statusEl.textContent='Subiendo '+(i+1)+' de '+valid.length+': '+file.name;
-     try{const {data,error}=await client.functions.invoke('github-images',{body:{action:'upload',kind:'product',category:'biblioteca',productSlug:folder,contentType:file.type,contentBase64:await fileBase64(file)}});
-       if(error)throw error;if(!data?.path)throw new Error('GitHub no devolvió la ruta.');uploaded++;
-     }catch(error){failed++;statusEl.textContent='Error con '+file.name+': '+await functionErrorMessage(error);}
+   input.disabled=true;button.disabled=true;
+   let uploaded=0,failed=0;
+   statusEl.textContent='Preparando '+valid.length+' imágenes…';
+   for(let i=0;i<valid.length;i++){
+     const file=valid[i];
+     let destination=baseFolder;
+     if(preserveFolders){
+       const relative=String(file.webkitRelativePath||file.name).split('/');
+       relative.pop();
+       const nested=relative.slice(1).map(folderSlug).filter(Boolean);
+       if(nested.length)destination=[baseFolder,...nested].filter(Boolean).join('/');
+     }
+     statusEl.textContent='Subiendo '+(i+1)+' de '+valid.length+': '+file.name;
+     try{
+       const {data,error}=await client.functions.invoke('github-images',{body:{
+         action:'upload',kind:'product',category:'biblioteca',productSlug:destination,
+         fileName:file.name,contentType:file.type,contentBase64:await fileBase64(file)
+       }});
+       if(error)throw error;
+       if(!data?.path)throw new Error('GitHub no devolvió la ruta.');
+       uploaded++;
+     }catch(error){
+       failed++;
+       statusEl.textContent='Error con '+file.name+': '+await functionErrorMessage(error);
+     }
    }
    input.disabled=false;button.disabled=false;input.value='';
    statusEl.textContent='Proceso terminado: '+uploaded+' imágenes guardadas'+(failed?', '+failed+' errores':'')+(invalid?', '+invalid+' archivos omitidos por formato o tamaño':'')+'.';
    await refreshUploadFolders();await loadImageLibrary(currentLibraryFolder);
+ }
+ $('libraryUploadFiles').addEventListener('change',async()=>{
+   await uploadLibraryFiles(Array.from($('libraryUploadFiles').files||[]),$('libraryUploadFiles'),$('libraryUploadButton'),false);
+ });
+ $('libraryUploadFolder').addEventListener('change',async()=>{
+   await uploadLibraryFiles(Array.from($('libraryUploadFolder').files||[]),$('libraryUploadFolder'),$('libraryUploadFolderButton'),true);
  });
  refreshUploadFolders();
  $('imageShowToggle').addEventListener('change',updateImageToggleText);
