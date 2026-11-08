@@ -59,6 +59,25 @@ dialog#imageDialog::backdrop{background:#211a1780}
 .product-image-action{white-space:nowrap}.library-items{min-width:0}.library-item{display:flex;align-items:center;gap:8px;min-width:0;padding:8px;background:#fff;border:1px solid #e3d9d0;border-radius:9px}.library-item-open{flex:1;min-width:0;display:flex;align-items:center;gap:8px;text-align:left;padding:7px;background:#f5f1ec;color:var(--ink);overflow:hidden}.library-item-name{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px}.library-item-actions{display:flex;gap:5px;flex:0 0 auto}.library-item-actions button{padding:7px 9px;min-width:36px;background:#eee8e1;color:var(--ink)}.library-item-thumb{width:38px;height:38px;object-fit:contain;background:#f5f2ed;border-radius:5px;flex:0 0 auto}@media(max-width:380px){.library-item{gap:5px;padding:6px}.library-item-actions{gap:3px}.library-item-actions button{min-width:32px;padding:6px 7px}}
 
 </style>
+<style>
+.category-management{margin:18px 0;border:1px solid #e2d5c9;border-radius:14px;background:#faf7f3;overflow:hidden}
+.category-management>summary{cursor:pointer;padding:18px 16px;font-weight:750;font-size:19px;display:flex;justify-content:space-between;gap:12px;align-items:center}
+.category-management-hint{font-size:13px;font-weight:500;color:#665b52}
+.category-management[open] .category-management-hint{display:none}
+.category-management-body{padding:0 16px 18px}
+.category-editor-row{padding:15px;margin:14px 0;border:1px solid #e0d5cb;background:#fff;border-radius:12px}
+.category-editor-row label,.category-new label{display:block;font-weight:650;font-size:14px;margin:10px 0 5px}
+.category-editor-row input:not([type=checkbox]),.category-new input{box-sizing:border-box;width:100%;max-width:100%;min-width:0;padding:11px 12px;font-size:16px}
+.category-editor-row .category-row-fields{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
+.category-editor-row .category-row-fields>label{min-width:0}
+.category-editor-row .category-row-actions{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:12px}
+.category-editor-row .category-row-actions button{max-width:210px}
+.category-editor-row .category-row-actions label{display:flex;align-items:center;gap:9px;margin:0}
+.category-editor-row .category-row-actions input{width:20px;height:20px}
+.category-new{border-top:1px solid #ded2c6;margin-top:22px;padding-top:12px}
+.category-new button{margin-top:12px}
+@media(max-width:480px){.category-management>summary{font-size:17px}.category-editor-row .category-row-fields{grid-template-columns:minmax(0,1fr)}.category-editor-row .category-row-actions{flex-wrap:wrap}.category-editor-row .category-row-actions button{width:100%;max-width:none}}
+</style>
 </head>
 <body>
 <header><strong>🥩 Carnicería Rodri</strong><button id="logout" class="secondary" hidden>Cerrar sesión</button></header>
@@ -83,6 +102,7 @@ dialog#imageDialog::backdrop{background:#211a1780}
 <p class="muted">Introduce el precio en euros. Pulsa Guardar en cada cambio.</p>
 <div class="notice" id="emptyNotice" hidden>La conexión está lista, pero todavía no hay productos cargados en la base de datos. Hay que importar el catálogo antes de editar precios.</div>
 
+<details id="categoryManagement" class="category-management"><summary>⚙️ Gestionar categorías <span class="category-management-hint">Abrir editor</span></summary><div class="category-management-body"><p class="muted">Cambia el nombre, la descripción, el orden o la visibilidad de cada categoría. Pulsa «Guardar cambios» en la categoría que modifiques.</p><div id="categoryRows"></div><div class="category-new"><h3>Añadir una categoría</h3><label>Identificador (sin espacios)<input id="newCategoryId" placeholder="Ej.: ofertas"></label><label>Nombre visible<input id="newCategoryName" placeholder="Ej.: Ofertas"></label><label>Descripción<input id="newCategoryTagline" placeholder="Descripción breve"></label><label>Posición<input id="newCategoryOrder" type="number" value="0"></label><button type="button" id="createCategory">Crear categoría</button></div><p class="status" id="categoryStatus" role="status"></p></div></details>
 <div id="products"></div><p class="status" id="adminStatus" role="status"></p>
 <div class="notice" style="margin:24px 0 8px"><strong>Descarga de imágenes</strong><p class="muted">Guarda una copia de todas las fotografías del catálogo en tu dispositivo.</p><a class="button" href="backup-images.html" style="display:inline-block;text-decoration:none">Descargar imágenes</a></div>
 <div class="notice" style="margin:12px 0 20px">
@@ -150,6 +170,6 @@ dialog#imageDialog::backdrop{background:#211a1780}
 <script src="js/catalogo.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js" defer></script>
-<script src="js/admin.js?v=3.4" defer></script>
+<script src="js/admin.js?v=3.5" defer></script>
 </body>
 </html>
