@@ -382,13 +382,12 @@ Deno.serve(async (req: Request) => {
     const extension = type === "image/png" ? "png" : type === "image/webp" ? "webp" : "jpg";
     const version = Date.now();
     let path = "img/productos/" + category + "/" + (productParts.length ? productParts.join("/") + "/" : "");
-    if (body.kind === "product") {
-      path += "principal-" + version + "." + extension;
-    } else {
-      const option = slug(String(body.optionSlug || "preparacion"));
-      if (!option || option.length > 100) return json({ error: "Preparación no válida" }, 400, origin);
-      path += option + "-" + version + "." + extension;
-    }
+    const requestedName = String(body.fileName || "").split(/[\\/]/).pop().replace(/\\.[^.]+$/, "");
+    const sourceName = slug(requestedName || (body.kind === "product" ? "principal" : String(body.optionSlug || "preparacion")));
+    if (!sourceName || sourceName.length > 100) return json({ error: "Nombre de imagen no válido" }, 400, origin);
+    let fileName = sourceName + "." + extension;
+    if (await githubRequest(path + fileName)) fileName = sourceName + "-" + version + "." + extension;
+    path += fileName;
 
     await saveToGitHub(path, toBase64(bytes));
     return json({ path }, 200, origin);
