@@ -101,11 +101,28 @@
      '<label>Nombre de la categoría<input data-cat-name value="'+escapeHtml(c.name)+'"></label>'+
      '<label>Descripción<input data-cat-tagline value="'+escapeHtml(c.tagline||'')+'"></label>'+
      '<div class="category-row-fields"><label>Orden de aparición<input data-cat-order type="number" value="'+Number(c.sort_order||0)+'"></label></div>'+
-     '<div class="category-row-actions"><label><input data-cat-active type="checkbox"'+(c.active?' checked':'')+'> Visible en la tienda</label><button type="button" class="secondary" data-save-category>Guardar cambios</button></div></div>'
+     '<div class="category-row-actions"><label><input data-cat-active type="checkbox"'+(c.active?' checked':'')+'> Visible en la tienda</label><button type="button" class="secondary" data-save-category>Guardar cambios</button><button type="button" data-delete-category style="background:#9c2929">Eliminar categoría</button></div></div>'
    ).join('');
  }
  $('categoryRows').addEventListener('click',async e=>{
-   const button=e.target.closest('[data-save-category]');if(!button)return;
+   const del=e.target.closest('[data-delete-category]');
+    if(del){
+      const row=del.closest('[data-category-id]'),id=row.dataset.categoryId;
+      del.disabled=true;
+      try{
+        const {count,error}=await client.from('products').select('id',{count:'exact',head:true}).eq('category',id);
+        if(error)throw error;
+        if(count){status('categoryStatus','No se puede eliminar: contiene '+count+' productos. Elimina primero todos los productos y sus opciones.');return}
+        if(!confirm('¿Eliminar definitivamente la categoría '+id+'?'))return;
+        const result=await client.from('categories').delete().eq('id',id).select('id');
+        if(result.error)throw result.error;
+        if(!result.data?.length)throw new Error('No se eliminó la categoría.');
+        status('categoryStatus','Categoría eliminada.');await loadProducts();
+      }catch(err){status('categoryStatus','Error al eliminar: '+err.message)}
+      finally{del.disabled=false}
+      return;
+    }
+    const button=e.target.closest('[data-save-category]');if(!button)return;
    const row=button.closest('[data-category-id]');
    const name=row.querySelector('[data-cat-name]').value.trim();
    if(!name){status('categoryStatus','Escribe el nombre de la categoría.');return}
@@ -215,7 +232,7 @@
        const prepValues=Array.isArray(p.preparations)?p.preparations:[];
        const prepEditor='<div class="options-content" style="padding:10px 0"><label>Tipo de venta<select data-sale-unit="'+p.id+'"><option value="">Sin definir</option><option value="kg"'+(p.sale_unit==='kg'?' selected':'')+'>Por kilo</option><option value="ud"'+(p.sale_unit==='ud'?' selected':'')+'>Por unidad</option></select></label><label style="display:block;margin-top:8px">Preparaciones gratuitas (una por línea)<textarea rows="3" data-preparations="'+p.id+'" placeholder="Filetes finos&#10;Filetes gruesos&#10;En dados">'+escapeHtml(prepValues.join('\n'))+'</textarea></label><button type="button" class="secondary" data-save-product-settings="'+p.id+'">Guardar venta y preparaciones</button></div>';
        return '<article class="product product-unified"><div class="product-head"><div style="display:flex;align-items:center;gap:12px;min-width:0"><div class="admin-product-thumb" style="width:86px;height:86px;flex:0 0 86px;border-radius:10px;background:#f2eee9;overflow:hidden;display:grid;place-items:center">'+(imagePublicUrl(p.image||cp?.imagenBiblioteca)?'<img loading="lazy" src="'+escapeHtml(imagePublicUrl(p.image||cp?.imagenBiblioteca))+'" alt="Foto de '+escapeHtml(p.name)+'" style="width:100%;height:100%;object-fit:contain">':'<span style="font-size:11px;text-align:center;padding:5px">Sin imagen</span>')+'</div><div><div class="product-name">'+escapeHtml(p.name)+'</div><div class="category">'+escapeHtml(p.category||group.meta.name)+(p.active?'':' · Inactivo')+'</div></div></div><button type="button" class="image-action product-image-action" data-image-product="'+escapeHtml(p.id)+'" data-image-category="'+escapeHtml(cp?.cat||p.category||'otros')+'" data-image-product-slug="'+escapeHtml(cp?.id||p.name||p.id)+'" data-image-path="'+escapeHtml(p.image||cp?.imagenBiblioteca||'')+'" title="Gestionar imagen principal" aria-label="Gestionar imagen principal de '+escapeHtml(p.name)+'">📷 Imagen</button></div>'+
-         '<details class="product-settings"><summary>Editar ficha del producto</summary><div class="options-content"><label>Nombre<input data-product-name="'+escapeHtml(p.id)+'" value="'+escapeHtml(p.name)+'"></label><label>Descripción<textarea rows="2" data-product-description="'+escapeHtml(p.id)+'">'+escapeHtml(p.description||'')+'</textarea></label><label>Categoría<select data-product-category="'+escapeHtml(p.id)+'">'+categoryOptions.replace('value="'+escapeHtml(p.category)+'"','value="'+escapeHtml(p.category)+'" selected')+'</select></label><label>Precio base (€)<input inputmode="decimal" data-product-base="'+escapeHtml(p.id)+'" value="'+(p.base_price_cents==null?'':(Number(p.base_price_cents)/100).toFixed(2))+'"></label><label>Orden<input type="number" data-product-order="'+escapeHtml(p.id)+'" value="'+Number(p.sort_order||0)+'"></label><label><input type="checkbox" data-product-active="'+escapeHtml(p.id)+'"'+(p.active?' checked':'')+'> Producto activo</label><button type="button" class="secondary" data-save-product-details="'+escapeHtml(p.id)+'">Guardar ficha</button></div></details>'+ 
+         '<details class="product-settings"><summary>Editar ficha del producto</summary><div class="options-content"><label>Nombre<input data-product-name="'+escapeHtml(p.id)+'" value="'+escapeHtml(p.name)+'"></label><label>Descripción<textarea rows="2" data-product-description="'+escapeHtml(p.id)+'">'+escapeHtml(p.description||'')+'</textarea></label><label>Categoría<select data-product-category="'+escapeHtml(p.id)+'">'+categoryOptions.replace('value="'+escapeHtml(p.category)+'"','value="'+escapeHtml(p.category)+'" selected')+'</select></label><label>Precio base (€)<input inputmode="decimal" data-product-base="'+escapeHtml(p.id)+'" value="'+(p.base_price_cents==null?'':(Number(p.base_price_cents)/100).toFixed(2))+'"></label><label>Orden<input type="number" data-product-order="'+escapeHtml(p.id)+'" value="'+Number(p.sort_order||0)+'"></label><label><input type="checkbox" data-product-active="'+escapeHtml(p.id)+'"'+(p.active?' checked':'')+'> Producto activo</label><button type="button" class="secondary" data-save-product-details="'+escapeHtml(p.id)+'">Guardar ficha</button><button type="button" data-delete-product="'+escapeHtml(p.id)+'" style="background:#9c2929;margin-left:8px">Eliminar producto</button></div></details>'+ 
          '<details class="options-details" data-product-options="'+p.id+'"'+(openOptionPanels.has(String(p.id))?' open':'')+'><summary>'+(group.key==='bebidas'?'Variedades y formatos':'Preparaciones y opciones')+' <span class="muted">'+opts.length+' guardadas · '+missing.length+' pendientes</span></summary><div class="options-content">'+
          '<details class="product-settings"><summary>Venta y preparaciones gratuitas</summary>'+prepEditor+'</details>'+(saved||'')+(pending||'')+
          '<div class="option" style="margin-top:14px;font-weight:700;color:var(--ink)">'+(group.key==='bebidas'?'Añadir variedad y formato':'Añadir preparación u opción')+'</div><div class="add-option-row"><label class="sr-only" for="new-label-'+p.id+'">Nombre opción</label><input id="new-label-'+p.id+'" placeholder="'+(group.key==='bebidas'?'Ej. Fanta naranja · botella 1,5 L':'Nombre de la opción')+'"><label class="sr-only" for="new-price-'+p.id+'">Precio (€)</label><input id="new-price-'+p.id+'" inputmode="decimal" placeholder="Precio (€)"><button class="icon-button" aria-label="Añadir opción" data-add-option="'+p.id+'">➕</button></div></div></details></article>';
