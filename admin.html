@@ -61,6 +61,13 @@ dialog#imageDialog::backdrop{background:#211a1780}
 .product-active-label{display:inline-flex;align-items:center;gap:7px;margin:12px 0 6px;line-height:1.2;cursor:pointer}.product-active-label input{width:19px;height:19px;margin:0;flex:none}
 .product-settings>summary,.options-details>summary{cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between;gap:10px}.product-settings>summary::-webkit-details-marker,.options-details>summary::-webkit-details-marker{display:none}.product-settings>summary::after,.options-details>summary::after{content:"";width:9px;height:9px;flex:none;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(-45deg);transition:transform .18s ease;margin-right:5px}.product-settings[open]>summary::after,.options-details[open]>summary::after{transform:rotate(45deg)}
 .library-management{margin:12px 0 20px;border:1px solid var(--line);border-radius:12px;background:#fff;overflow:hidden}.library-management>summary{padding:15px 16px;cursor:pointer;font-weight:750;list-style:none;display:flex;justify-content:space-between;align-items:center}.library-management>summary::-webkit-details-marker{display:none}.library-management>summary::after{content:"▸";font-size:21px}.library-management[open]>summary::after{content:"▾"}.library-management>.notice{margin:0!important;border-radius:0}
+.product-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.product-head-controls{margin-left:auto;display:flex;flex-direction:column;align-items:flex-end;justify-content:center;gap:8px;flex-shrink:0}
+.product-head-controls .product-active-label{display:inline-flex;align-items:center;justify-content:flex-end;gap:9px;margin:0;padding:6px 9px;border:1px solid #d7e5d8;border-radius:9px;background:#edf9ef;color:#165c31;white-space:nowrap;font-weight:750;cursor:pointer}
+.product-head-controls .product-active-label:has(input:not(:checked)){background:#f6f1ed;border-color:#dfd5ca;color:#6e5142}
+.product-head-controls .product-active-label input{margin:0;width:22px;height:22px;accent-color:#16834a;flex-shrink:0}
+.product-head-controls .product-image-action{max-width:125px}
+@media(max-width:520px){.product-head{display:flex;align-items:center}.product-head>div:first-child{min-width:0;flex:1}.product-head-controls{margin-left:auto}.product-unified .product-name{overflow-wrap:anywhere}}
 </style>
 <style>
 .category-management{margin:18px 0;border:1px solid #e2d5c9;border-radius:14px;background:#faf7f3;overflow:hidden}
@@ -92,7 +99,7 @@ dialog#imageDialog::backdrop{background:#211a1780}
 <div class="actions"><button id="login">Entrar</button></div><p class="status" id="loginStatus" role="status"></p>
 </section>
 <section class="panel" id="adminPanel" hidden>
-<h1>Precios de productos</h1>
+<h1>Precios y visibilidad de productos</h1>
  <div class="panel" style="background:#fff4e5;border-color:#e8c99e">
   <h2>Modo mantenimiento</h2>
   <p class="muted">Actívalo para mostrar un aviso a los clientes y detener temporalmente los pedidos.</p>
@@ -102,7 +109,7 @@ dialog#imageDialog::backdrop{background:#211a1780}
   </label>
   <p class="status" id="maintenanceStatus" role="status"></p>
 </div>
-<p class="muted">Introduce el precio en euros. Pulsa Guardar en cada cambio.</p>
+<p class="muted">Los productos nuevos se crean activos. Usa la casilla «Activo» a la derecha de cada producto para mostrarlo u ocultarlo al instante. Los productos sin precio u opciones válidas no se mostrarán.</p><div class="actions"><button type="button" id="activateAllProducts" class="secondary">✅ Activar todos los productos existentes</button></div>
 <div class="notice" id="emptyNotice" hidden>La conexión está lista, pero todavía no hay productos cargados en la base de datos. Hay que importar el catálogo antes de editar precios.</div>
 
 <details id="categoryManagement" class="category-management"><summary>⚙️ Gestionar categorías <span class="category-management-hint">Abrir editor</span></summary><div class="category-management-body"><p class="muted">Cambia el nombre, la descripción, el orden o la visibilidad de cada categoría. Pulsa «Guardar cambios» en la categoría que modifiques.</p><div id="categoryRows"></div><div class="category-new"><h3>Añadir una categoría</h3><label>Identificador (sin espacios)<input id="newCategoryId" placeholder="Ej.: ofertas"></label><label>Nombre visible<input id="newCategoryName" placeholder="Ej.: Ofertas"></label><label>Descripción<input id="newCategoryTagline" placeholder="Descripción breve"></label><label>Posición<input id="newCategoryOrder" type="number" value="0"></label><button type="button" id="createCategory">Crear categoría</button></div><p class="status" id="categoryStatus" role="status"></p></div></details>
@@ -175,6 +182,6 @@ dialog#imageDialog::backdrop{background:#211a1780}
 <script src="js/catalogo.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js" defer></script>
-<script src="js/admin.js?v=3.7" defer></script>
+<script src="js/admin.js?v=3.8" defer></script>
 </body>
 </html>
