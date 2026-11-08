@@ -103,7 +103,7 @@
 
     $('#secciones').innerHTML = CATEGORIAS.map((c, i) => {
       // Solo se muestran productos que conservan al menos una opción activa.
-      const productos = PRODUCTOS.filter((p) => p.cat === c.id && Array.isArray(p.opciones) && p.opciones.length > 0);
+      const productos = PRODUCTOS.filter((p) => p.cat === c.id && (p.precioDemo === true || (Array.isArray(p.opciones) && p.opciones.length > 0)));
       if (!productos.length) return '';
       return `
         <section class="cat" id="cat-${escapeHtml(c.id)}" data-cat="${escapeHtml(c.id)}">
@@ -837,7 +837,8 @@ const product = PRODUCTOS.find(p => String(p.id) === String(row.id))
   || PRODUCTOS.find(p => normalizar(p.nombre) === normalizar(row.name));
         if (!product) return;
         catalogProductByDatabaseId.set(String(row.id), product);
-        product.imageUrl = publicImageUrl(row.image) || '';
+        product.imageUrl = publicImageUrl(row.image) || product.imagenBiblioteca || '';
+        // La demostración solo complementa el catálogo; no sobrescribe imágenes propias.
         if (row.base_price_cents !== null && row.base_price_cents !== undefined && Number.isFinite(Number(row.base_price_cents))) product.precioDemo = false;
         product.saleUnit = row.sale_unit || null;
         product.preparations = Array.isArray(row.preparations) ? row.preparations : [];
