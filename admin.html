@@ -96,7 +96,11 @@ dialog#imageDialog::backdrop{background:#211a1780}
   <div id="libraryUploadFolders" class="library-items" style="display:grid;gap:8px;margin-top:10px"></div>
   <p id="libraryUploadNavStatus" class="muted" role="status"></p>
   <input id="libraryUploadFiles" type="file" accept="image/jpeg,image/png,image/webp" multiple hidden>
-  <button type="button" id="libraryUploadButton" title="Subir imágenes" aria-label="Subir imágenes">📤</button>
+  <input id="libraryUploadFolder" type="file" accept="image/jpeg,image/png,image/webp" webkitdirectory directory multiple hidden>
+  <div class="actions" style="margin-top:10px">
+    <button type="button" id="libraryUploadButton" title="Subir imágenes sueltas">📤 Subir imágenes</button>
+    <button type="button" id="libraryUploadFolderButton" class="secondary" title="Subir una carpeta completa">📁 Subir carpeta completa</button>
+  </div>
   <p id="libraryUploadStatus" class="status" role="status"></p>
 </div>
 </section>
@@ -142,6 +146,6 @@ dialog#imageDialog::backdrop{background:#211a1780}
 
 <script src="js/catalogo.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-<script src="js/admin.js?v=2.9" defer></script>
+<script src="js/admin.js?v=3.0" defer></script>
 </body>
 </html>
