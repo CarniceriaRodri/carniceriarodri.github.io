@@ -82,6 +82,41 @@ function toBase64(bytes: Uint8Array) {
   return btoa(binary);
 }
 
+async function githubRequest(path: string, method = "GET", body?: Record<string, unknown>) {
+  const owner = secret("GITHUB_OWNER");
+  const repo = secret("GITHUB_REPO");
+  const token = secret("GITHUB_TOKEN");
+  const branch = Deno.env.get("GITHUB_BRANCH") || "main";
+  const encodedPath = path.split("/").filter(Boolean).map(encodeURIComponent).join("/");
+  const url = "https://api.github.com/repos/" + owner + "/" + repo + "/contents/" + encodedPath +
+    (method === "GET" ? "?ref=" + encodeURIComponent(branch) : "");
+  const response = await fetch(url, {
+    method,
+    headers: {
+      Authorization: "Bearer " + token,
+      Accept: "application/vnd.github+json",
+      "X-GitHub-Api-Version": "2022-11-28",
+      "Content-Type": "application/json",
+    },
+    ...(body ? { body: JSON.stringify(body) } : {}),
+  });
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const detail = typeof payload?.message === "string" ? payload.message : "sin detalle";
+    throw new Error("GitHub API " + response.status + ": " + detail +
+      (response.status === 403 ? ". Comprueba que GITHUB_TOKEN tenga permisos Contents: read y write para este repositorio." : ""));
+  }
+  return payload;
+}
+
+async function listGitHubFolder(folder: string) {
+  const path = "img/productos/biblioteca/" + folder;
+  const result = await githubRequest(path);
+  if (!Array.isArray(result)) throw new Error("La ruta indicada no es una carpeta de GitHub.");
+  return result.filter((item: any) => item && ["file", "dir"].includes(item.type))
+    .map((item: any) => ({ name: item.name, path: item.path, type: item.type, sha: item.sha }));
+}
+
 async function saveToGitHub(path: string, content: string) {
   const owner = secret("GITHUB_OWNER");
   const repo = secret("GITHUB_REPO");
@@ -130,6 +165,15 @@ Deno.serve(async (req: Request) => {
   try {
     await verifyAdmin(req);
     const body = await req.json();
+    if (body.action === "list-folder") {
+      const rawFolder = String(body.folder || "");
+      const parts = rawFolder ? rawFolder.split("/").map((part) => slug(part)) : [];
+      if (parts.some((part) => !part || part.length > 80 || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(part))) {
+        return json({ error: "Ruta de carpeta no válida" }, 400, origin);
+      }
+      const entries = await listGitHubFolder(parts.join("/"));
+      return json({ entries }, 200, origin);
+    }
     if (body.action === "create-folder") {
       const rawFolder = String(body.folder || "").trim();
       const parts = rawFolder.split("/").map((part) => slug(part));
