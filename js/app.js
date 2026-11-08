@@ -205,7 +205,7 @@
     let precioNum = 0;
     if (p) {
       const key = normalizarClave(l.opcion);
-      const unit = ((p.precio || '').match(/\/(kg|ud)/i) || [,'ud'])[0];
+      const unit = ((p.precio || '').match(/\/(kg|ud)/i) || [null, '/ud'])[0] || '/ud';
       const optionValue = p.preciosOpciones && Number.isFinite(Number(p.preciosOpciones[key]))
         ? Number(p.preciosOpciones[key])
         : (p.precioNumOpciones && Number.isFinite(p.precioNumOpciones[key]) ? p.precioNumOpciones[key] : null);
@@ -548,8 +548,8 @@
   async function enviar(e) {
     e.preventDefault();
 
-    // Marcar el flujo de pedido desde el primer instante del submit para que
-    // ningún popstate generado durante el checkout muestre el aviso de salida.
+    // Evitar dobles envíos si el usuario pulsa repetidamente.
+    if (pedidoEnProceso) return;
     pedidoEnProceso = true;
 
     const nombre = $('#nombre').value.trim().replace(/\s+/g, ' ');
@@ -594,7 +594,10 @@
     const hoy = new Date();
     const dd = String(hoy.getDate()).padStart(2, '0');
     const mm = String(hoy.getMonth() + 1).padStart(2, '0');
-    const idMostrar = `rod-${dd}${mm}-${Array.from(crypto.getRandomValues(new Uint8Array(4)), b => b.toString(16).padStart(2, '0')).join('')}`;
+    const randomId = typeof crypto !== 'undefined' && crypto.getRandomValues
+      ? Array.from(crypto.getRandomValues(new Uint8Array(4)), b => b.toString(16).padStart(2, '0')).join('')
+      : String(Date.now());
+    const idMostrar = `rod-${dd}${mm}-${randomId}`;
 
     let totalPedido = 0;
     const productosParaSheets = cart.map((l) => {
