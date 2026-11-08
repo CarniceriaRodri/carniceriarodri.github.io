@@ -177,8 +177,8 @@ function libraryPathFromInput(raw: unknown) {
 function libraryFullPath(relative: string) {
   return LIBRARY_ROOT + relative;
 }
-function safeLibraryName(raw: unknown, isFolder: boolean) {
-  const value = String(raw || "").trim();
+function safeLibraryName(raw: unknown, isFolder: boolean, existingName = "") {
+  let value = String(raw || "").trim();
   if (!value || value.includes("/") || value.includes("\\") || value === "." || value === "..") {
     throw new Error("Nombre no válido.");
   }
@@ -187,8 +187,10 @@ function safeLibraryName(raw: unknown, isFolder: boolean) {
     if (!name || name.length > 80) throw new Error("Nombre de carpeta no válido.");
     return name;
   }
+  const existingExtension = existingName.match(/\.(jpe?g|png|webp)$/i)?.[0] || "";
+  if (!/\.(jpe?g|png|webp)$/i.test(value) && existingExtension) value += existingExtension;
   const match = value.match(/^(.*)\.(jpe?g|png|webp)$/i);
-  if (!match) throw new Error("El archivo debe ser JPG, PNG o WebP e incluir su extensión.");
+  if (!match) throw new Error("El archivo debe ser JPG, PNG o WebP.");
   const base = slug(match[1]);
   if (!base || base.length > 100) throw new Error("Nombre de archivo no válido.");
   return base + "." + match[2].toLowerCase();
@@ -284,7 +286,7 @@ async function renameLibraryItem(relative: string, newNameRaw: unknown) {
   const item = await githubRequest(fullPath);
   if (!item) throw new Error("El elemento ya no existe.");
   const isFolder = Array.isArray(item) || item.type === "dir";
-  const newName = safeLibraryName(newNameRaw,isFolder);
+  const newName = safeLibraryName(newNameRaw,isFolder,item.name || "");
   if (!isFolder && !/\.(jpe?g|png|webp)$/i.test(item.name)) {
     throw new Error("Solo se pueden renombrar imágenes de la biblioteca.");
   }
