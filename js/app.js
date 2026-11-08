@@ -419,40 +419,32 @@
     document.body.classList.add('no-scroll');
   }
 
-  // Validación de recogida: horario 08:00-20:00, cada 30 minutos y mínimo 60 minutos.
+  // Horario de recogida de 08:00 a 20:00, intervalos de 30 minutos
+  // y un mínimo de 60 minutos de antelación.
   function fechaRecogidaSeleccionada(dia, hora) {
-    if (!hora || !/^\\d{2}:\\d{2}$/.test(hora)) return null;
+    if (!/^\d{2}:\d{2}$/.test(hora || '')) return null;
+    if (!['Hoy', 'Mañana', 'Pasado mañana'].includes(dia)) return null;
     const [horas, minutos] = hora.split(':').map(Number);
-    const desplazamiento = dia === 'Hoy' ? 0 : dia === 'Mañana' ? 1 : 2;
+    if (horas < 8 || horas > 20 || ![0, 30].includes(minutos) || (horas === 20 && minutos !== 0)) return null;
     const fecha = new Date();
-    fecha.setDate(fecha.getDate() + desplazamiento);
+    fecha.setDate(fecha.getDate() + (dia === 'Hoy' ? 0 : dia === 'Mañana' ? 1 : 2));
     fecha.setHours(horas, minutos, 0, 0);
     return fecha;
   }
 
   function validarHoraRecogida(dia, hora) {
-  if (!hora || !/^\d{2}:\d{2}$/.test(hora)) return false;
-
-  const [horas, minutos] = hora.split(':').map(Number);
-
-  return horas >= 8 &&
-    (horas < 20 || (horas === 20 && minutos === 0)) &&
-    minutos >= 0 &&
-    minutos <= 59;
-}
+    const fecha = fechaRecogidaSeleccionada(dia, hora);
+    return fecha !== null && fecha.getTime() >= Date.now() + 60 * 60 * 1000;
+  }
 
   function actualizarRestriccionesHora() {
-  const campoHora = $('#hora');
-  if (!campoHora) return;
-
-  campoHora.min = '08:00';
-  campoHora.max = '20:00';
-  campoHora.step = '60';
-
-  if (campoHora.value && !validarHoraRecogida($('#dia').value, campoHora.value)) {
-    campoHora.value = '';
+    const campoHora = $('#hora');
+    if (!campoHora) return;
+    campoHora.min = '08:00';
+    campoHora.max = '20:00';
+    campoHora.step = '1800';
+    if (campoHora.value && !validarHoraRecogida($('#dia').value, campoHora.value)) campoHora.value = '';
   }
-}
 
   // ——— Envío por Google Sheets y WhatsApp ———
   async function enviar(e) {
@@ -486,7 +478,7 @@
     errorTelefono.classList.toggle('show', !telefonoValido);
 
     const horaValida = validarHoraRecogida(dia, hora);
-     errorHora.textContent = 'La recogida debe ser entre las 08:00 y las 20:00.';
+     errorHora.textContent = 'Elige una hora entre las 08:00 y las 20:00, cada 30 minutos y con al menos una hora de antelación.';
     errorHora.classList.toggle('show', !horaValida);
 
     if (!nombreValido || !telefonoValido || !horaValida) {
@@ -537,7 +529,7 @@
 
     const submitBtn = checkoutForm.querySelector('button[type="submit"]');
     submitBtn.disabled = true;
-    submitBtn.textContent = "Registrando pedido...";
+    submitBtn.textContent = "Preparando pedido...";
 
     const textoWA = [
       '*🥩 NUEVO PEDIDO - CARNICERÍA RODRI*',
