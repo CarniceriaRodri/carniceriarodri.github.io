@@ -222,8 +222,8 @@
  function updateImageToggleText(){
    const toggle=$('imageShowToggle');
    $('imageShowToggleText').textContent=toggle.checked
-     ?'Mostrar imagen específica de esta preparación'
-     :'Mostrar imagen principal del producto';
+     ?'Mostrar imagen específica'
+     :'Mostrar imagen principal';
  }
  function openImageEditor(target){
    imageTarget=target;
