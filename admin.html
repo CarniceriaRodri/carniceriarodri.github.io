@@ -48,6 +48,7 @@ dialog#imageDialog::backdrop{background:#211a1780}
 .image-choices{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0}
 .image-choice{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:11px 14px;border:1px solid #7b2e20;border-radius:9px;background:#7b2e20;color:#fff;font-weight:650;cursor:pointer}
 .image-choice.secondary{background:#eee8e1;border-color:#d8cfc6;color:var(--ink)}
+.image-choice.camera-only{width:48px;min-width:48px;padding:11px 0;font-size:20px}
 .image-choice input{position:absolute;width:1px;height:1px;opacity:0;overflow:hidden;pointer-events:none}
 .image-toggle{display:flex;align-items:center;gap:9px;margin:12px 0}
 .image-toggle input{width:20px;height:20px}
@@ -94,18 +95,17 @@ dialog#imageDialog::backdrop{background:#211a1780}
   <img id="imagePreview" class="image-preview" alt="Previsualización de la imagen" hidden>
   <p id="imageCurrent" class="muted">Selecciona una imagen JPG, PNG o WebP (máximo 5 MB).</p>
   <div class="image-choices">
-    <label class="image-choice" for="imageCamera">📷 Hacer una foto
+    <label class="image-choice camera-only" for="imageCamera" title="Hacer una foto" aria-label="Hacer una foto">📷
       <input id="imageCamera" type="file" accept="image/*" capture="environment">
     </label>
-    <label class="image-choice secondary" for="imageFile">🖼️ Elegir del dispositivo
+    <label class="image-choice secondary" for="imageFile">🖼️ Elegir
       <input id="imageFile" type="file" accept="image/jpeg,image/png,image/webp">
     </label>
   </div>
-  <fieldset class="image-fit-choices" style="border:0;padding:0">
-    <legend style="font-weight:750;font-size:14px;margin-bottom:8px">Elige el encuadre · la vista previa cambia al instante</legend>
-    <label class="image-fit-choice" title="Mostrar la foto completa"><input type="radio" name="imageFit" value="contain" checked><span class="image-fit-icon" aria-hidden="true">⛶</span><strong>Completa</strong></label>
-    <label class="image-fit-choice" title="Añadir margen blanco alrededor"><input type="radio" name="imageFit" value="padded"><span class="image-fit-icon" aria-hidden="true">▣</span><strong>Con margen</strong></label>
-    <label class="image-fit-choice" title="Rellenar el cuadrado, puede recortar"><input type="radio" name="imageFit" value="cover"><span class="image-fit-icon" aria-hidden="true">⌗</span><strong>Rellenar</strong></label>
+  <fieldset class="image-fit-choices" aria-label="Encuadre de la imagen" style="border:0;padding:0">
+    <label class="image-fit-choice" title="Foto completa" aria-label="Foto completa"><input type="radio" name="imageFit" value="contain" checked><span class="image-fit-icon" aria-hidden="true">⛶</span></label>
+    <label class="image-fit-choice" title="Con margen blanco" aria-label="Con margen blanco"><input type="radio" name="imageFit" value="padded"><span class="image-fit-icon" aria-hidden="true">▣</span></label>
+    <label class="image-fit-choice" title="Rellenar el cuadro" aria-label="Rellenar el cuadro"><input type="radio" name="imageFit" value="cover"><span class="image-fit-icon" aria-hidden="true">⌗</span></label>
   </fieldset>
   <label id="imageToggleRow" class="image-toggle" hidden>
     <input id="imageShowToggle" type="checkbox" checked>
