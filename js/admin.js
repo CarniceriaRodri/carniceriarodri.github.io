@@ -90,10 +90,31 @@
    await loadProducts();
  }
 
+ async function loadCategoriesEditor(){
+   const {data,error}=await client.from('categories').select('id,name,tagline,sort_order,active').order('sort_order');
+   if(error){status('categoryStatus',error.message);return}
+   $('categoryRows').innerHTML=(data||[]).map(c=>'<div class="category-editor-row" data-category-id="'+escapeHtml(c.id)+'" style="display:grid;grid-template-columns:1fr 1fr 1fr 70px auto;gap:6px;align-items:center;margin:8px 0"><input data-cat-name value="'+escapeHtml(c.name)+'" aria-label="Nombre"><input data-cat-tagline value="'+escapeHtml(c.tagline)+'" aria-label="Descripción"><input data-cat-order type="number" value="'+Number(c.sort_order||0)+'" aria-label="Orden"><label><input data-cat-active type="checkbox"'+(c.active?' checked':'')+'> ON</label><button type="button" class="secondary" data-save-category>Guardar</button></div>').join('');
+ }
+ $('categoryRows').addEventListener('click',async e=>{
+   const button=e.target.closest('[data-save-category]');if(!button)return;
+   const row=button.closest('[data-category-id]');const name=row.querySelector('[data-cat-name]').value.trim();
+   if(!name){status('categoryStatus','Escribe un nombre.');return}
+   button.disabled=true;
+   const {error}=await client.from('categories').update({name,tagline:row.querySelector('[data-cat-tagline]').value.trim(),sort_order:Number(row.querySelector('[data-cat-order]').value)||0,active:row.querySelector('[data-cat-active]').checked}).eq('id',row.dataset.categoryId);
+   button.disabled=false;
+   status('categoryStatus',error?'No se pudo guardar: '+error.message:'Categoría guardada.');if(!error)await loadProducts();
+ });
+ $('createCategory').addEventListener('click',async()=>{
+   const id=$('newCategoryId').value.trim().toLowerCase().replace(/[^a-z0-9-]/g,'-');const name=$('newCategoryName').value.trim();
+   if(!id||!name){status('categoryStatus','Escribe ID y nombre.');return}
+   const {error}=await client.from('categories').insert({id,name,tagline:$('newCategoryTagline').value.trim(),sort_order:Number($('newCategoryOrder').value)||0,active:true});
+   status('categoryStatus',error?'No se pudo crear: '+error.message:'Categoría creada.');if(!error)await loadProducts();
+ });
+
  async function loadProducts(){
    const openOptionPanels=new Set(Array.from(document.querySelectorAll('.options-details[open]')).map(el=>el.dataset.productOptions));
    status('adminStatus','Cargando productos…');
-   let {data:products,error}=await client.from('products').select('id,name,category,image,base_price_cents,active,sort_order,sale_unit,preparations').order('sort_order');
+   let {data:products,error}=await client.from('products').select('id,name,description,category,image,base_price_cents,active,sort_order,sale_unit,preparations').order('sort_order');
    if(products){
      const excludedCategories=['caza','casqueria','vaca-buey','vaca buey','vaca y buey'];
      const normalizeCategory=value=>String(value||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase('es').trim();
@@ -110,14 +131,15 @@
    const catalogue=(window.PRODUCTOS||[]);
    // El panel solo administra el catálogo vigente; los productos históricos de Supabase
    // se conservan en la base de datos, pero no deben crear categorías repetidas.
-   const catalogueIds=new Set(catalogue.map(item=>String(item.id)));
-   products=products.filter(product=>catalogueIds.has(String(product.id)));
+   // Mostrar TODOS los productos de Supabase, también los nuevos o renombrados.
    if(!products.length){
      $('emptyNotice').hidden=false;
      $('products').innerHTML='';
      status('adminStatus','No hay productos del catálogo actual para mostrar.');
      return;
    }
+   const {data:databaseCategories,error:categoryError}=await client.from('categories').select('id,name,tagline,sort_order,active').order('sort_order');
+   if(categoryError){status('adminStatus','No se pudieron cargar categorías: '+categoryError.message);return}
    const categoryMeta={
      salado:{name:'Salado',icon:'🧂',color:'#80612a',bg:'#f8f4e8'},
      precocinados:{name:'Precocinados',icon:'🍗',color:'#9a4b28',bg:'#fbf0e8'},
@@ -128,15 +150,18 @@
      gallina:{name:'Gallina',icon:'🐓',color:'#766044',bg:'#f5f1e9'},
      pavo:{name:'Pavo',icon:'🦃',color:'#80612a',bg:'#f8f4e8'},
      bebidas:{name:'Refrescos y bebidas',icon:'🥤',color:'#356b83',bg:'#edf5f8'}
-   };;
+   };
+   (databaseCategories||[]).forEach(c=>{categoryMeta[c.id]={...(categoryMeta[c.id]||{icon:'📦',color:'#765c4d',bg:'#f7f2ec'}),name:c.name,tagline:c.tagline,active:c.active};});
+   products.forEach(p=>{if(!categoryMeta[p.category])categoryMeta[p.category]={name:p.category||'Sin categoría',icon:'📦',color:'#765c4d',bg:'#f7f2ec'};});
+   const categoryOptions=Object.entries(categoryMeta).map(([id,c])=>'<option value="'+escapeHtml(id)+'">'+escapeHtml(c.name)+'</option>').join('');
    // Orden estable por categoría: cada categoría se crea una sola vez,
    // usando la categoría del catálogo actual y no el texto histórico de Supabase.
    const catalogueById=new Map(catalogue.map(item=>[String(item.id),item]));
    products.sort((a,b)=>{
-     const ca=Object.keys(categoryMeta).indexOf(catalogueById.get(String(a.id))?.cat||'');
-     const cb=Object.keys(categoryMeta).indexOf(catalogueById.get(String(b.id))?.cat||'');
+     const ca=Object.keys(categoryMeta).indexOf(a.category||'');
+     const cb=Object.keys(categoryMeta).indexOf(b.category||'');
      if(ca!==cb)return ca-cb;
-     return catalogue.findIndex(x=>String(x.id)===String(a.id))-catalogue.findIndex(x=>String(x.id)===String(b.id));
+     return Number(a.sort_order||0)-Number(b.sort_order||0);
    });
 
    const {data:options,error:optError}=await client.from('product_options').select('id,product_id,label,image,show_image,price_cents,active,sort_order').order('sort_order');
@@ -149,7 +174,7 @@
    const groupedProducts=Object.keys(categoryMeta).map(categoryKey=>({
      key:categoryKey,
      meta:categoryMeta[categoryKey],
-     items:products.filter(p=>catalogueById.get(String(p.id))?.cat===categoryKey)
+     items:products.filter(p=>p.category===categoryKey)
    })).filter(group=>group.items.length>0);
 
    $('products').innerHTML=groupedProducts.map(group=>{
@@ -162,6 +187,7 @@
        const prepValues=Array.isArray(p.preparations)?p.preparations:[];
        const prepEditor='<div class="options-content" style="padding:10px 0"><label>Tipo de venta<select data-sale-unit="'+p.id+'"><option value="">Sin definir</option><option value="kg"'+(p.sale_unit==='kg'?' selected':'')+'>Por kilo</option><option value="ud"'+(p.sale_unit==='ud'?' selected':'')+'>Por unidad</option></select></label><label style="display:block;margin-top:8px">Preparaciones gratuitas (una por línea)<textarea rows="3" data-preparations="'+p.id+'" placeholder="Filetes finos&#10;Filetes gruesos&#10;En dados">'+escapeHtml(prepValues.join('\n'))+'</textarea></label><button type="button" class="secondary" data-save-product-settings="'+p.id+'">Guardar venta y preparaciones</button></div>';
        return '<article class="product product-unified"><div class="product-head"><div><div class="product-name">'+escapeHtml(p.name)+'</div><div class="category">'+escapeHtml(p.category||group.meta.name)+(p.active?'':' · Inactivo')+'</div></div><button type="button" class="image-action product-image-action" data-image-product="'+escapeHtml(p.id)+'" data-image-category="'+escapeHtml(cp?.cat||p.category||'otros')+'" data-image-product-slug="'+escapeHtml(cp?.id||p.name||p.id)+'" data-image-path="'+escapeHtml(p.image||'')+'" title="Gestionar imagen principal" aria-label="Gestionar imagen principal de '+escapeHtml(p.name)+'">📷 Imagen</button></div>'+
+         '<details class="product-settings"><summary>Editar ficha del producto</summary><div class="options-content"><label>Nombre<input data-product-name="'+escapeHtml(p.id)+'" value="'+escapeHtml(p.name)+'"></label><label>Descripción<textarea rows="2" data-product-description="'+escapeHtml(p.id)+'">'+escapeHtml(p.description||'')+'</textarea></label><label>Categoría<select data-product-category="'+escapeHtml(p.id)+'">'+categoryOptions.replace('value="'+escapeHtml(p.category)+'"','value="'+escapeHtml(p.category)+'" selected')+'</select></label><label>Precio base (€)<input inputmode="decimal" data-product-base="'+escapeHtml(p.id)+'" value="'+(p.base_price_cents==null?'':(Number(p.base_price_cents)/100).toFixed(2))+'"></label><label>Orden<input type="number" data-product-order="'+escapeHtml(p.id)+'" value="'+Number(p.sort_order||0)+'"></label><label><input type="checkbox" data-product-active="'+escapeHtml(p.id)+'"'+(p.active?' checked':'')+'> Producto activo</label><button type="button" class="secondary" data-save-product-details="'+escapeHtml(p.id)+'">Guardar ficha</button></div></details>'+ 
          '<details class="options-details" data-product-options="'+p.id+'"'+(openOptionPanels.has(String(p.id))?' open':'')+'><summary>'+(group.key==='bebidas'?'Variedades y formatos':'Preparaciones y opciones')+' <span class="muted">'+opts.length+' guardadas · '+missing.length+' pendientes</span></summary><div class="options-content">'+
          '<details class="product-settings"><summary>Venta y preparaciones gratuitas</summary>'+prepEditor+'</details>'+(saved||'')+(pending||'')+
          '<div class="option" style="margin-top:14px;font-weight:700;color:var(--ink)">'+(group.key==='bebidas'?'Añadir variedad y formato':'Añadir preparación u opción')+'</div><div class="add-option-row"><label class="sr-only" for="new-label-'+p.id+'">Nombre opción</label><input id="new-label-'+p.id+'" placeholder="'+(group.key==='bebidas'?'Ej. Fanta naranja · botella 1,5 L':'Nombre de la opción')+'"><label class="sr-only" for="new-price-'+p.id+'">Precio (€)</label><input id="new-price-'+p.id+'" inputmode="decimal" placeholder="Precio (€)"><button class="icon-button" aria-label="Añadir opción" data-add-option="'+p.id+'">➕</button></div></div></details></article>';
@@ -170,6 +196,7 @@
      return '<details class="category-section" data-category-section="'+escapeHtml(group.key)+'"'+(sectionOpen?' open':'')+'><summary class="category-test" style="--cat-color:'+group.meta.color+';--cat-bg:'+group.meta.bg+'"><h2><span class="category-icon" aria-hidden="true">'+group.meta.icon+'</span> '+escapeHtml(group.meta.name)+'</h2><p>Gestiona aquí todos los productos y sus opciones</p></summary>'+categoryProducts+'<div class="category-close-row"><button type="button" class="secondary" data-close-category>Cerrar categoría</button></div></details>';
    }).join('');
    status('adminStatus',products.length+' productos cargados.');
+   await loadCategoriesEditor();
  }
 
  function optionMarkup(o,p){
@@ -615,6 +642,23 @@
    if(imageOptionButton){
      openImageEditor({kind:'option',id:imageOptionButton.dataset.imageOption,name:imageOptionButton.closest('.option-item')?.querySelector('.option-name')?.textContent||'Preparación',category:imageOptionButton.dataset.imageCategory,productSlug:imageOptionButton.dataset.imageProductSlug,optionSlug:imageOptionButton.dataset.imageOptionSlug,path:imageOptionButton.dataset.imagePath||null,showImage:imageOptionButton.dataset.showImage!=='false'});
      return;
+   }
+
+   const detailsButton=e.target.closest('[data-save-product-details]');
+   if(detailsButton){
+     const id=detailsButton.dataset.saveProductDetails;
+     const name=document.querySelector('[data-product-name="'+CSS.escape(id)+'"]').value.trim();
+     const description=document.querySelector('[data-product-description="'+CSS.escape(id)+'"]').value.trim();
+     const category=document.querySelector('[data-product-category="'+CSS.escape(id)+'"]').value;
+     const base=document.querySelector('[data-product-base="'+CSS.escape(id)+'"]').value.trim();
+     const order=Number(document.querySelector('[data-product-order="'+CSS.escape(id)+'"]').value);
+     const active=document.querySelector('[data-product-active="'+CSS.escape(id)+'"]').checked;
+     if(!name||!category||!Number.isFinite(order)|| (base!==''&&(!Number.isFinite(centsFromInput(base))||centsFromInput(base)<0))){status('adminStatus','Revisa los datos de la ficha.');return}
+     detailsButton.disabled=true;
+     const {error}=await client.from('products').update({name,description,category,base_price_cents:base===''?null:centsFromInput(base),sort_order:order,active}).eq('id',id);
+     detailsButton.disabled=false;
+     if(error){status('adminStatus','Error al guardar ficha: '+error.message);return}
+     status('adminStatus','Ficha guardada en Supabase.');await loadProducts();return;
    }
 
    const settingsButton=e.target.closest('[data-save-product-settings]');
