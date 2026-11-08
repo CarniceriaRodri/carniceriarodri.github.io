@@ -330,6 +330,23 @@
  $('refreshImageLibrary').addEventListener('click',()=>loadImageLibrary(currentLibraryFolder));
  $('libraryGoRoot').addEventListener('click',()=>loadImageLibrary(''));
  $('libraryFolder').addEventListener('input',()=>{$('libraryUploadPath').textContent=libraryPath(folderSlug($('libraryFolder').value));});
+ $('libraryCreateFolderButton').addEventListener('click',async()=>{
+   const raw=$('libraryFolder').value.trim(),folder=folderSlug(raw);
+   const button=$('libraryCreateFolderButton'),statusEl=$('libraryUploadStatus');
+   if(!raw||!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(folder)||folder.length>80){
+     statusEl.textContent='Escribe un nombre válido de hasta 80 caracteres.';return;
+   }
+   button.disabled=true;statusEl.textContent='Creando carpeta…';
+   try{
+     const {data,error}=await client.functions.invoke('github-images',{body:{action:'create-folder',folder}});
+     if(error)throw error;
+     if(!data?.path)throw new Error('GitHub no confirmó la creación de la carpeta.');
+     $('libraryFolder').value=folder;currentLibraryFolder=folder;updateLibraryPaths();
+     statusEl.textContent='Carpeta creada: '+data.path;
+     await loadImageLibrary(folder);
+   }catch(error){statusEl.textContent='No se pudo crear la carpeta: '+(error?.message||String(error));}
+   finally{button.disabled=false;}
+ });
  $('libraryUploadButton').addEventListener('click',()=>$('libraryUploadFiles').click());
  $('libraryUploadFiles').addEventListener('change',async()=>{
    const files=Array.from($('libraryUploadFiles').files||[]);if(!files.length)return;
