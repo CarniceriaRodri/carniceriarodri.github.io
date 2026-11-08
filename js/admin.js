@@ -866,4 +866,45 @@
      $('products').innerHTML='';
    }
  });
-})();
+})();  $('syncVerifiedCatalog').addEventListener('click',async()=>{
+    const button=$('syncVerifiedCatalog');
+    button.disabled=true;
+    status('syncVerifiedStatus','Comprobando catálogo y base de datos…');
+    try{
+      const response=await fetch('img/productos/biblioteca/catalogo-rodri/catalogo-verificado.json',{cache:'no-store'});
+      if(!response.ok)throw new Error('No se pudo leer el inventario de imágenes.');
+      const manifest=await response.json();
+      const [productsResult,categoriesResult]=await Promise.all([
+        client.from('products').select('id,image'),
+        client.from('categories').select('id')
+      ]);
+      if(productsResult.error)throw productsResult.error;
+      if(categoriesResult.error)throw categoriesResult.error;
+      const existing=new Map((productsResult.data||[]).map(p=>[String(p.id),p]));
+      const categories=new Set((categoriesResult.data||[]).map(c=>String(c.id)));
+      let added=0,updated=0,skipped=0,failed=0;
+      const errors=[];
+      for(const entry of manifest.productos||[]){
+        if(!entry.id||!entry.nombre||!entry.categoria||!entry.imagen||!entry.imagen.startsWith('img/productos/biblioteca/')){skipped++;continue}
+        if(!categories.has(entry.categoria)){skipped++;continue}
+        const current=existing.get(String(entry.id));
+        if(current){
+          if(current.image){skipped++;continue}
+          const {error}=await client.from('products').update({image:entry.imagen}).eq('id',entry.id);
+          if(error){failed++;errors.push(entry.id+': '+error.message)}else updated++;
+        }else{
+          const {error}=await client.from('products').insert({
+            id:entry.id,name:entry.nombre,category:entry.categoria,image:entry.imagen,
+            description:'',active:false,sort_order:9999
+          });
+          if(error){failed++;errors.push(entry.id+': '+error.message)}
+          else{added++;existing.set(String(entry.id),{id:entry.id,image:entry.imagen})}
+        }
+      }
+      status('syncVerifiedStatus','Sincronización: '+added+' fichas nuevas (inactivas hasta revisión), '+updated+' imágenes asociadas, '+skipped+' sin cambios o pendientes, '+failed+' errores.'+(errors.length?' '+errors.slice(0,3).join(' | '):''));
+      await loadProducts();
+    }catch(error){status('syncVerifiedStatus','No se pudo sincronizar: '+error.message)}
+    finally{button.disabled=false}
+  });
+
+
