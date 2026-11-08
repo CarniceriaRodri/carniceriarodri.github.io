@@ -1,24 +1,7 @@
 (async function () {
 
-  // Protección temprana de salida: no esperar a la comprobación de mantenimiento.
-  // El script puede quedar pausado en el primer fetch; esta guardia cubre ese intervalo.
-  let intentoSalidaTemprano = false;
-  let hashTemprano = location.hash;
-  history.replaceState({ rodriPageEntry: true }, '', location.href);
-  history.pushState({ rodriExitGuard: true }, '', location.href);
-  function protegerSalidaDuranteCarga() {
-    const hashActual = location.hash;
-    if (hashActual !== hashTemprano) {
-      hashTemprano = hashActual;
-      return;
-    }
-    intentoSalidaTemprano = true;
-    if (!history.state?.rodriExitGuard && !history.state?.rodriCartOpen) {
-      history.pushState({ rodriExitGuard: true }, '', location.href);
-    }
-  }
-  window.addEventListener('popstate', protegerSalidaDuranteCarga);
-
+  // No interceptar el historial para mostrar avisos de salida: generaba falsos positivos.
+  // El carrito se conserva en localStorage y puede recuperarse al volver.
 
   // Comprobar si la tienda está en mantenimiento
   try {
@@ -297,91 +280,27 @@
   let cartHistoryEntry = false;
   let cartClosePending = false;
 
-  function prepararHistorialSalida() {
-    // Evitar duplicar la entrada de protección si ya estamos sobre ella.
-    if (history.state?.rodriExitGuard || history.state?.rodriCartOpen) return;
-    history.pushState({ rodriExitGuard: true }, '', location.href);
-  }
-
-  function mostrarAvisoSalida() {
-    if (!salidaDialogo) return;
-    salidaDialogo.hidden = false;
-    document.body.classList.add('no-scroll');
-    const seguir = salidaDialogo.querySelector('[data-stay]');
-    if (seguir) seguir.focus();
-  }
-
-  function ocultarAvisoSalida() {
-    if (!salidaDialogo) return;
-    salidaDialogo.hidden = true;
-    document.body.classList.remove('no-scroll');
-  }
+  // Compatibilidad con llamadas antiguas; no añadir entradas artificiales al historial.
+  function prepararHistorialSalida() {}
 
   function volverACategorias() {
     const catalogo = document.getElementById('catalogo');
     if (catalogo) catalogo.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
-  // La entrada inicial representa la parte superior de la tienda.
-  // Los enlaces internos conservan su historial natural por medio de sus hashes.
-  let ultimoHash = location.hash;
-  window.addEventListener('hashchange', () => {
-    ultimoHash = location.hash;
-  });
-
-  window.addEventListener('popstate', (event) => {
-    const hashActual = location.hash;
-    const navegacionInterna = hashActual !== ultimoHash;
-    ultimoHash = hashActual;
-
-    // Atrás con el carrito abierto solo cierra el carrito.
+  // El botón Atrás solo cierra el carrito si este está abierto.
+  // No interpretar desplazamientos, hashes ni navegación normal como salida.
+  window.addEventListener('popstate', () => {
     if (cartClosePending) {
       cartClosePending = false;
       cartHistoryEntry = false;
       return;
     }
-    if (drawer && drawer.classList.contains('open')) {
+    if (drawer?.classList.contains('open')) {
       cartHistoryEntry = false;
       closeCart(true);
-      volverACategorias();
-      return;
     }
-
-    // Los cambios de sección por hash nunca son intentos de abandonar la tienda.
-    if (navegacionInterna) return;
-
-    if (pedidoEnProceso) {
-      prepararHistorialSalida();
-      return;
-    }
-
-    // Chrome puede terminar de restaurar el scroll después de popstate.
-    requestAnimationFrame(() => requestAnimationFrame(() => {
-      if (window.scrollY <= 24) mostrarAvisoSalida();
-
-      if (history.state?.rodriExitGuard) {
-        history.replaceState({ rodriPageEntry: true }, '', location.href);
-      }
-      prepararHistorialSalida();
-    }));
   });
-
-  // La protección temprana solo es necesaria mientras se comprueba mantenimiento.
-  // Desde aquí, el listener normal gestiona carrito y navegación interna.
-  window.removeEventListener('popstate', protegerSalidaDuranteCarga);
-
-  // Crear la guardia también en una carga directa desde marcador/acceso directo.
-  prepararHistorialSalida();
-
-  window.addEventListener('pageshow', () => {
-    if (drawer?.classList.contains('open')) return;
-    // pageshow ocurre tanto en la carga inicial como al restaurar desde bfcache.
-    if (!history.state?.rodriExitGuard && !history.state?.rodriCartOpen) {
-      prepararHistorialSalida();
-    }
-    ultimoHash = location.hash;
-  });
-
 
   // Verificación anti-bots de Cloudflare Turnstile
   let turnstileToken = '';
@@ -438,21 +357,9 @@
     }, 300);
   }
 
-  // Acciones del aviso de salida del navegador.
+  // Aviso de salida desactivado: nunca interrumpir el pedido por navegar o desplazarse.
   salidaDialogo = document.getElementById('exitConfirm');
-  if (intentoSalidaTemprano) mostrarAvisoSalida();
-  if (salidaDialogo) {
-    salidaDialogo.querySelector('[data-stay]')?.addEventListener('click', () => {
-      ocultarAvisoSalida();
-      volverACategorias();
-      // La entrada de protección ya está rearmada al mostrar el aviso.
-    });
-    salidaDialogo.querySelector('[data-exit]')?.addEventListener('click', () => {
-      ocultarAvisoSalida();
-      // Saltar la protección rearmada y la entrada inicial de la tienda.
-      history.go(-2);
-    });
-  }
+  if (salidaDialogo) salidaDialogo.hidden = true;
 
   let toastTimer;
   function toast(msg) {
@@ -479,7 +386,7 @@
       cartHistoryEntry = false;
       cartClosePending = false;
       if (history.state?.rodriCartOpen) {
-        history.replaceState({ rodriExitGuard: true }, '', location.href);
+        history.replaceState({ rodriPageEntry: true }, '', location.href);
       }
       closeCart(true);
     }
