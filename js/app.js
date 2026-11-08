@@ -336,6 +336,7 @@
       cartHistoryEntry = true;
     }
     backdrop.hidden = false;
+    actualizarRestriccionesHora();
     inicializarTurnstile();
     drawer.removeAttribute('inert');
     requestAnimationFrame(() => {
@@ -426,36 +427,72 @@
     document.body.classList.add('no-scroll');
   }
 
-  // Horario de recogida de 08:00 a 20:00, intervalos de 30 minutos
-  // y un mínimo de 60 minutos de antelación.
-  function fechaRecogidaSeleccionada(dia, hora) {
-    if (!/^\d{2}:\d{2}$/.test(hora || '')) return null;
-    if (!['Hoy', 'Mañana', 'Pasado mañana'].includes(dia)) return null;
-    const [horas, minutos] = hora.split(':').map(Number);
-    if (horas < 8 || horas > 20 || ![0, 30].includes(minutos) || (horas === 20 && minutos !== 0)) return null;
-    const fecha = new Date();
-    fecha.setDate(fecha.getDate() + (dia === 'Hoy' ? 0 : dia === 'Mañana' ? 1 : 2));
-    fecha.setHours(horas, minutos, 0, 0);
-    return fecha;
+  // Franja horaria en Jerez (Europe/Madrid), también para visitantes
+  // cuyo teléfono esté configurado en otra zona horaria.
+  function minutosActualesJerez() {
+    const partes = new Intl.DateTimeFormat('es-ES', {
+      timeZone: 'Europe/Madrid', hour: '2-digit', minute: '2-digit', hourCycle: 'h23'
+    }).formatToParts(new Date());
+    const horas = Number(partes.find(p => p.type === 'hour')?.value);
+    const minutos = Number(partes.find(p => p.type === 'minute')?.value);
+    return horas * 60 + minutos;
   }
 
   function validarHoraRecogida(dia, hora) {
-    const fecha = fechaRecogidaSeleccionada(dia, hora);
-    return fecha !== null && fecha.getTime() >= Date.now() + 60 * 60 * 1000;
+    if (!['Hoy', 'Mañana', 'Pasado mañana'].includes(dia) || !/^\d{2}:(00|30)$/.test(hora || '')) return false;
+    const [horas, minutos] = hora.split(':').map(Number);
+    const total = horas * 60 + minutos;
+    if (total < 8 * 60 || total > 20 * 60) return false;
+    // Mínimo una hora desde el momento real en la zona del establecimiento.
+    return dia !== 'Hoy' || total >= minutosActualesJerez() + 60;
   }
 
   function actualizarRestriccionesHora() {
+    const diaEl = $('#dia');
     const campoHora = $('#hora');
-    if (!campoHora) return;
-    campoHora.min = '08:00';
-    campoHora.max = '20:00';
-    campoHora.step = '1800';
-    if (campoHora.value && !validarHoraRecogida($('#dia').value, campoHora.value)) campoHora.value = '';
+    if (!diaEl || !campoHora) return;
+
+    // Evitar mostrar "Hoy" cuando ya no quedan horas de recogida.
+    const hoyOption = diaEl.querySelector('option[value="Hoy"]');
+    const hoyDisponible = Array.from({ length: 25 }, (_, i) => 8 * 60 + i * 30)
+      .some(total => total >= minutosActualesJerez() + 60);
+    if (hoyOption) {
+      hoyOption.disabled = !hoyDisponible;
+      hoyOption.textContent = hoyDisponible ? 'Hoy' : 'Hoy (sin horarios disponibles)';
+    }
+    const cambiadoAManana = !hoyDisponible && diaEl.value === 'Hoy';
+    if (cambiadoAManana) diaEl.value = 'Mañana';
+
+    const anterior = campoHora.value;
+    campoHora.replaceChildren();
+    campoHora.add(new Option('Selecciona una hora', ''));
+    const horarios = [];
+    for (let total = 8 * 60; total <= 20 * 60; total += 30) {
+      const hora = String(Math.floor(total / 60)).padStart(2, '0')
+        + ':' + String(total % 60).padStart(2, '0');
+      if (!validarHoraRecogida(diaEl.value, hora)) continue;
+      horarios.push(hora);
+      campoHora.add(new Option(hora, hora));
+    }
+
+    campoHora.disabled = horarios.length === 0;
+    campoHora.value = horarios.includes(anterior) ? anterior : '';
+    const ayuda = $('#horaAyuda');
+    if (ayuda) {
+      ayuda.textContent = cambiadoAManana
+        ? 'Hoy ya no quedan horas de recogida. Hemos seleccionado mañana. Horario de Jerez.'
+        : horarios.length
+          ? 'De ' + horarios[0] + ' a ' + horarios[horarios.length - 1]
+            + ', cada 30 minutos · Hora local de Jerez.'
+          : 'No hay franjas disponibles para este día. Selecciona otro.';
+    }
   }
 
   // ——— Envío por Google Sheets y WhatsApp ———
   async function enviar(e) {
     e.preventDefault();
+    // El horario puede haber dejado de estar disponible mientras se rellenaba el pedido.
+    actualizarRestriccionesHora();
 
     // Evitar dobles envíos si el usuario pulsa repetidamente.
     if (pedidoEnProceso) return;
@@ -485,7 +522,7 @@
     errorTelefono.classList.toggle('show', !telefonoValido);
 
     const horaValida = validarHoraRecogida(dia, hora);
-     errorHora.textContent = 'Elige una hora entre las 08:00 y las 20:00, cada 30 minutos y con al menos una hora de antelación.';
+     errorHora.textContent = 'Selecciona uno de los horarios disponibles para el día elegido.';
     errorHora.classList.toggle('show', !horaValida);
 
     if (!nombreValido || !telefonoValido || !horaValida) {
@@ -839,6 +876,12 @@
     $('[data-err="hora"]').classList.remove('show');
   });
   actualizarRestriccionesHora();
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden && drawer?.classList.contains('open')) actualizarRestriccionesHora();
+  });
+  window.addEventListener('pageshow', () => {
+    if (drawer?.classList.contains('open')) actualizarRestriccionesHora();
+  });
   $('#vaciar').addEventListener('click', () => { cart = []; save(); renderCart(); });
 
   $$('#nombre, #telefono, #hora').forEach((el) =>
