@@ -1,24 +1,7 @@
 (async function () {
 
-  // Protección temprana de salida: no esperar a la comprobación de mantenimiento.
-  // El script puede quedar pausado en el primer fetch; esta guardia cubre ese intervalo.
-  let intentoSalidaTemprano = false;
-  let hashTemprano = location.hash;
-  history.replaceState({ rodriPageEntry: true }, '', location.href);
-  history.pushState({ rodriExitGuard: true }, '', location.href);
-  function protegerSalidaDuranteCarga() {
-    const hashActual = location.hash;
-    if (hashActual !== hashTemprano) {
-      hashTemprano = hashActual;
-      return;
-    }
-    intentoSalidaTemprano = true;
-    if (!history.state?.rodriExitGuard && !history.state?.rodriCartOpen) {
-      history.pushState({ rodriExitGuard: true }, '', location.href);
-    }
-  }
-  window.addEventListener('popstate', protegerSalidaDuranteCarga);
-
+  // No interceptar el historial para mostrar avisos de salida: generaba falsos positivos.
+  // El carrito se conserva en localStorage y puede recuperarse al volver.
 
   // Comprobar si la tienda está en mantenimiento
   try {
@@ -101,13 +84,15 @@
             typeof l.cantidad === 'string' &&
             typeof l.opcion === 'string' &&
             Number.isInteger(l.uds) &&
-            l.uds > 0
+            l.uds > 0 && l.uds <= 99 &&
+            PRODUCTOS.some((p) => p.id === l.id)
           )
           .slice(0, 50)
       : [];
   } catch { cart = []; }
   const save = () => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(cart));
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(cart)); }
+    catch (error) { console.warn('No se pudo guardar el carrito:', error); }
   };
 
   // ——— Catálogo ———
@@ -204,7 +189,7 @@
     let precioNum = 0;
     if (p) {
       const key = normalizarClave(l.opcion);
-      const unit = ((p.precio || '').match(/\/(kg|ud)/i) || [,'ud'])[0];
+      const unit = ((p.precio || '').match(/\/(kg|ud)/i) || [null, '/ud'])[0] || '/ud';
       const optionValue = p.preciosOpciones && Number.isFinite(Number(p.preciosOpciones[key]))
         ? Number(p.preciosOpciones[key])
         : (p.precioNumOpciones && Number.isFinite(p.precioNumOpciones[key]) ? p.precioNumOpciones[key] : null);
@@ -270,9 +255,11 @@
     const carritoEstabaVacio = cart.length === 0;
     const existing = cart.find((l) => l.id === id && l.cantidad === cantidad && l.opcion === opcion && (l.preparacion || '') === preparacion);
     if (existing) {
+      if (existing.uds >= 99) { toast('Máximo 99 unidades por producto.'); return; }
       existing.uds++;
       if (imagenSeleccionada) existing.img = imagenSeleccionada;
     } else {
+      if (cart.length >= 50) { toast('Máximo 50 líneas en el pedido.'); return; }
       cart.push({ id, cantidad, opcion, preparacion, uds: 1, ...(imagenSeleccionada ? { img: imagenSeleccionada } : {}) });
     }
     save();
@@ -293,91 +280,27 @@
   let cartHistoryEntry = false;
   let cartClosePending = false;
 
-  function prepararHistorialSalida() {
-    // Evitar duplicar la entrada de protección si ya estamos sobre ella.
-    if (history.state?.rodriExitGuard || history.state?.rodriCartOpen) return;
-    history.pushState({ rodriExitGuard: true }, '', location.href);
-  }
-
-  function mostrarAvisoSalida() {
-    if (!salidaDialogo) return;
-    salidaDialogo.hidden = false;
-    document.body.classList.add('no-scroll');
-    const seguir = salidaDialogo.querySelector('[data-stay]');
-    if (seguir) seguir.focus();
-  }
-
-  function ocultarAvisoSalida() {
-    if (!salidaDialogo) return;
-    salidaDialogo.hidden = true;
-    document.body.classList.remove('no-scroll');
-  }
+  // Compatibilidad con llamadas antiguas; no añadir entradas artificiales al historial.
+  function prepararHistorialSalida() {}
 
   function volverACategorias() {
     const catalogo = document.getElementById('catalogo');
     if (catalogo) catalogo.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
-  // La entrada inicial representa la parte superior de la tienda.
-  // Los enlaces internos conservan su historial natural por medio de sus hashes.
-  let ultimoHash = location.hash;
-  window.addEventListener('hashchange', () => {
-    ultimoHash = location.hash;
-  });
-
-  window.addEventListener('popstate', (event) => {
-    const hashActual = location.hash;
-    const navegacionInterna = hashActual !== ultimoHash;
-    ultimoHash = hashActual;
-
-    // Atrás con el carrito abierto solo cierra el carrito.
+  // El botón Atrás solo cierra el carrito si este está abierto.
+  // No interpretar desplazamientos, hashes ni navegación normal como salida.
+  window.addEventListener('popstate', () => {
     if (cartClosePending) {
       cartClosePending = false;
       cartHistoryEntry = false;
       return;
     }
-    if (drawer && drawer.classList.contains('open')) {
+    if (drawer?.classList.contains('open')) {
       cartHistoryEntry = false;
       closeCart(true);
-      volverACategorias();
-      return;
     }
-
-    // Los cambios de sección por hash nunca son intentos de abandonar la tienda.
-    if (navegacionInterna) return;
-
-    if (pedidoEnProceso) {
-      prepararHistorialSalida();
-      return;
-    }
-
-    // Chrome puede terminar de restaurar el scroll después de popstate.
-    requestAnimationFrame(() => requestAnimationFrame(() => {
-      if (window.scrollY <= 24) mostrarAvisoSalida();
-
-      if (history.state?.rodriExitGuard) {
-        history.replaceState({ rodriPageEntry: true }, '', location.href);
-      }
-      prepararHistorialSalida();
-    }));
   });
-
-  // La protección temprana solo es necesaria mientras se comprueba mantenimiento.
-  // Desde aquí, el listener normal gestiona carrito y navegación interna.
-  window.removeEventListener('popstate', protegerSalidaDuranteCarga);
-
-  // Crear la guardia también en una carga directa desde marcador/acceso directo.
-  prepararHistorialSalida();
-
-  window.addEventListener('pageshow', () => {
-    if (drawer?.classList.contains('open')) return;
-    // pageshow ocurre tanto en la carga inicial como al restaurar desde bfcache.
-    if (!history.state?.rodriExitGuard && !history.state?.rodriCartOpen) {
-      prepararHistorialSalida();
-    }
-    ultimoHash = location.hash;
-  });
-
 
   // Verificación anti-bots de Cloudflare Turnstile
   let turnstileToken = '';
@@ -403,8 +326,8 @@
       history.pushState({ rodriCartOpen: true }, '', location.href);
       cartHistoryEntry = true;
     }
-    inicializarTurnstile();
     backdrop.hidden = false;
+    inicializarTurnstile();
     drawer.removeAttribute('inert');
     requestAnimationFrame(() => {
       drawer.classList.add('open');
@@ -434,21 +357,9 @@
     }, 300);
   }
 
-  // Acciones del aviso de salida del navegador.
+  // Aviso de salida desactivado: nunca interrumpir el pedido por navegar o desplazarse.
   salidaDialogo = document.getElementById('exitConfirm');
-  if (intentoSalidaTemprano) mostrarAvisoSalida();
-  if (salidaDialogo) {
-    salidaDialogo.querySelector('[data-stay]')?.addEventListener('click', () => {
-      ocultarAvisoSalida();
-      volverACategorias();
-      // La entrada de protección ya está rearmada al mostrar el aviso.
-    });
-    salidaDialogo.querySelector('[data-exit]')?.addEventListener('click', () => {
-      ocultarAvisoSalida();
-      // Saltar la protección rearmada y la entrada inicial de la tienda.
-      history.go(-2);
-    });
-  }
+  if (salidaDialogo) salidaDialogo.hidden = true;
 
   let toastTimer;
   function toast(msg) {
@@ -475,7 +386,7 @@
       cartHistoryEntry = false;
       cartClosePending = false;
       if (history.state?.rodriCartOpen) {
-        history.replaceState({ rodriExitGuard: true }, '', location.href);
+        history.replaceState({ rodriPageEntry: true }, '', location.href);
       }
       closeCart(true);
     }
@@ -545,8 +456,8 @@
   async function enviar(e) {
     e.preventDefault();
 
-    // Marcar el flujo de pedido desde el primer instante del submit para que
-    // ningún popstate generado durante el checkout muestre el aviso de salida.
+    // Evitar dobles envíos si el usuario pulsa repetidamente.
+    if (pedidoEnProceso) return;
     pedidoEnProceso = true;
 
     const nombre = $('#nombre').value.trim().replace(/\s+/g, ' ');
@@ -587,10 +498,14 @@
       return;
     }
 
+    if (!cart.length) { pedidoEnProceso = false; toast('Añade productos antes de enviar.'); return; }
     const hoy = new Date();
     const dd = String(hoy.getDate()).padStart(2, '0');
     const mm = String(hoy.getMonth() + 1).padStart(2, '0');
-    const idMostrar = `rod-${dd}${mm}-${Math.floor(10 + Math.random() * 90)}`;
+    const randomId = typeof crypto !== 'undefined' && crypto.getRandomValues
+      ? Array.from(crypto.getRandomValues(new Uint8Array(4)), b => b.toString(16).padStart(2, '0')).join('')
+      : String(Date.now());
+    const idMostrar = `rod-${dd}${mm}-${randomId}`;
 
     let totalPedido = 0;
     const productosParaSheets = cart.map((l) => {
@@ -674,8 +589,7 @@
       turnstileToken = '';
     }
 
-    // El navegador usa no-cors y no puede leer la respuesta de Apps Script.
-    // Se conserva el comportamiento actual del modal.
+    // no-cors NO permite confirmar el registro en Sheets: informar con precisión.
     mostrarModal(idMostrar);
   }
 
@@ -829,6 +743,8 @@
     if (inc || dec) {
       const el = inc || dec;
       const i = Number(el.dataset.inc != null ? el.dataset.inc : el.dataset.dec);
+      if (!Number.isInteger(i) || !cart[i]) return;
+      if (inc && cart[i].uds >= 99) { toast('Máximo 99 unidades por producto.'); return; }
       cart[i].uds += inc ? 1 : -1;
       if (cart[i].uds <= 0) cart.splice(i, 1);
       save(); renderCart();
@@ -846,16 +762,16 @@
   const btnWhatsAppModal = document.getElementById('btnEnviarWhatsApp');
   if (btnWhatsAppModal) {
     btnWhatsAppModal.onclick = () => {
-      if (enlaceWhatsAppPendiente) {
-        window.open(enlaceWhatsAppPendiente, '_blank', 'noopener,noreferrer');
-      }
+      if (!enlaceWhatsAppPendiente) { toast('No hay un pedido pendiente para enviar.'); return; }
+      // No borrar el carrito: abrir WhatsApp no demuestra que el mensaje se haya enviado.
+      const enlace = enlaceWhatsAppPendiente;
       const modal = document.getElementById('modalConfirmacion');
       const modalBackdrop = document.getElementById('modalBackdrop');
       if (modal) modal.setAttribute('hidden', '');
       if (modalBackdrop) modalBackdrop.setAttribute('hidden', '');
       document.body.classList.remove('no-scroll');
       pedidoEnProceso = false;
-      cart = []; save(); renderCart();
+      window.location.assign(enlace);
     };
   }
 
