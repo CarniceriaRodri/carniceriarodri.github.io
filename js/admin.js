@@ -306,6 +306,18 @@
    $('imageLibraryPath').textContent=libraryPath(currentLibraryFolder);
    $('libraryUploadPath').textContent=libraryPath(uploadLibraryFolder);
  }
+ async function functionErrorMessage(error){
+   let detail=error?.message||String(error);
+   try{
+     const response=error?.context;
+     if(response&&typeof response.clone==='function'){
+       const payload=await response.clone().json();
+       if(payload?.error)detail=payload.error;
+       else if(payload?.message)detail=payload.message;
+     }
+   }catch(_){}
+   return detail;
+ }
  async function listLibraryFolder(folder){
    const {data,error}=await client.functions.invoke('github-images',{body:{action:'list-folder',folder}});
    if(error){
@@ -357,7 +369,7 @@
        host.append(button);
      });
      $('libraryUploadNavStatus').textContent=folders.length? 'Carpetas en esta ubicación. Pulsa una para entrar.':'No hay subcarpetas en esta ubicación.';
-   }catch(error){$('libraryUploadNavStatus').textContent='No se pudieron cargar las carpetas: '+(error?.message||String(error));}
+   }catch(error){$('libraryUploadNavStatus').textContent='No se pudieron cargar las carpetas: '+await functionErrorMessage(error);}
  }
  $('openImageLibrary').addEventListener('click',async()=>{$('imageLibraryPicker').hidden=!$('imageLibraryPicker').hidden;if(!$('imageLibraryPicker').hidden)await loadImageLibrary('');});
  $('refreshImageLibrary').addEventListener('click',()=>loadImageLibrary(currentLibraryFolder));
@@ -377,7 +389,7 @@
      uploadLibraryFolder=uploadLibraryFolder?uploadLibraryFolder+'/'+folder:folder;
      statusEl.textContent='Carpeta creada correctamente.';
      await refreshUploadFolders();await loadImageLibrary(currentLibraryFolder);
-   }catch(error){statusEl.textContent='No se pudo crear la carpeta: '+(error?.message||String(error));}
+   }catch(error){statusEl.textContent='No se pudo crear la carpeta: '+await functionErrorMessage(error);}
    finally{button.disabled=false;}
  });
  $('libraryUploadButton').addEventListener('click',()=>$('libraryUploadFiles').click());
@@ -390,7 +402,7 @@
    for(let i=0;i<valid.length;i++){const file=valid[i];statusEl.textContent='Subiendo '+(i+1)+' de '+valid.length+': '+file.name;
      try{const {data,error}=await client.functions.invoke('github-images',{body:{action:'upload',kind:'product',category:'biblioteca',productSlug:folder,contentType:file.type,contentBase64:await fileBase64(file)}});
        if(error)throw error;if(!data?.path)throw new Error('GitHub no devolvió la ruta.');uploaded++;
-     }catch(error){failed++;statusEl.textContent='Error con '+file.name+': '+(error?.message||String(error));}
+     }catch(error){failed++;statusEl.textContent='Error con '+file.name+': '+await functionErrorMessage(error);}
    }
    input.disabled=false;button.disabled=false;input.value='';
    statusEl.textContent='Proceso terminado: '+uploaded+' imágenes guardadas'+(failed?', '+failed+' errores':'')+(invalid?', '+invalid+' archivos omitidos por formato o tamaño':'')+'.';
