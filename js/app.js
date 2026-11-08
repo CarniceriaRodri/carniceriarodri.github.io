@@ -817,7 +817,7 @@
 
   async function sincronizarPrecios() {
     try {
-      const response = await fetch('https://ugqiomoywgpkmogcdjqn.supabase.co/rest/v1/products?select=id,name,base_price_cents,active,image,sale_unit,preparations&apikey=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVncWlvbW95d2dwa21vZ2NkanFuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM2MDc0OTQsImV4cCI6MjEwOTE4MzQ5NH0.k--iBQrSD_raY-TQn01ZHPIkZJ5Xm_KrxEmwY08po3Q', {
+      const response = await fetch('https://ugqiomoywgpkmogcdjqn.supabase.co/rest/v1/products?select=id,name,description,category,base_price_cents,active,image,sale_unit,preparations&apikey=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVncWlvbW95d2dwa21vZ2NkanFuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM2MDc0OTQsImV4cCI6MjEwOTE4MzQ5NH0.k--iBQrSD_raY-TQn01ZHPIkZJ5Xm_KrxEmwY08po3Q', {
         method: 'GET',
         mode: 'cors',
         cache: 'no-store',
@@ -837,6 +837,10 @@ const product = PRODUCTOS.find(p => String(p.id) === String(row.id))
   || PRODUCTOS.find(p => normalizar(p.nombre) === normalizar(row.name));
         if (!product) return;
         catalogProductByDatabaseId.set(String(row.id), product);
+        // Los cambios guardados en administración prevalecen sobre el catálogo local.
+        if (typeof row.name === 'string' && row.name.trim()) product.nombre = row.name.trim();
+        if (typeof row.description === 'string') product.desc = row.description;
+        if (typeof row.category === 'string' && row.category.trim()) product.cat = row.category.trim();
         product.imageUrl = publicImageUrl(row.image) || product.imagenBiblioteca || '';
         // La demostración solo complementa el catálogo; no sobrescribe imágenes propias.
         if (row.base_price_cents !== null && row.base_price_cents !== undefined && Number.isFinite(Number(row.base_price_cents))) product.precioDemo = false;
