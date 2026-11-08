@@ -134,3 +134,66 @@ const DESCRIPCIONES_RODRI = {
   "entrecot-de-ternera": "Entrecot de ternera para parrilla o plancha."
 };
 window.PRODUCTOS.forEach(producto => { if (!producto.desc && DESCRIPCIONES_RODRI[producto.id]) producto.desc = DESCRIPCIONES_RODRI[producto.id]; });
+
+// Imágenes verificadas en la biblioteca de GitHub. No crea ni activa productos.
+// Se usan solo como respaldo cuando Supabase no tiene imagen principal configurada.
+window.IMAGENES_BIBLIOTECA_RODRI = {
+  "espinazo-salado": "img/productos/biblioteca/salados/01-espinazo-salado.jpg",
+  "blanco-salado": "img/productos/biblioteca/salados/02-blanco-salado.jpg",
+  "costilla-salada": "img/productos/biblioteca/salados/03-costilla-salada.jpg",
+  "tocino-salado": "img/productos/biblioteca/salados/04-tocino-salado.jpg",
+  "corteza-aneja": "img/productos/biblioteca/salados/05-corteza-aneja.jpg",
+  "rabo-salado": "img/productos/biblioteca/salados/06-rabo-salado.jpg",
+  "filetes-empanados": "img/productos/biblioteca/precocinados/01-filetes-empanados.jpg",
+  "lagrimitas-de-pollo": "img/productos/biblioteca/precocinados/02-lagrimitas-de-pollo.jpg",
+  "aneto-jamon-y-queso": "img/productos/biblioteca/precocinados/03-aneto-de-jamon-y-queso.jpg",
+  "albondigas-de-pollo": "img/productos/biblioteca/precocinados/04-albondigas-de-pollo.jpg",
+  "albondigas-mixtas": "img/productos/biblioteca/precocinados/05-albondigas-mixtas.jpg",
+  "san-jacobo": "img/productos/biblioteca/precocinados/06-san-jacobos.jpg",
+  "fajitas-de-pollo": "img/productos/biblioteca/precocinados/08-fajitas-de-pollo.jpg",
+  "hamburguesa-de-pollo": "img/productos/biblioteca/precocinados/09-hamburguesas-de-pollo.jpg",
+  "hamburguesa-iberica": "img/productos/biblioteca/precocinados/10-hamburguesas-ibericas.jpg",
+  "hamburguesa-de-ternera": "img/productos/biblioteca/precocinados/11-hamburguesas-de-ternera.jpg",
+  "hamburguesa-de-cerdo": "img/productos/biblioteca/precocinados/12-hamburguesas-de-cerdo.jpg",
+  "pinchito-de-pollo-pechuga": "img/productos/biblioteca/precocinados/13-pinchitos-de-pechuga-de-pollo.jpg",
+  "pinchito-de-pollo-contramuslo": "img/productos/biblioteca/precocinados/14-pinchitos-de-contramuslo-de-pollo.jpg",
+  "pinchito-de-cerdo": "img/productos/biblioteca/precocinados/15-pinchitos-de-cerdo.jpg",
+  "chuletas-de-lomo": "img/productos/biblioteca/cerdo/01-chuletas-de-lomo-de-cerdo.jpg",
+  "lomo-entero": "img/productos/biblioteca/cerdo/02-lomo-entero-de-cerdo.jpg",
+  "filetes-de-lomo": "img/productos/biblioteca/cerdo/03-filetes-de-lomo-de-cerdo.jpg",
+  "chuletas-de-cabeza": "img/productos/biblioteca/cerdo/04-chuletas-de-cabeza-de-cerdo.jpg",
+  "cabeza-entera-con-hueso": "img/productos/biblioteca/cerdo/05-cabeza-entera-con-hueso-de-cerdo.jpg",
+  "cabeza-entera-sin-hueso": "img/productos/biblioteca/cerdo/06-cabeza-entera-sin-hueso-de-cerdo.jpg",
+  "filete-de-jamon-de-cerdo": "img/productos/biblioteca/cerdo/09-filetes-de-jamon-de-cerdo.jpg",
+  "jamon-entero-de-cerdo": "img/productos/biblioteca/cerdo/10-jamon-entero-de-cerdo.jpg",
+  "paleta-entera-de-cerdo": "img/productos/biblioteca/cerdo/11-paleta-entera-de-cerdo.jpg",
+  "morcilla-cerdo": "img/productos/biblioteca/cerdo/12-morcilla-de-cerdo.jpg",
+  "chorizo-cerdo": "img/productos/biblioteca/cerdo/13-chorizo-de-cerdo.jpg",
+  "tiras-de-costilla": "img/productos/biblioteca/cerdo/14-tiras-de-costilla-de-lomo-de-cerdo.jpg",
+  "costilla-carnosa": "img/productos/biblioteca/cerdo/15-costilla-carnosa-de-cerdo.jpg",
+  "manitas-de-cerdo": "img/productos/biblioteca/cerdo/17-manitas-de-cerdo.jpg",
+  "higado-de-cerdo": "img/productos/biblioteca/cerdo/18-higado-de-cerdo.jpg",
+  "hueso-de-espinazo-de-cerdo": "img/productos/biblioteca/cerdo/21-hueso-de-espinazo-de-cerdo.jpg",
+  "oreja-de-cerdo": "img/productos/biblioteca/cerdo/22-oreja-de-cerdo.jpg",
+  "lengua-de-cerdo": "img/productos/biblioteca/cerdo/23-lengua-de-cerdo.jpg",
+  "punta-de-solomillo": "img/productos/biblioteca/cerdo/24-punta-de-solomillo-de-cerdo.jpg",
+  "tocino-fresco": "img/productos/biblioteca/cerdo/25-tocino-fresco-de-cerdo.jpg",
+  "babilla-de-ternera": "img/productos/biblioteca/ternera/01-babilla-de-ternera.jpg",
+  "chuleta-de-ternera": "img/productos/biblioteca/ternera/02-chuleta-de-ternera.jpg",
+  "ternera-para-guiso": "img/productos/biblioteca/ternera/03-carne-para-guiso-de-ternera.jpg",
+  "solomillo-de-ternera": "img/productos/biblioteca/ternera/04-solomillo-de-ternera.jpg",
+  "entrecot-de-ternera": "img/productos/biblioteca/ternera/05-entrecot-de-ternera.jpg",
+  "chuletas-ibericas": "img/productos/biblioteca/cerdo-iberico/01-chuletas-ibericas.jpg",
+  "lomo-iberico": "img/productos/biblioteca/cerdo-iberico/02-lomo-iberico.jpg",
+  "filete-iberico": "img/productos/biblioteca/cerdo-iberico/03-filete-iberico.jpg",
+  "lagartito-iberico": "img/productos/biblioteca/cerdo-iberico/04-lagartito-iberico.jpg",
+  "presa-iberica": "img/productos/biblioteca/cerdo-iberico/05-presa-iberica.jpg",
+  "secreto-iberico": "img/productos/biblioteca/cerdo-iberico/06-secreto-iberico.jpg",
+  "solomillo-iberico": "img/productos/biblioteca/cerdo-iberico/07-solomillo-iberico.jpg",
+  "costilla-iberica": "img/productos/biblioteca/cerdo-iberico/08-costilla-iberica.jpg"
+};
+window.PRODUCTOS.forEach(producto => {
+  if (window.IMAGENES_BIBLIOTECA_RODRI[producto.id]) {
+    producto.imagenBiblioteca = window.IMAGENES_BIBLIOTECA_RODRI[producto.id];
+  }
+});
