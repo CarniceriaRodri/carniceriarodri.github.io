@@ -922,7 +922,7 @@
       const original = new Map(PRODUCTOS.map(p => [String(p.id), p]));
       const optionsByProduct = new Map();
       for (const option of optionRows) {
-        if (option.active !== true || !Number.isFinite(Number(option.price_cents)) || Number(option.price_cents) <= 0) continue;
+        if (option.active !== true || /^al gusto$/i.test(String(option.label||'').trim()) || !Number.isFinite(Number(option.price_cents)) || Number(option.price_cents) <= 0) continue;
         const id = String(option.product_id);
         if (!optionsByProduct.has(id)) optionsByProduct.set(id, []);
         optionsByProduct.get(id).push(option);
