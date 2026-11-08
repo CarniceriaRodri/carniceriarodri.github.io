@@ -857,6 +857,26 @@
       });
       if (!response.ok) throw new Error('Supabase respondió ' + response.status);
       const rows = await response.json();
+      // Las categorías creadas en administración deben aparecer en la tienda.
+      // Respetar el indicador active y el orden configurado en Supabase.
+      try {
+        const key = new URL(response.url).searchParams.get('apikey');
+        const categoriesResponse = await fetch(
+          'https://ugqiomoywgpkmogcdjqn.supabase.co/rest/v1/categories?select=id,name,tagline,sort_order,active&order=sort_order.asc&apikey=' + encodeURIComponent(key),
+          {cache:'no-store'}
+        );
+        if (!categoriesResponse.ok) throw new Error('HTTP ' + categoriesResponse.status);
+        const categoryRows = await categoriesResponse.json();
+        if (Array.isArray(categoryRows)) {
+          const visible = categoryRows.filter(c => c.active === true);
+          CATEGORIAS.splice(0,CATEGORIAS.length,...visible.map(c => ({
+            id:String(c.id),nombre:String(c.name||c.id),lema:String(c.tagline||'')
+          })));
+        }
+      } catch (categoryError) {
+        console.warn('No se pudieron cargar las categorías de Supabase:',categoryError);
+      }
+
       const catalogProductByDatabaseId = new Map();
       rows.forEach(row => {
         const normalizar = texto => String(texto || '')
