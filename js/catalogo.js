@@ -244,8 +244,7 @@ window.RODRI_PRECIOS_DEMO = {
       "Entero",
       "En filetes",
       "En trozos",
-      "Para guiso",
-      "Al gusto"
+      "Para guiso"
     ]
   },
   "cabeza-entera-sin-hueso": {
@@ -255,8 +254,7 @@ window.RODRI_PRECIOS_DEMO = {
       "Entero",
       "En filetes",
       "En trozos",
-      "Para guiso",
-      "Al gusto"
+      "Para guiso"
     ]
   },
   "solomillo-de-cerdo": {
@@ -275,8 +273,7 @@ window.RODRI_PRECIOS_DEMO = {
       "Entero",
       "En filetes",
       "En trozos",
-      "Para guiso",
-      "Al gusto"
+      "Para guiso"
     ]
   },
   "filete-de-jamon-de-cerdo": {
@@ -286,8 +283,7 @@ window.RODRI_PRECIOS_DEMO = {
       "Entero",
       "En filetes",
       "En trozos",
-      "Para guiso",
-      "Al gusto"
+      "Para guiso"
     ]
   },
   "jamon-entero-de-cerdo": {
@@ -297,8 +293,7 @@ window.RODRI_PRECIOS_DEMO = {
       "Entero",
       "En filetes",
       "En trozos",
-      "Para guiso",
-      "Al gusto"
+      "Para guiso"
     ]
   },
   "paleta-entera-de-cerdo": {
@@ -308,8 +303,7 @@ window.RODRI_PRECIOS_DEMO = {
       "Entero",
       "En filetes",
       "En trozos",
-      "Para guiso",
-      "Al gusto"
+      "Para guiso"
     ]
   },
   "morcilla-cerdo": {
@@ -319,8 +313,7 @@ window.RODRI_PRECIOS_DEMO = {
       "Entero",
       "En filetes",
       "En trozos",
-      "Para guiso",
-      "Al gusto"
+      "Para guiso"
     ]
   },
   "chorizo-cerdo": {
@@ -330,8 +323,7 @@ window.RODRI_PRECIOS_DEMO = {
       "Entero",
       "En filetes",
       "En trozos",
-      "Para guiso",
-      "Al gusto"
+      "Para guiso"
     ]
   },
   "tiras-de-costilla": {
@@ -341,8 +333,7 @@ window.RODRI_PRECIOS_DEMO = {
       "Entero",
       "En filetes",
       "En trozos",
-      "Para guiso",
-      "Al gusto"
+      "Para guiso"
     ]
   },
   "costilla-carnosa": {
@@ -352,8 +343,7 @@ window.RODRI_PRECIOS_DEMO = {
       "Entero",
       "En filetes",
       "En trozos",
-      "Para guiso",
-      "Al gusto"
+      "Para guiso"
     ]
   },
   "jarrete-de-cerdo": {
@@ -363,8 +353,7 @@ window.RODRI_PRECIOS_DEMO = {
       "Entero",
       "En filetes",
       "En trozos",
-      "Para guiso",
-      "Al gusto"
+      "Para guiso"
     ]
   },
   "manitas-de-cerdo": {
@@ -374,8 +363,7 @@ window.RODRI_PRECIOS_DEMO = {
       "Entero",
       "En filetes",
       "En trozos",
-      "Para guiso",
-      "Al gusto"
+      "Para guiso"
     ]
   },
   "higado-de-cerdo": {
@@ -385,8 +373,7 @@ window.RODRI_PRECIOS_DEMO = {
       "Entero",
       "En filetes",
       "En trozos",
-      "Para guiso",
-      "Al gusto"
+      "Para guiso"
     ]
   },
   "pella-de-cerdo": {
@@ -396,8 +383,7 @@ window.RODRI_PRECIOS_DEMO = {
       "Entero",
       "En filetes",
       "En trozos",
-      "Para guiso",
-      "Al gusto"
+      "Para guiso"
     ]
   },
   "pajarilla-de-cerdo": {
@@ -407,8 +393,7 @@ window.RODRI_PRECIOS_DEMO = {
       "Entero",
       "En filetes",
       "En trozos",
-      "Para guiso",
-      "Al gusto"
+      "Para guiso"
     ]
   },
   "hueso-de-espinazo-de-cerdo": {
@@ -418,8 +403,7 @@ window.RODRI_PRECIOS_DEMO = {
       "Entero",
       "En filetes",
       "En trozos",
-      "Para guiso",
-      "Al gusto"
+      "Para guiso"
     ]
   },
   "oreja-de-cerdo": {
@@ -429,8 +413,7 @@ window.RODRI_PRECIOS_DEMO = {
       "Entero",
       "En filetes",
       "En trozos",
-      "Para guiso",
-      "Al gusto"
+      "Para guiso"
     ]
   },
   "lengua-de-cerdo": {
@@ -440,8 +423,7 @@ window.RODRI_PRECIOS_DEMO = {
       "Entero",
       "En filetes",
       "En trozos",
-      "Para guiso",
-      "Al gusto"
+      "Para guiso"
     ]
   },
   "punta-de-solomillo": {
@@ -451,8 +433,7 @@ window.RODRI_PRECIOS_DEMO = {
       "Entero",
       "En filetes",
       "En trozos",
-      "Para guiso",
-      "Al gusto"
+      "Para guiso"
     ]
   },
   "tocino-fresco": {
@@ -462,8 +443,7 @@ window.RODRI_PRECIOS_DEMO = {
       "Entero",
       "En filetes",
       "En trozos",
-      "Para guiso",
-      "Al gusto"
+      "Para guiso"
     ]
   },
   "chuletas-ibericas": {
@@ -472,8 +452,7 @@ window.RODRI_PRECIOS_DEMO = {
     "opciones": [
       "Entero",
       "En filetes",
-      "En medallones",
-      "Al gusto"
+      "En medallones"
     ]
   },
   "lomo-iberico": {
@@ -482,8 +461,7 @@ window.RODRI_PRECIOS_DEMO = {
     "opciones": [
       "Entero",
       "En filetes",
-      "En medallones",
-      "Al gusto"
+      "En medallones"
     ]
   },
   "filete-iberico": {
@@ -492,8 +470,7 @@ window.RODRI_PRECIOS_DEMO = {
     "opciones": [
       "Entero",
       "En filetes",
-      "En medallones",
-      "Al gusto"
+      "En medallones"
     ]
   },
   "lagartito-iberico": {
@@ -502,8 +479,7 @@ window.RODRI_PRECIOS_DEMO = {
     "opciones": [
       "Entero",
       "En filetes",
-      "En medallones",
-      "Al gusto"
+      "En medallones"
     ]
   },
   "presa-iberica": {
@@ -512,8 +488,7 @@ window.RODRI_PRECIOS_DEMO = {
     "opciones": [
       "Entero",
       "En filetes",
-      "En medallones",
-      "Al gusto"
+      "En medallones"
     ]
   },
   "secreto-iberico": {
@@ -522,8 +497,7 @@ window.RODRI_PRECIOS_DEMO = {
     "opciones": [
       "Entero",
       "En filetes",
-      "En medallones",
-      "Al gusto"
+      "En medallones"
     ]
   },
   "solomillo-iberico": {
@@ -532,8 +506,7 @@ window.RODRI_PRECIOS_DEMO = {
     "opciones": [
       "Entero",
       "En filetes",
-      "En medallones",
-      "Al gusto"
+      "En medallones"
     ]
   },
   "costilla-iberica": {
@@ -542,8 +515,7 @@ window.RODRI_PRECIOS_DEMO = {
     "opciones": [
       "Entero",
       "En filetes",
-      "En medallones",
-      "Al gusto"
+      "En medallones"
     ]
   },
   "babilla-de-ternera": {
@@ -552,8 +524,7 @@ window.RODRI_PRECIOS_DEMO = {
     "opciones": [
       "Entero",
       "En filetes",
-      "En dados para guiso",
-      "Al gusto"
+      "En dados para guiso"
     ]
   },
   "chuleta-de-ternera": {
@@ -562,8 +533,7 @@ window.RODRI_PRECIOS_DEMO = {
     "opciones": [
       "Entero",
       "En filetes",
-      "En dados para guiso",
-      "Al gusto"
+      "En dados para guiso"
     ]
   },
   "ternera-para-guiso": {
@@ -580,8 +550,7 @@ window.RODRI_PRECIOS_DEMO = {
     "opciones": [
       "Entero",
       "En filetes",
-      "En dados para guiso",
-      "Al gusto"
+      "En dados para guiso"
     ]
   },
   "entrecot-de-ternera": {
@@ -590,8 +559,7 @@ window.RODRI_PRECIOS_DEMO = {
     "opciones": [
       "Entero",
       "En filetes",
-      "En dados para guiso",
-      "Al gusto"
+      "En dados para guiso"
     ]
   },
   "espinazo-salado": {
@@ -599,8 +567,7 @@ window.RODRI_PRECIOS_DEMO = {
     "unidad": "kg",
     "opciones": [
       "Por peso",
-      "En trozos",
-      "Al gusto"
+      "En trozos"
     ]
   },
   "blanco-salado": {
@@ -608,8 +575,7 @@ window.RODRI_PRECIOS_DEMO = {
     "unidad": "kg",
     "opciones": [
       "Por peso",
-      "En trozos",
-      "Al gusto"
+      "En trozos"
     ]
   },
   "costilla-salada": {
@@ -617,8 +583,7 @@ window.RODRI_PRECIOS_DEMO = {
     "unidad": "kg",
     "opciones": [
       "Por peso",
-      "En trozos",
-      "Al gusto"
+      "En trozos"
     ]
   },
   "tocino-salado": {
@@ -626,8 +591,7 @@ window.RODRI_PRECIOS_DEMO = {
     "unidad": "kg",
     "opciones": [
       "Por peso",
-      "En trozos",
-      "Al gusto"
+      "En trozos"
     ]
   },
   "corteza-aneja": {
@@ -635,8 +599,7 @@ window.RODRI_PRECIOS_DEMO = {
     "unidad": "kg",
     "opciones": [
       "Por peso",
-      "En trozos",
-      "Al gusto"
+      "En trozos"
     ]
   },
   "rabo-salado": {
@@ -644,8 +607,7 @@ window.RODRI_PRECIOS_DEMO = {
     "unidad": "kg",
     "opciones": [
       "Por peso",
-      "En trozos",
-      "Al gusto"
+      "En trozos"
     ]
   },
   "filetes-empanados": {
@@ -661,8 +623,7 @@ window.RODRI_PRECIOS_DEMO = {
     "unidad": "kg",
     "opciones": [
       "Por unidades",
-      "Por peso",
-      "Al gusto"
+      "Por peso"
     ]
   },
   "aneto-jamon-y-queso": {
@@ -670,8 +631,7 @@ window.RODRI_PRECIOS_DEMO = {
     "unidad": "ud",
     "opciones": [
       "Por unidades",
-      "Por peso",
-      "Al gusto"
+      "Por peso"
     ]
   },
   "albondigas-de-pollo": {
@@ -679,8 +639,7 @@ window.RODRI_PRECIOS_DEMO = {
     "unidad": "kg",
     "opciones": [
       "Por unidades",
-      "Por peso",
-      "Al gusto"
+      "Por peso"
     ]
   },
   "albondigas-mixtas": {
@@ -688,8 +647,7 @@ window.RODRI_PRECIOS_DEMO = {
     "unidad": "kg",
     "opciones": [
       "Por unidades",
-      "Por peso",
-      "Al gusto"
+      "Por peso"
     ]
   },
   "san-jacobo": {
@@ -704,8 +662,7 @@ window.RODRI_PRECIOS_DEMO = {
     "unidad": "kg",
     "opciones": [
       "Por unidades",
-      "Por peso",
-      "Al gusto"
+      "Por peso"
     ]
   },
   "hamburguesa-de-pollo": {
