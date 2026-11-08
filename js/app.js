@@ -435,7 +435,8 @@
     }).formatToParts(new Date());
     const horas = Number(partes.find(p => p.type === 'hour')?.value);
     const minutos = Number(partes.find(p => p.type === 'minute')?.value);
-    return horas * 60 + minutos;
+    // Redondear hacia arriba: las 10:00:01 requieren una cita a partir de las 11:01.
+    return horas * 60 + minutos + (new Date().getSeconds() > 0 ? 1 : 0);
   }
 
   function validarHoraRecogida(dia, hora) {
