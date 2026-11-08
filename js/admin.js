@@ -101,7 +101,7 @@
    if(!container)return;
    const {data,error}=await client.from('categories').select('id,name,tagline,sort_order,active').order('sort_order');
    if(error){status('categoryStatus','No se pudieron cargar las categorías: '+error.message);return}
-   container.innerHTML=(data||[]).filter(c=>!isRetiredCategory(c.id)&&!isRetiredCategory(c.name)).map(c=>
+   container.innerHTML=(data||[]).map(c=>
      '<div class="category-editor-row" data-category-id="'+escapeHtml(c.id)+'">'+
      '<strong>'+escapeHtml(c.name)+'</strong><div class="muted">Identificador: '+escapeHtml(c.id)+'</div>'+
      '<label>Nombre de la categoría<input data-cat-name value="'+escapeHtml(c.name)+'"></label>'+
@@ -112,23 +112,77 @@
  }
  $('categoryRows').addEventListener('click',async e=>{
    const del=e.target.closest('[data-delete-category]');
-    if(del){
-      const row=del.closest('[data-category-id]'),id=row.dataset.categoryId;
-      del.disabled=true;
-      try{
-        const {count,error}=await client.from('products').select('id',{count:'exact',head:true}).eq('category',id);
-        if(error)throw error;
-        if(count){status('categoryStatus','No se puede eliminar: contiene '+count+' productos. Elimina primero todos los productos y sus opciones.');return}
-        if(!confirm('¿Eliminar definitivamente la categoría '+id+'?'))return;
-        const result=await client.from('categories').delete().eq('id',id).select('id');
-        if(result.error)throw result.error;
-        if(!result.data?.length)throw new Error('No se eliminó la categoría.');
-        status('categoryStatus','Categoría eliminada.');await loadProducts();
-      }catch(err){status('categoryStatus','Error al eliminar: '+err.message)}
-      finally{del.disabled=false}
-      return;
-    }
-    const button=e.target.closest('[data-save-category]');if(!button)return;
+   if(del){
+     const row=del.closest('[data-category-id]');
+     if(!row)return;
+     const id=row.dataset.categoryId;
+     let started=false;
+     del.disabled=true;
+     status('categoryStatus','Comprobando contenido de la categoría…');
+     try{
+       const {data:category,error:catError}=await client.from('categories')
+         .select('id,name,tagline,sort_order,active').eq('id',id).maybeSingle();
+       if(catError)throw catError;
+       if(!category)throw Error('La categoría ya no existe.');
+       const products=[];
+       for(let start=0;;start+=500){
+         const {data,error}=await client.from('products')
+           .select('id,name,description,category,image,base_price_cents,active,sort_order,sale_unit,preparations')
+           .eq('category',id).order('id').range(start,start+499);
+         if(error)throw error;
+         products.push(...(data||[]));
+         if(!data||data.length<500)break;
+       }
+       const options=[];
+       for(let i=0;i<products.length;i+=50){
+         const ids=products.slice(i,i+50).map(p=>p.id);
+         for(let start=0;;start+=500){
+           const {data,error}=await client.from('product_options').select('*')
+             .in('product_id',ids).order('id').range(start,start+499);
+           if(error)throw error;
+           options.push(...(data||[]));
+           if(!data||data.length<500)break;
+         }
+       }
+       const warning='¿Eliminar la categoría «'+category.name+'»?\n\nSe borrarán definitivamente '+
+         products.length+' productos y '+options.length+' opciones de esta categoría. '+
+         'Se descargará una copia JSON antes del borrado. Las imágenes de GitHub no se borrarán.';
+       if(!confirm(warning)){status('categoryStatus','Eliminación cancelada.');return}
+       const backup={created_at:new Date().toISOString(),categories:[category],products,options};
+       const url=URL.createObjectURL(new Blob([JSON.stringify(backup,null,2)],{type:'application/json'}));
+       const link=document.createElement('a');
+       link.href=url;
+       link.download='respaldo-categoria-'+String(id).replace(/[^a-z0-9_-]/gi,'-')+'-'+
+         new Date().toISOString().slice(0,10)+'.json';
+       document.body.appendChild(link);link.click();link.remove();
+       setTimeout(()=>URL.revokeObjectURL(url),10000);
+       if(!confirm('Verifica que se ha descargado la copia de «'+category.name+
+         '». ¿Eliminar ahora la categoría, sus productos y sus opciones?')){
+         status('categoryStatus','Eliminación cancelada. Conserva el respaldo descargado.');return;
+       }
+       status('categoryStatus','Eliminando opciones, productos y categoría…');
+       started=true;
+       for(const o of options){
+         const {data,error}=await client.from('product_options').delete().eq('id',o.id).select('id');
+         if(error||!data?.length)throw Error('Opción '+o.id+': '+(error?.message||'borrado no permitido.'));
+       }
+       for(const p of products){
+         const {data,error}=await client.from('products').delete().eq('id',p.id).select('id');
+         if(error||!data?.length)throw Error('Producto '+p.id+': '+(error?.message||'borrado no permitido.'));
+       }
+       const {data,error}=await client.from('categories').delete().eq('id',id).select('id');
+       if(error||!data?.length)throw Error('Categoría '+id+': '+(error?.message||'borrado no permitido.'));
+       await loadProducts();
+       status('categoryStatus','Categoría «'+category.name+'» eliminada con '+
+         products.length+' productos y '+options.length+' opciones. Las imágenes de GitHub se conservan.');
+     }catch(err){
+       status('categoryStatus','No se pudo completar el borrado: '+err.message+
+         (started?' Algunos registros podrían haberse borrado; consulta el respaldo JSON.':' No se ha borrado nada.'));
+       if(started)await loadProducts();
+     }finally{del.disabled=false}
+     return;
+   }
+   const button=e.target.closest('[data-save-category]');if(!button)return;
    const row=button.closest('[data-category-id]');
    const name=row.querySelector('[data-cat-name]').value.trim();
    if(!name){status('categoryStatus','Escribe el nombre de la categoría.');return}
@@ -213,7 +267,8 @@
      $('emptyNotice').hidden=false;
      $('products').innerHTML='';
      status('adminStatus','');
-     return;
+     await loadCategoriesEditor();
+      return;
    }
    $('emptyNotice').hidden=true;
    const catalogue=(window.PRODUCTOS||[]);
@@ -741,87 +796,6 @@
    const label=row?.querySelector('.product-head .category');
    if(label)label.textContent=label.textContent.replace(/ · Inactivo$/, '')+(requested?'':' · Inactivo');
    status('adminStatus',requested?'Producto activado. Será visible si tiene opciones y precio.':'Producto desactivado y oculto en la tienda.');
- });
-
- $('removeRetiredCategories').addEventListener('click',async()=>{
-   const button=$('removeRetiredCategories');
-   button.disabled=true;
-   status('adminStatus','Comprobando categorías retiradas…');
-   try{
-     const [catResult,productResult,optionResult]=await Promise.all([
-       client.from('categories').select('id,name,tagline,sort_order,active'),
-       client.from('products').select('id,name,description,category,image,base_price_cents,active,sort_order,sale_unit,preparations'),
-       client.from('product_options').select('*')
-     ]);
-     if(catResult.error||productResult.error||optionResult.error)throw catResult.error||productResult.error||optionResult.error;
-     const cats=catResult.data||[],products=productResult.data||[],options=optionResult.data||[];
-     const names=new Map(cats.map(c=>[String(c.id),c.name]));
-     const removedCategories=cats.filter(c=>isRetiredCategory(c.id)||isRetiredCategory(c.name));
-     const removedProducts=products.filter(p=>isRetiredProduct(p,names));
-     const ids=new Set(removedProducts.map(p=>String(p.id)));
-     const removedOptions=options.filter(o=>ids.has(String(o.product_id)));
-     if(!removedCategories.length&&!removedProducts.length){
-       status('adminStatus','No quedan categorías ni productos retirados en Supabase.');return;
-     }
-     const lines='Se borrarán DEFINITIVAMENTE '+removedCategories.length+' categorías, '+removedProducts.length+
-       ' productos y '+removedOptions.length+' opciones de venta. Se descargará antes un respaldo JSON.\n\n¿Continuar?';
-     if(!confirm(lines)){status('adminStatus','Limpieza cancelada: no se ha eliminado nada.');return}
-     const backup={created_at:new Date().toISOString(),categories:removedCategories,products:removedProducts,options:removedOptions};
-     const url=URL.createObjectURL(new Blob([JSON.stringify(backup,null,2)],{type:'application/json'}));
-     const link=document.createElement('a');link.href=url;
-     link.download='respaldo-categorias-retiradas-'+new Date().toISOString().slice(0,10)+'.json';
-     document.body.appendChild(link);link.click();link.remove();
-     setTimeout(()=>URL.revokeObjectURL(url),10000);
-     if(!confirm('Confirma que el navegador ha descargado la copia JSON. ¿Eliminar ahora los registros en Supabase?')){
-       status('adminStatus','No se han borrado registros. Respaldo descargado.');return;
-     }
-     let deletedOptions=0,deletedProducts=0,deletedCategories=0;
-     for(const o of removedOptions){
-       const {data,error}=await client.from('product_options').delete().eq('id',o.id).select('id');
-       if(error||!data?.length)throw Error('Opción '+o.id+': '+(error?.message||'Borrado no permitido'));
-       deletedOptions++;
-     }
-     for(const p of removedProducts){
-       const {data,error}=await client.from('products').delete().eq('id',p.id).select('id');
-       if(error||!data?.length)throw Error('Producto '+p.id+': '+(error?.message||'Borrado no permitido'));
-       deletedProducts++;
-     }
-     for(const c of removedCategories){
-       const {data,error}=await client.from('categories').delete().eq('id',c.id).select('id');
-       if(error||!data?.length)throw Error('Categoría '+c.id+': '+(error?.message||'Borrado no permitido'));
-       deletedCategories++;
-     }
-     status('adminStatus','Limpieza completada: '+deletedCategories+' categorías, '+deletedProducts+
-       ' productos y '+deletedOptions+' opciones eliminados. Las fotos de GitHub se conservan.');
-     await loadProducts();
-   }catch(error){status('adminStatus','Limpieza detenida: '+error.message+
-       '. Si se borraron registros antes del error, consulta el JSON de respaldo descargado.');}
-   finally{button.disabled=false}
- });
-
- $('activateAllProducts').addEventListener('click',async()=>{
-   const button=$('activateAllProducts');
-   if(!confirm('¿Activar todos los productos permitidos? También se activarán los que anteriormente desactivaste.'))return;
-   button.disabled=true;
-   status('adminStatus','Activando productos…');
-   try{
-     const [{data:all,error:productsError},{data:cats,error:categoriesError}]=await Promise.all([
-       client.from('products').select('id,name,category,active'),
-       client.from('categories').select('id,name')
-     ]);
-     if(productsError||categoriesError)throw productsError||categoriesError;
-     const names=new Map((cats||[]).map(c=>[String(c.id),c.name]));
-     const pending=(all||[]).filter(p=>p.active!==true&&!isRetiredProduct(p,names));
-     let count=0;
-     for(const item of pending){
-       const {data,error}=await client.from('products').update({active:true}).eq('id',item.id).select('id');
-       if(error||!data?.length)throw new Error('No se pudo activar '+item.id+': '+(error?.message||'Permiso denegado'));
-       count++;
-     }
-     status('adminStatus',count+' productos activados. Ahora puedes desactivar los que no te interesen.');
-     await loadProducts();
-   }catch(error){status('adminStatus','Activación parcial o fallida: '+error.message);}
-   finally{button.disabled=false;}
  });
 
  $('products').addEventListener('click',async e=>{
