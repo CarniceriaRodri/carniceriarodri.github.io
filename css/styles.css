@@ -226,13 +226,18 @@ a { color: inherit; }
 }
 .card-img img {
   display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  object-position: center;
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain !important;
+  object-position: center center !important;
+  transform: none !important;
   transition: none;
+  justify-self: center;
+  align-self: center;
 }
-.card:hover .card-img img { transform: none; }
+.card:hover .card-img img { transform: none !important; }
 .tag {
   position: absolute; top: .8rem; left: .8rem; background: var(--paper); color: var(--blood);
   font: 700 .7rem var(--body); letter-spacing: .14em; text-transform: uppercase; padding: .38rem .65rem; border-radius: 4px;
