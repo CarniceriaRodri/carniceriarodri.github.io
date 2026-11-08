@@ -48,7 +48,7 @@ dialog#imageDialog::backdrop{background:#211a1780}
 .image-choices{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0}
 .image-choice{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:7px;box-sizing:border-box;width:112px;min-width:112px;height:44px;padding:10px 12px;border:1px solid #d8cfc6;border-radius:9px;background:#eee8e1;color:var(--ink);font-weight:650;cursor:pointer}
 .image-choice.secondary{background:#eee8e1;border-color:#d8cfc6;color:var(--ink)}
-.image-choice.camera-only{width:112px;min-width:112px;height:44px;padding:10px 12px;font-size:20px}
+.image-choice.camera-only{width:56px;min-width:56px;height:48px;padding:8px;font-size:23px}.image-choice{width:56px;min-width:56px;height:48px;padding:8px;font-size:22px}
 .image-choice input{position:absolute;width:1px;height:1px;opacity:0;overflow:hidden;pointer-events:none}
 .image-toggle{display:flex;align-items:center;gap:9px;margin:12px 0}
 .image-toggle input{width:20px;height:20px}
@@ -89,14 +89,14 @@ dialog#imageDialog::backdrop{background:#211a1780}
   <p class="muted">Selecciona fotos del ordenador o del móvil. Máximo 5 MB por imagen.</p>
   <p class="muted">Destino de las próximas subidas: <strong id="libraryUploadPath">img/productos/biblioteca/</strong></p>
   <div class="actions" style="margin-top:8px">
-    <button type="button" id="libraryUploadUp" class="secondary">↑ Subir un nivel</button>
-    <button type="button" id="libraryUploadRoot" class="secondary">⌂ Ir a biblioteca</button>
-    <button type="button" id="libraryCreateFolderButton" class="secondary">＋ Crear carpeta</button>
+    <button type="button" id="libraryUploadUp" class="secondary" title="Subir un nivel" aria-label="Subir un nivel">⬆️</button>
+    <button type="button" id="libraryUploadRoot" class="secondary" title="Ir a la biblioteca" aria-label="Ir a la biblioteca">📚</button>
+    <button type="button" id="libraryCreateFolderButton" class="secondary" title="Crear carpeta" aria-label="Crear carpeta">📁＋</button>
   </div>
   <div id="libraryUploadFolders" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"></div>
   <p id="libraryUploadNavStatus" class="muted" role="status"></p>
   <input id="libraryUploadFiles" type="file" accept="image/jpeg,image/png,image/webp" multiple hidden>
-  <button type="button" id="libraryUploadButton">Subir imágenes</button>
+  <button type="button" id="libraryUploadButton" title="Subir imágenes" aria-label="Subir imágenes">📤</button>
   <p id="libraryUploadStatus" class="status" role="status"></p>
 </div>
 </section>
@@ -113,14 +113,14 @@ dialog#imageDialog::backdrop{background:#211a1780}
     <label class="image-choice camera-only" for="imageCamera" title="Hacer una foto" aria-label="Hacer una foto">📷
       <input id="imageCamera" type="file" accept="image/*" capture="environment">
     </label>
-    <label class="image-choice secondary" for="imageFile">📱 💻 Dispositivo
+    <label class="image-choice secondary" for="imageFile" title="Elegir desde móvil u ordenador" aria-label="Elegir desde móvil u ordenador">📱 💻
       <input id="imageFile" type="file" accept="image/jpeg,image/png,image/webp">
     </label>
-    <button type="button" id="openImageLibrary" class="image-choice secondary">📚 Biblioteca</button>
+    <button type="button" id="openImageLibrary" class="image-choice secondary" title="Elegir de la biblioteca" aria-label="Elegir de la biblioteca">📚</button>
   </div>
   <section id="imageLibraryPicker" hidden style="border:1px solid var(--line);border-radius:12px;padding:12px;margin:12px 0">
-    <div class="image-dialog-head"><strong>Biblioteca de imágenes</strong><button type="button" id="refreshImageLibrary" class="secondary">↻</button></div>
-    <p class="muted">Biblioteca de imágenes guardadas.</p><p class="muted">Ruta actual: <strong id="imageLibraryPath">img/productos/biblioteca/</strong></p><button type="button" id="libraryGoRoot" class="secondary" style="margin-bottom:8px">Carpeta principal</button>
+    <div class="image-dialog-head"><strong>Biblioteca de imágenes</strong><button type="button" id="refreshImageLibrary" class="secondary" title="Actualizar" aria-label="Actualizar">🔄</button></div>
+    <p class="muted">Biblioteca de imágenes guardadas.</p><p class="muted">Ruta actual: <strong id="imageLibraryPath">img/productos/biblioteca/</strong></p><button type="button" id="libraryGoRoot" class="secondary" style="margin-bottom:8px" title="Volver a la biblioteca" aria-label="Volver a la biblioteca">📚</button>
     <div id="imageLibraryGrid" style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px"></div>
     <p id="imageLibraryStatus" class="status" role="status"></p>
   </section>
@@ -142,6 +142,6 @@ dialog#imageDialog::backdrop{background:#211a1780}
 
 <script src="js/catalogo.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-<script src="js/admin.js?v=2.5" defer></script>
+<script src="js/admin.js?v=2.6" defer></script>
 </body>
 </html>
