@@ -187,10 +187,6 @@
     }catch(error){status('syncVerifiedStatus','No se pudo sincronizar: '+error.message)}
     finally{button.disabled=false}
   });
-
-
-
-
   async function loadProducts(){
    const openOptionPanels=new Set(Array.from(document.querySelectorAll('.options-details[open]')).map(el=>el.dataset.productOptions));
    status('adminStatus','Cargando productos…');
