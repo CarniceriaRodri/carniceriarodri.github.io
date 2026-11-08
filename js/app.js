@@ -101,7 +101,8 @@
             typeof l.cantidad === 'string' &&
             typeof l.opcion === 'string' &&
             Number.isInteger(l.uds) &&
-            l.uds > 0
+            l.uds > 0 && l.uds <= 99 &&
+            PRODUCTOS.some((p) => p.id === l.id)
           )
           .slice(0, 50)
       : [];
