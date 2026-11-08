@@ -89,6 +89,7 @@ dialog#imageDialog::backdrop{background:#211a1780}
   <p class="muted">Selecciona fotos del ordenador o del móvil. Máximo 5 MB por imagen.</p>
   <label for="libraryFolder">Carpeta de destino</label>
   <input id="libraryFolder" type="text" value="biblioteca" placeholder="Ej.: carnes, preparados, ofertas">
+  <div class="actions" style="margin-top:8px"><button type="button" id="libraryCreateFolderButton" class="secondary">＋ Crear carpeta</button></div>
   <p class="muted">Ruta actual: <strong id="libraryUploadPath">img/productos/biblioteca/biblioteca/</strong></p>
   <input id="libraryUploadFiles" type="file" accept="image/jpeg,image/png,image/webp" multiple hidden>
   <button type="button" id="libraryUploadButton">Subir imágenes</button>
@@ -137,6 +138,6 @@ dialog#imageDialog::backdrop{background:#211a1780}
 
 <script src="js/catalogo.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-<script src="js/admin.js?v=2.3" defer></script>
+<script src="js/admin.js?v=2.4" defer></script>
 </body>
 </html>
