@@ -210,10 +210,25 @@ async function listLibraryFilesRecursively(relative: string): Promise<Array<{pat
 }
 async function readGitHubFile(path: string) {
   const item = await githubRequest(path);
-  if (!item || item.type !== "file" || typeof item.content !== "string") {
-    throw new Error("No se pudo leer el archivo " + path);
+  if (!item || item.type !== "file" || typeof item.sha !== "string") {
+    throw new Error("No se pudo localizar el archivo " + path);
   }
-  return {content:item.content.replace(/\\s/g,""),sha:item.sha};
+  const owner = secret("GITHUB_OWNER");
+  const repo = secret("GITHUB_REPO");
+  const token = secret("GITHUB_TOKEN");
+  const response = await fetch("https://api.github.com/repos/" + owner + "/" + repo + "/git/blobs/" + item.sha, {
+    headers: {
+      Authorization: "Bearer " + token,
+      Accept: "application/vnd.github+json",
+      "X-GitHub-Api-Version": "2022-11-28",
+    },
+  });
+  if (!response.ok) throw new Error("No se pudo descargar el archivo para renombrarlo (" + response.status + ").");
+  const blob = await response.json();
+  if (blob.encoding !== "base64" || typeof blob.content !== "string") {
+    throw new Error("GitHub no devolvió el contenido de la imagen en formato base64.");
+  }
+  return {content:blob.content.replace(/\\s/g,""),sha:item.sha};
 }
 async function deleteGitHubFile(path: string, sha: string) {
   const branch = Deno.env.get("GITHUB_BRANCH") || "main";
