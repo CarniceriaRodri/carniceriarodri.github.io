@@ -127,6 +127,7 @@
           <div class="grid">${productos.map(card).join('')}</div>
         </section>`;
     }).join('');
+    document.querySelectorAll('.card').forEach(actualizarPrecioCantidad);
   }
 
   function card(p) {
@@ -667,7 +668,7 @@
   }
   document.addEventListener('change', (event) => {
     const option = event.target.closest('.card [data-field="opcion"]');
-    if (option) { actualizarImagenTarjeta(option.closest('.card'), true); return; }
+    if (option) { actualizarImagenTarjeta(option.closest('.card'), true); actualizarPrecioCantidad(option.closest('.card')); return; }
     const quantity = event.target.closest('.card [data-field="cantidad"]');
     if (quantity) { actualizarImagenTarjeta(quantity.closest('.card'), true); actualizarPrecioCantidad(quantity.closest('.card')); }
   });
@@ -710,7 +711,7 @@
       option.dispatchEvent(new Event('change', { bubbles: true }));
     }
     actualizarImagenTarjeta(cardEl, false);
-    restaurarPrecioBase(cardEl);
+    actualizarPrecioCantidad(cardEl);
   }
 
   function restaurarProductosAlSalir(exceptoCard = null) {
@@ -763,6 +764,7 @@
     if (priceEl) priceEl.innerHTML = escapeHtml(priceText) + ' ';
     const cantidad = cardEl.querySelector('[data-field="cantidad"]');
     if (!cantidad) return;
+    const selectedQuantity = cantidad.value;
     const original = p.cantidadesOriginales || p.cantidades;
     cantidad.innerHTML = original.map(label => {
       const m = label.match(/[0-9]+(?:[.,][0-9]+)?/);
@@ -773,6 +775,12 @@
       const updated = label.replace(/-\s*[0-9]+(?:[.,][0-9]+)?\s*€/i, '- ' + value + ' €');
       return '<option>' + escapeHtml(updated) + '</option>';
     }).join('');
+    const existing = Array.from(cantidad.options).find(o => o.value === selectedQuantity);
+    if (existing) cantidad.value = selectedQuantity;
+    else {
+      const index = original.findIndex(x => x.replace(/\s*-\s*[\d.,]+\s*€/g,'').trim() === selectedQuantity.replace(/\s*-\s*[\d.,]+\s*€/g,'').trim());
+      if (index >= 0) cantidad.selectedIndex = index;
+    }
     actualizarPrecioCantidad(cardEl);
   });
 
@@ -931,7 +939,15 @@
       const published = [];
       for (const row of rows) {
         if (row.active !== true || !allowedCategories.has(String(row.category)) || categoryRetired(row.category) || categoryRetired(categoryNames.get(String(row.category))) || categoryRetired(row.name)) continue;
-        const options = optionsByProduct.get(String(row.id)) || [];
+        const configuredOptions = optionsByProduct.get(String(row.id)) || [];
+        // Conservar únicamente preparaciones coherentes cuando existe una configuración
+        // específica para el producto. No cambiar los precios guardados en Supabase.
+        const demoOptions = window.RODRI_PRECIOS_DEMO?.[String(row.id)]?.opciones;
+        const normalizedAllowed = Array.isArray(demoOptions) && demoOptions.length
+          ? new Set(demoOptions.map(x => normalizarClave(x))) : null;
+        const options = normalizedAllowed
+          ? configuredOptions.filter(o => normalizedAllowed.has(normalizarClave(o.label)))
+          : configuredOptions;
         if (!options.length) continue;
         const baseCents = Number(row.base_price_cents);
         const base = Number.isFinite(baseCents) && baseCents > 0
