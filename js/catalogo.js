@@ -242,7 +242,6 @@ window.RODRI_PRECIOS_DEMO = {
     "unidad": "kg",
     "opciones": [
       "Entero",
-      "En filetes",
       "En trozos",
       "Para guiso"
     ]
@@ -270,8 +269,6 @@ window.RODRI_PRECIOS_DEMO = {
     "precio": 9.9,
     "unidad": "kg",
     "opciones": [
-      "Entero",
-      "En filetes",
       "En trozos",
       "Para guiso"
     ]
@@ -280,10 +277,9 @@ window.RODRI_PRECIOS_DEMO = {
     "precio": 9.9,
     "unidad": "kg",
     "opciones": [
-      "Entero",
-      "En filetes",
-      "En trozos",
-      "Para guiso"
+      "Finos",
+      "Normales",
+      "Gruesos"
     ]
   },
   "jamon-entero-de-cerdo": {
@@ -310,10 +306,8 @@ window.RODRI_PRECIOS_DEMO = {
     "precio": 8.9,
     "unidad": "kg",
     "opciones": [
-      "Entero",
-      "En filetes",
-      "En trozos",
-      "Para guiso"
+      "Entera",
+      "En rodajas"
     ]
   },
   "chorizo-cerdo": {
@@ -321,29 +315,23 @@ window.RODRI_PRECIOS_DEMO = {
     "unidad": "kg",
     "opciones": [
       "Entero",
-      "En filetes",
-      "En trozos",
-      "Para guiso"
+      "En rodajas"
     ]
   },
   "tiras-de-costilla": {
     "precio": 9.9,
     "unidad": "kg",
     "opciones": [
-      "Entero",
-      "En filetes",
-      "En trozos",
-      "Para guiso"
+      "En tiras",
+      "Troceadas"
     ]
   },
   "costilla-carnosa": {
     "precio": 9.9,
     "unidad": "kg",
     "opciones": [
-      "Entero",
-      "En filetes",
-      "En trozos",
-      "Para guiso"
+      "Entera",
+      "Troceada"
     ]
   },
   "jarrete-de-cerdo": {
@@ -351,8 +339,7 @@ window.RODRI_PRECIOS_DEMO = {
     "unidad": "kg",
     "opciones": [
       "Entero",
-      "En filetes",
-      "En trozos",
+      "Troceado",
       "Para guiso"
     ]
   },
@@ -360,10 +347,9 @@ window.RODRI_PRECIOS_DEMO = {
     "precio": 9.9,
     "unidad": "kg",
     "opciones": [
-      "Entero",
-      "En filetes",
-      "En trozos",
-      "Para guiso"
+      "Enteras",
+      "Partidas por la mitad",
+      "Troceadas"
     ]
   },
   "higado-de-cerdo": {
@@ -372,28 +358,23 @@ window.RODRI_PRECIOS_DEMO = {
     "opciones": [
       "Entero",
       "En filetes",
-      "En trozos",
-      "Para guiso"
+      "En trozos"
     ]
   },
   "pella-de-cerdo": {
     "precio": 9.9,
     "unidad": "kg",
     "opciones": [
-      "Entero",
-      "En filetes",
-      "En trozos",
-      "Para guiso"
+      "Entera",
+      "En trozos"
     ]
   },
   "pajarilla-de-cerdo": {
     "precio": 9.9,
     "unidad": "kg",
     "opciones": [
-      "Entero",
-      "En filetes",
-      "En trozos",
-      "Para guiso"
+      "Entera",
+      "En trozos"
     ]
   },
   "hueso-de-espinazo-de-cerdo": {
@@ -401,39 +382,32 @@ window.RODRI_PRECIOS_DEMO = {
     "unidad": "kg",
     "opciones": [
       "Entero",
-      "En filetes",
-      "En trozos",
-      "Para guiso"
+      "Troceado"
     ]
   },
   "oreja-de-cerdo": {
     "precio": 9.9,
     "unidad": "kg",
     "opciones": [
-      "Entero",
-      "En filetes",
-      "En trozos",
-      "Para guiso"
+      "Entera",
+      "Troceada"
     ]
   },
   "lengua-de-cerdo": {
     "precio": 9.9,
     "unidad": "kg",
     "opciones": [
-      "Entero",
-      "En filetes",
-      "En trozos",
-      "Para guiso"
+      "Entera",
+      "En rodajas"
     ]
   },
   "punta-de-solomillo": {
     "precio": 9.9,
     "unidad": "kg",
     "opciones": [
-      "Entero",
-      "En filetes",
-      "En trozos",
-      "Para guiso"
+      "Entera",
+      "En medallones",
+      "En trozos"
     ]
   },
   "tocino-fresco": {
@@ -441,18 +415,17 @@ window.RODRI_PRECIOS_DEMO = {
     "unidad": "kg",
     "opciones": [
       "Entero",
-      "En filetes",
-      "En trozos",
-      "Para guiso"
+      "En lonchas",
+      "En dados"
     ]
   },
   "chuletas-ibericas": {
     "precio": 19.9,
     "unidad": "kg",
     "opciones": [
-      "Entero",
-      "En filetes",
-      "En medallones"
+      "Finas",
+      "Normales",
+      "Gruesas"
     ]
   },
   "lomo-iberico": {
@@ -468,9 +441,9 @@ window.RODRI_PRECIOS_DEMO = {
     "precio": 20.9,
     "unidad": "kg",
     "opciones": [
-      "Entero",
-      "En filetes",
-      "En medallones"
+      "Finos",
+      "Normales",
+      "Gruesos"
     ]
   },
   "lagartito-iberico": {
@@ -478,15 +451,14 @@ window.RODRI_PRECIOS_DEMO = {
     "unidad": "kg",
     "opciones": [
       "Entero",
-      "En filetes",
-      "En medallones"
+      "En trozos"
     ]
   },
   "presa-iberica": {
     "precio": 24.9,
     "unidad": "kg",
     "opciones": [
-      "Entero",
+      "Entera",
       "En filetes",
       "En medallones"
     ]
@@ -496,8 +468,7 @@ window.RODRI_PRECIOS_DEMO = {
     "unidad": "kg",
     "opciones": [
       "Entero",
-      "En filetes",
-      "En medallones"
+      "En filetes"
     ]
   },
   "solomillo-iberico": {
@@ -513,9 +484,8 @@ window.RODRI_PRECIOS_DEMO = {
     "precio": 15.9,
     "unidad": "kg",
     "opciones": [
-      "Entero",
-      "En filetes",
-      "En medallones"
+      "Entera",
+      "Troceada"
     ]
   },
   "babilla-de-ternera": {
@@ -531,9 +501,9 @@ window.RODRI_PRECIOS_DEMO = {
     "precio": 22.9,
     "unidad": "kg",
     "opciones": [
-      "Entero",
-      "En filetes",
-      "En dados para guiso"
+      "Fina",
+      "Normal",
+      "Gruesa"
     ]
   },
   "ternera-para-guiso": {
@@ -557,9 +527,9 @@ window.RODRI_PRECIOS_DEMO = {
     "precio": 24.9,
     "unidad": "kg",
     "opciones": [
-      "Entero",
-      "En filetes",
-      "En dados para guiso"
+      "Fino",
+      "Normal",
+      "Grueso"
     ]
   },
   "espinazo-salado": {
@@ -567,7 +537,7 @@ window.RODRI_PRECIOS_DEMO = {
     "unidad": "kg",
     "opciones": [
       "Por peso",
-      "En trozos"
+      "Troceado"
     ]
   },
   "blanco-salado": {
@@ -583,7 +553,7 @@ window.RODRI_PRECIOS_DEMO = {
     "unidad": "kg",
     "opciones": [
       "Por peso",
-      "En trozos"
+      "Troceada"
     ]
   },
   "tocino-salado": {
@@ -598,8 +568,7 @@ window.RODRI_PRECIOS_DEMO = {
     "precio": 5.9,
     "unidad": "kg",
     "opciones": [
-      "Por peso",
-      "En trozos"
+      "Por peso"
     ]
   },
   "rabo-salado": {
@@ -607,7 +576,7 @@ window.RODRI_PRECIOS_DEMO = {
     "unidad": "kg",
     "opciones": [
       "Por peso",
-      "En trozos"
+      "Troceado"
     ]
   },
   "filetes-empanados": {
