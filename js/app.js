@@ -945,9 +945,18 @@
         const demoOptions = window.RODRI_PRECIOS_DEMO?.[String(row.id)]?.opciones;
         const normalizedAllowed = Array.isArray(demoOptions) && demoOptions.length
           ? new Set(demoOptions.map(x => normalizarClave(x))) : null;
-        const options = normalizedAllowed
+        const matchedOptions = normalizedAllowed
           ? configuredOptions.filter(o => normalizedAllowed.has(normalizarClave(o.label)))
           : configuredOptions;
+        // Cuando los rótulos antiguos de Supabase no coinciden exactamente con la
+        // nueva propuesta, conservar la alternativa coherente disponible sin ocultar
+        // accidentalmente todo el producto ni modificar su precio.
+        const productName = normalizarClave(row.name || row.id);
+        const impossibleFillet = /manitas|chorizo|morcilla|costilla|espinazo|hueso|oreja|rabo|pella|pajarilla|lagartito|corteza|pinchito|hamburguesa|albondiga|chuleta|entrecot/.test(productName);
+        const fallbackOptions = configuredOptions.filter(o =>
+          !/^al gusto$/i.test(String(o.label||'').trim()) &&
+          !(impossibleFillet && /filetes|medallones|dados para guiso/i.test(normalizarClave(o.label))));
+        const options = matchedOptions.length ? matchedOptions : fallbackOptions;
         if (!options.length) continue;
         const baseCents = Number(row.base_price_cents);
         const base = Number.isFinite(baseCents) && baseCents > 0
