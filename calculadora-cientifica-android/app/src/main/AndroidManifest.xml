@@ -1,7 +1,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application
         android:allowBackup="true"
-        android:label="Calculadora Clara"
+        android:icon="@drawable/ic_calculadoraprendizaje"
+        android:label="calculadoraprendizaje"
+        android:roundIcon="@drawable/ic_calculadoraprendizaje"
         android:supportsRtl="true"
         android:theme="@android:style/Theme.Material.Light.NoActionBar"
         android:usesCleartextTraffic="false">
