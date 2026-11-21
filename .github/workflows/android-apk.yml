@@ -41,10 +41,13 @@ jobs:
         working-directory: calculadora-cientifica-android
         run: gradle --no-daemon assembleDebug
 
+      - name: Preparar archivo APK descargable
+        run: cp calculadora-cientifica-android/app/build/outputs/apk/debug/app-debug.apk calculadoraprendizaje.apk
+
       - name: Publicar APK descargable
         uses: actions/upload-artifact@v4
         with:
-          name: Calculadora-Clara-APK-debug
-          path: calculadora-cientifica-android/app/build/outputs/apk/debug/app-debug.apk
+          name: calculadoraprendizaje-apk
+          path: calculadoraprendizaje.apk
           if-no-files-found: error
           retention-days: 90
